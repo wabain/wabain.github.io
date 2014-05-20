@@ -81,8 +81,10 @@
 /* Text formatting */
 
 body {
-    font-family: 'Raleway', Verdana, sans-serif;
-    font-size: 12pt;
+    font: {
+        family: 'Raleway', Verdana, sans-serif;
+        size: 12pt;
+    }
 }
 
 .heading {
@@ -124,9 +126,9 @@ a {
     }
 }
 
-/* adapted from Bootstrap */
+/* Adapted from Bootstrap */
 .initialism {
     font-size: 90%;
     text-transform: uppercase;
-    vertical-align: text-bottom; /* Subtly changes appearance of Ubuntu */
+    vertical-align: text-bottom; /* subtly changes appearance of Ubuntu */
 }
