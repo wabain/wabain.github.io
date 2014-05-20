@@ -76,7 +76,7 @@ module.exports = function (grunt) {
             dist: {
                 options: {
                     data: {
-                        index_banner: '<%= banner %>',
+                        index_banner: '<%= banner.replace(/\\n\\s*/, "\\n     ") %>',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
@@ -90,6 +90,9 @@ module.exports = function (grunt) {
                         styles: {
                             page: 'home-assets/cs-homepage.min.css'
                             // page: '<%= sass.dist.dest %>'
+                        },
+                        readFile: function (fname) {
+                            return grunt.file.read(fname).replace(/\s*$/, '');
                         }
                     }
                 },

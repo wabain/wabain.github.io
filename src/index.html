@@ -23,15 +23,15 @@
     </header>
 
     <section id="about" class="content">
-      <%= grunt.file.read(sections.about) %>
+      <%= readFile(sections.about) %>
     </section>
 
     <section id="projects" class="content">
-      <%= grunt.file.read(sections.projects) %>
+      <%= readFile(sections.projects) %>
     </section>
 
     <section id="cv" class="content">
-      <%= grunt.file.read(sections.cv) %>
+      <%= readFile(sections.cv) %>
     </section>
   </div>
 
