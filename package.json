@@ -17,6 +17,7 @@
     "grunt-contrib-copy": "~0.5.0",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-template": "~0.2.3",
-    "grunt-concurrent": "~0.5.0"
+    "grunt-concurrent": "~0.5.0",
+    "grunt-jsbeautifier": "~0.2.7"
   }
 }

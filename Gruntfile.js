@@ -118,6 +118,19 @@ module.exports = function (grunt) {
                 dest: 'tmp-dev/index.html'
             }
         },
+        jsbeautifier: {
+            options: {
+                html: {
+                    indentSize: 2
+                }
+            },
+            dist: {
+                src: ['dist/index.html']
+            },
+            dev: {
+                src: ['tmp-dev/index.html']
+            }
+        },
         watch: {
             options: {
                 spawn: true
@@ -174,8 +187,11 @@ module.exports = function (grunt) {
         }
     }
 
-    // Default task
-    grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify',
-        'copy:distScss', 'sass', 'template:dist']);
-    grunt.registerTask('rundev', ['clean:dev', 'sass:dev', 'template:dev', 'concurrent:dev']);
+    // High-level tasks
+    grunt.registerTask('default', ['jshint', 'clean:dist', 'concat',
+            'uglify', 'copy:distScss', 'sass:dist', 'template:dist',
+            'jsbeautifier:dist']);
+
+    grunt.registerTask('rundev', ['jshint', 'clean:dev', 'sass:dev',
+            'template:dev', 'jsbeautifier:dev', 'concurrent:dev']);
 };
