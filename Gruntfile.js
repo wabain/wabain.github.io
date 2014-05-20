@@ -34,20 +34,18 @@ module.exports = function (grunt) {
             }
         },
         copy: {
-            distCss: {
-                options: {
-                    // Prepend the banner
-                    process: function (content) {
-                        return '/* '+grunt.config('banner')+' */'+'\n'+content;
-                    }
-                },
+            options: {
+                // Prepend the banner
+                process: function (content) {
+                    return '/* '+grunt.config('banner')+' */'+'\n'+content;
+                }
+            },
+            distScss: {
                 files: [
                     {
                         expand: true,
-                        flatten: true,
-                        filter: 'isFile',
-                        cwd: 'src/css/',
-                        src: '**/*.css',
+                        cwd: 'src/scss/',
+                        src: 'cs-homepage.scss',
                         dest: 'dist/home-assets/'
                     }
                 ]
@@ -56,12 +54,12 @@ module.exports = function (grunt) {
         /* Sass loses out on compression a bit relative to cssmin (color names,
            0px vs 0) but it does source maps and it's good enough */
         sass: {
+            options: {
+                style: 'compressed',
+                sourcemap: true
+            },
             dist: {
-                options: {
-                    style: 'compressed',
-                    sourcemap: true
-                },
-                src: 'dist/home-assets/**/*.css',
+                src: 'dist/home-assets/cs-homepage.scss',
                 dest: 'dist/home-assets/cs-homepage.min.css'
             }
         },
@@ -140,5 +138,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-html-build');
 
     // Default task
-    grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify', 'copy:distCss', 'sass', 'htmlbuild', 'usebanner:index']);
+    grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify',
+            'copy:distScss', 'sass', 'htmlbuild', 'usebanner:index']);
 };
