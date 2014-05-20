@@ -9,7 +9,8 @@ module.exports = function (grunt) {
             '   Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>',
         // Task configuration
         clean: {
-            dist: ['./dist/**', '!dist']
+            dist: ['./dist/**', '!dist'],
+            tmpDev: 'tmpDev/**'
         },
         concat: {
             options: {
@@ -54,13 +55,21 @@ module.exports = function (grunt) {
         /* Sass loses out on compression a bit relative to cssmin (color names,
            0px vs 0) but it does source maps and it's good enough */
         sass: {
-            options: {
-                style: 'compressed',
-                sourcemap: true
-            },
             dist: {
+                options: {
+                    style: 'compressed',
+                    sourcemap: true
+                },
                 src: 'dist/home-assets/cs-homepage.scss',
                 dest: 'dist/home-assets/cs-homepage.min.css'
+            },
+            dev: {
+                options: {
+                    style: 'expanded',
+                    sourcemap: true
+                },
+                src: 'dist/home-assets/cs-homepage.scss',
+                dest: 'tmp-dev/cs-homepage.tmp.css'
             }
         },
         htmlbuild: {
@@ -94,6 +103,12 @@ module.exports = function (grunt) {
                     banner: '<!-- <%= banner %> -->',
                 },
                 src: 'dist/index.html'
+            }
+        },
+        watch: {
+            devScss: {
+                files: ['src/scss/**/*.scss'],
+                tasks: ['sass:dev']
             }
         },
         jshint: {
@@ -134,10 +149,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-banner');
     grunt.loadNpmTasks('grunt-html-build');
 
     // Default task
     grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify',
             'copy:distScss', 'sass', 'htmlbuild', 'usebanner:index']);
+    grunt.registerTask('devScss', ['clean:tmpDev', 'sass:dev', 'watch:devScss']);
 };

@@ -1,4 +1,5 @@
 dist
 node_modules
+tmp-dev
 .sass-cache
 cs-homepage.sublime-workspace
