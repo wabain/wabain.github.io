@@ -10,7 +10,7 @@ module.exports = function (grunt) {
         // Task configuration
         clean: {
             dist: ['./dist/**', '!dist'],
-            tmpDev: 'tmpDev/**'
+            dev: ['tmp-dev/**']
         },
         concat: {
             options: {
@@ -131,6 +131,12 @@ module.exports = function (grunt) {
                 tasks: ['template:dev']
             }
         },
+        concurrent: {
+            options: {
+                logConcurrentOutput: true
+            },
+            dev: ['watch:devScss', 'watch:devIndex']
+        },
         jshint: {
             options: {
                 node: true,
@@ -171,5 +177,5 @@ module.exports = function (grunt) {
     // Default task
     grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify',
         'copy:distScss', 'sass', 'template:dist']);
-    grunt.registerTask('devrun', ['clean:tmpDev', 'sass:dev', 'template:dev', 'watch:devScss', 'watch:devIndex']);
+    grunt.registerTask('rundev', ['clean:dev', 'sass:dev', 'template:dev', 'concurrent:dev']);
 };
