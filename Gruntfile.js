@@ -161,16 +161,12 @@ module.exports = function (grunt) {
         }
     });
 
-    // These plugins provide necessary tasks
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-qunit');
-    grunt.loadNpmTasks('grunt-contrib-sass');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-template');
+    // Load NPM tasks
+    for (var task in grunt.config('pkg').devDependencies) {
+        if (task.substr && task.substr(0,6) === 'grunt-') {
+            grunt.loadNpmTasks(task);
+        }
+    }
 
     // Default task
     grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify',
