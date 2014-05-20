@@ -11,6 +11,15 @@
         /* Use the about section as a fallback */
         if (!initialSection || initialSection.length === 0) {
             initialSection = $('nav a[href="#about"]');
+
+            /* Return if the callback fails */
+            if (initialSection.length === 0) return;
+
+            /* Set the URL to include the appropriate hash */
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, 'William Bain',
+                        window.location.href+'#about');
+            }
         }
 
         /* Set the nav link to the active color and hide the other sections */
