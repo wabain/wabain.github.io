@@ -69,7 +69,7 @@ module.exports = function (grunt) {
                     sourcemap: true
                 },
                 src: 'dist/home-assets/cs-homepage.scss',
-                dest: 'tmp-dev/cs-homepage.tmp.css'
+                dest: 'tmp-dev/cs-homepage.css'
             }
         },
         template: {
@@ -110,7 +110,7 @@ module.exports = function (grunt) {
                             enhancement: '../src/js/home-navigation.js'
                         },
                         styles: {
-                            page: 'cs-homepage.tmp.css'
+                            page: 'cs-homepage.css'
                         }
                     }
                 },
