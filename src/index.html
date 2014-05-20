@@ -1,12 +1,11 @@
+<!-- <%= index_banner %> -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
 
-  <!-- build:style page -->
-    <link type="text/css" rel="stylesheet" href="../tmp-dev/cs-homepage.css" />
-  <!-- /build -->
+  <link type="text/css" rel="stylesheet" href="<%= styles.page %>" />
 
   <title>William Bain</title>
 </head>
@@ -24,26 +23,19 @@
     </header>
 
     <section id="about" class="content">
-
-      <!-- build:section about -->[About]<!-- /build -->
+      <%= grunt.file.read(sections.about) %>
     </section>
 
     <section id="projects" class="content">
-
-      <!-- build:section projects -->[Projects]<!-- /build -->
+      <%= grunt.file.read(sections.projects) %>
     </section>
 
     <section id="cv" class="content">
-
-      <!-- build:section cv -->[CV]<!-- /build -->
+      <%= grunt.file.read(sections.cv) %>
     </section>
   </div>
 
-  <!-- build:section jQueryScript -->
-    <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
-  <!-- /build -->
-  <!-- build:script enhancement -->
-    <script type="text/javascript" src="js/home-navigation.js"></script>
-  <!-- /build -->
+  <script type="text/javascript" src="<%= scripts.jquery %>"></script>
+  <script type="text/javascript" src="<%= scripts.enhancement %>"></script>
 </body>
 </html>

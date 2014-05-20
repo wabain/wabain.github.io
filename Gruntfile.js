@@ -72,43 +72,63 @@ module.exports = function (grunt) {
                 dest: 'tmp-dev/cs-homepage.tmp.css'
             }
         },
-        htmlbuild: {
+        template: {
             dist: {
-                src: 'src/index.html',
-                dest: 'dist/',
                 options: {
-                    beautify: true,
-                    relative: true,
-                    sections: {
-                        about: 'sections/about.html',
-                        projects: 'sections/projects.html',
-                        cv: 'sections/cv.html',
-                        jQueryScript: 'sections/jqscript.html' // what a terrible hack
-                    },
-                    styles: {
-                        page: '<%= sass.dist.dest %>'
-                    },
-                    scripts: {
-                        enhancement: '<%= uglify.dist.dest %>'
+                    data: {
+                        index_banner: '<%= banner %>',
+                        sections: {
+                            about: 'sections/about.html',
+                            projects: 'sections/projects.html',
+                            cv: 'sections/cv.html'
+                        },
+                        scripts: {
+                            jquery: 'http://code.jquery.com/jquery-1.11.0.min.js',
+                            enhancement: 'home-assets/cs-homepage.min.js'
+                            // enhancement: '<%= uglify.dist.dest %>'
+                        },
+                        styles: {
+                            page: 'home-assets/cs-homepage.min.css'
+                            // page: '<%= sass.dist.dest %>'
+                        }
                     }
                 },
-                data: {
-                    banner: '<!-- <%= banner %> -->'
-                }
-            }
-        },
-        usebanner: {
-            index: {
+                src: 'src/index.html',
+                dest: 'dist/index.html'
+            },
+            dev: {
                 options: {
-                    banner: '<!-- <%= banner %> -->',
+                    data: {
+                        index_banner: 'Dev build at <%= grunt.template.today("yyyy-mm-dd hh:MM") %>',
+                        sections: {
+                            about: 'sections/about.html',
+                            projects: 'sections/projects.html',
+                            cv: 'sections/cv.html'
+                        },
+                        scripts: {
+                            jquery: '../bower_components/jquery/dist/jquery.js',
+                            enhancement: '../src/js/home-navigation.js'
+                        },
+                        styles: {
+                            page: 'cs-homepage.tmp.css'
+                        }
+                    }
                 },
-                src: 'dist/index.html'
+                src: 'src/index.html',
+                dest: 'tmp-dev/index.html'
             }
         },
         watch: {
+            options: {
+                spawn: true
+            },
             devScss: {
                 files: ['src/scss/**/*.scss'],
                 tasks: ['sass:dev']
+            },
+            devIndex: {
+                files: ['src/index.html', 'sections/**'],
+                tasks: ['template:dev']
             }
         },
         jshint: {
@@ -150,11 +170,10 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-banner');
-    grunt.loadNpmTasks('grunt-html-build');
+    grunt.loadNpmTasks('grunt-template');
 
     // Default task
     grunt.registerTask('default', ['jshint', 'clean:dist', 'concat', 'uglify',
-            'copy:distScss', 'sass', 'htmlbuild', 'usebanner:index']);
-    grunt.registerTask('devScss', ['clean:tmpDev', 'sass:dev', 'watch:devScss']);
+        'copy:distScss', 'sass', 'template:dist']);
+    grunt.registerTask('devrun', ['clean:tmpDev', 'sass:dev', 'template:dev', 'watch:devScss', 'watch:devIndex']);
 };
