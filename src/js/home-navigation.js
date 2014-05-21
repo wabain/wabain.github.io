@@ -1,7 +1,7 @@
 'use strict';
 (function ($) {
     /* Don't try to enhance navigation if onhashchange is not supported. */
-    if (window.onhashchange === undefined) return;
+    if (!('onhashchange' in window)) return;
 
     $(document).ready(function () {
         /* If there is already a hash id in the URL, try to get a nav link
