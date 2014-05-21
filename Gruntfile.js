@@ -35,18 +35,28 @@ module.exports = function (grunt) {
             }
         },
         copy: {
-            options: {
-                // Prepend the banner
-                process: function (content) {
-                    return '/* '+grunt.config('banner')+' */'+'\n'+content;
-                }
-            },
             distScss: {
+                options: {
+                    // Prepend the banner
+                    process: function (content) {
+                        return '/* '+grunt.config('banner')+' */'+'\n'+content;
+                    }
+                },
                 files: [
                     {
                         expand: true,
                         cwd: 'src/scss/',
                         src: 'cs-homepage.scss',
+                        dest: 'dist/home-assets/'
+                    }
+                ]
+            },
+            distVendor: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'bower_components/html5shiv/dist/',
+                        src: 'html5shiv.min.js',
                         dest: 'dist/home-assets/'
                     }
                 ]
@@ -83,6 +93,7 @@ module.exports = function (grunt) {
                             cv: 'sections/cv.html'
                         },
                         scripts: {
+                            html5shiv: 'home-assets/html5shiv.min.js',
                             jquery: 'http://code.jquery.com/jquery-1.11.0.min.js',
                             enhancement: 'home-assets/cs-homepage.min.js'
                             // enhancement: '<%= uglify.dist.dest %>'
@@ -109,6 +120,7 @@ module.exports = function (grunt) {
                             cv: 'sections/cv.html'
                         },
                         scripts: {
+                            html5shiv: '../bower_components/html5shiv/dist/html5shiv.js',
                             jquery: '../bower_components/jquery/dist/jquery.js',
                             enhancement: '../src/js/home-navigation.js'
                         },
@@ -195,8 +207,8 @@ module.exports = function (grunt) {
 
     // High-level tasks
     grunt.registerTask('default', ['jshint', 'clean:dist', 'concat',
-            'uglify', 'copy:distScss', 'sass:dist', 'template:dist',
-            'jsbeautifier:dist']);
+            'uglify', 'copy:distVendor', 'copy:distScss', 'sass:dist',
+            'template:dist', 'jsbeautifier:dist']);
 
     grunt.registerTask('rundev', ['jshint', 'clean:dev', 'sass:dev',
             'template:dev', 'jsbeautifier:dev', 'concurrent:dev']);
