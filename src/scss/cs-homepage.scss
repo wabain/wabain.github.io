@@ -107,22 +107,16 @@ h2.heading {
 }
 
 a {
-    &:link {
-        color: rgb(90, 80, 190);
-    }
-
-    &:visited {
-        color: rgb(140, 100, 175);
-    }
+    color: rgb(90, 80, 190);
+    text-decoration: none;
 
     &:hover {
         color: rgb(100, 160, 175);
-        text-decoration: none;
+        text-decoration: underline;
     }
 
     &:active, &.active-link {
         color: rgb(255, 0, 0);
-        text-decoration: none;
     }
 }
 
