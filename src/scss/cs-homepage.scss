@@ -7,7 +7,7 @@
     margin: 100px auto 0px;
 
     @media (max-height: 400px) {
-        /* Shrink top margin when the screen is small */
+        /* Shrink the top margin when the screen is small */
         margin-top: 30px;
     }
 }
@@ -122,9 +122,4 @@ a {
 
 dt {
     font-weight: bold;
-/* Adapted from Bootstrap */
-.initialism {
-    font-size: 90%;
-    text-transform: uppercase;
-    vertical-align: text-bottom; /* subtly changes appearance of Ubuntu */
 }
