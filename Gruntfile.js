@@ -68,7 +68,7 @@ module.exports = function (grunt) {
                     style: 'expanded',
                     sourcemap: true
                 },
-                src: 'dist/home-assets/cs-homepage.scss',
+                src: 'src/scss/cs-homepage.scss',
                 dest: 'tmp-dev/cs-homepage.css'
             }
         },
@@ -114,6 +114,9 @@ module.exports = function (grunt) {
                         },
                         styles: {
                             page: 'cs-homepage.css'
+                        },
+                        readFile: function (fname) {
+                            return grunt.file.read(fname).replace(/\s*$/, '');
                         }
                     }
                 },
