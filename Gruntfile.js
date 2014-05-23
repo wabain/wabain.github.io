@@ -103,9 +103,7 @@ module.exports = function (grunt) {
                             page: 'home-assets/cs-homepage.min.css'
                             // page: '<%= sass.dist.dest %>'
                         },
-                        readFile: function (fname) {
-                            return grunt.file.read(fname).replace(/\s*$/, '');
-                        }
+                        readFile: readFile
                     }
                 },
                 src: 'src/index.html',
@@ -128,9 +126,7 @@ module.exports = function (grunt) {
                         styles: {
                             page: 'cs-homepage.css'
                         },
-                        readFile: function (fname) {
-                            return grunt.file.read(fname).replace(/\s*$/, '');
-                        }
+                        readFile: readFile
                     }
                 },
                 src: 'src/index.html',
@@ -213,4 +209,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask('rundev', ['jshint', 'clean:dev', 'sass:dev',
             'template:dev', 'jsbeautifier:dev', 'concurrent:dev']);
+
+    function readFile(fname) {
+        return grunt.file.read(fname).replace(/\s*$/, '');
+    }
 };
