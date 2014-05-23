@@ -89,6 +89,7 @@ module.exports = function (grunt) {
                     data: {
                         index_banner: '<%= banner.replace(/\\n\\s*/, "\\n     ") %>',
                         version: '<%= pkg.version %>',
+                        cookieDomain: '<%= grunt.option("release") ? "mcgill.ca" : "none" %>',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
@@ -116,6 +117,7 @@ module.exports = function (grunt) {
                     data: {
                         index_banner: 'Local dev build at <%= grunt.template.today("yyyy-mm-dd hh:MM") %>',
                         version: '<%= pkg.version %>',
+                        cookieDomain: 'none',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
@@ -125,7 +127,7 @@ module.exports = function (grunt) {
                             html5shiv: '../bower_components/html5shiv/dist/html5shiv.js',
                             jquery: '../bower_components/jquery/dist/jquery.js',
                             enhancement: '../src/js/home-navigation.js',
-                            analytics: null
+                            analytics: '<%= grunt.option("dev-analytics") ? "src/inline/init-analytics.js" : null %>'
                         },
                         styles: {
                             page: 'cs-homepage.css'
@@ -161,19 +163,31 @@ module.exports = function (grunt) {
             devIndex: {
                 files: ['src/index.html', 'sections/**'],
                 tasks: ['template:dev']
+            },
+            jshint: {
+                files: ['gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
+                tasks: ['jshint']
             }
         },
         concurrent: {
             options: {
                 logConcurrentOutput: true
             },
-            dev: ['watch:devScss', 'watch:devIndex']
+            dev: ['watch:devScss', 'watch:devIndex', 'watch:jshint']
+        },
+        'http-server': {
+            dev: {
+                port: 8282,
+                host: "127.0.0.1",
+                runInBackground: true
+            }
         },
         jshint: {
             options: {
                 node: true,
                 // curly: true,
                 eqeqeq: true,
+                forin: true,
                 immed: true,
                 latedef: 'nofunc',
                 newcap: true,
@@ -214,8 +228,12 @@ module.exports = function (grunt) {
             'uglify', 'copy:distVendor', 'copy:distScss', 'sass:dist',
             'template:dist', 'jsbeautifier:dist']);
 
-    grunt.registerTask('rundev', ['jshint', 'clean:dev', 'sass:dev',
-            'template:dev', 'jsbeautifier:dev', 'concurrent:dev']);
+    grunt.registerTask('build-dev', ['jshint', 'clean:dev', 'sass:dev',
+            'template:dev', 'jsbeautifier:dev']);
+
+    grunt.registerTask('watch-dev', ['concurrent:dev']);
+
+    grunt.registerTask('run-dev', ['build-dev', 'http-server:dev', 'watch-dev']);
 
     function readFile(fname) {
         return grunt.file.read(fname).replace(/\s*$/, '');

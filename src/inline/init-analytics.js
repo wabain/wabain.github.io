@@ -5,7 +5,7 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
 if (ga) {
-    ga('create', 'UA-51279886-1', 'mcgill.ca');
+    ga('create', 'UA-51279886-1', '<%= cookieDomain %>');
     ga('set', 'appVersion', '<%= version %>');
     ga('send', 'pageview');
 }
