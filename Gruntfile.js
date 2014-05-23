@@ -88,6 +88,7 @@ module.exports = function (grunt) {
                 options: {
                     data: {
                         index_banner: '<%= banner.replace(/\\n\\s*/, "\\n     ") %>',
+                        version: '<%= pkg.version %>',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
@@ -96,8 +97,9 @@ module.exports = function (grunt) {
                         scripts: {
                             html5shiv: 'home-assets/html5shiv.min.js',
                             jquery: '//code.jquery.com/jquery-1.11.0.min.js',
-                            enhancement: 'home-assets/cs-homepage.min.js'
+                            enhancement: 'home-assets/cs-homepage.min.js',
                             // enhancement: '<%= uglify.dist.dest %>'
+                            analytics: 'src/inline/init-analytics.js'
                         },
                         styles: {
                             page: 'home-assets/cs-homepage.min.css'
@@ -112,7 +114,8 @@ module.exports = function (grunt) {
             dev: {
                 options: {
                     data: {
-                        index_banner: 'Dev build at <%= grunt.template.today("yyyy-mm-dd hh:MM") %>',
+                        index_banner: 'Local dev build at <%= grunt.template.today("yyyy-mm-dd hh:MM") %>',
+                        version: '<%= pkg.version %>',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
@@ -121,7 +124,8 @@ module.exports = function (grunt) {
                         scripts: {
                             html5shiv: '../bower_components/html5shiv/dist/html5shiv.js',
                             jquery: '../bower_components/jquery/dist/jquery.js',
-                            enhancement: '../src/js/home-navigation.js'
+                            enhancement: '../src/js/home-navigation.js',
+                            analytics: null
                         },
                         styles: {
                             page: 'cs-homepage.css'
@@ -171,7 +175,7 @@ module.exports = function (grunt) {
                 // curly: true,
                 eqeqeq: true,
                 immed: true,
-                latedef: true,
+                latedef: 'nofunc',
                 newcap: true,
                 noarg: true,
                 sub: true,
@@ -179,7 +183,10 @@ module.exports = function (grunt) {
                 unused: true,
                 eqnull: true,
                 browser: true,
-                globals: { jQuery: true },
+                globals: {
+                    jQuery: true,
+                    ga: true
+                },
                 boss: true
             },
             gruntfile: {

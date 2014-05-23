@@ -43,5 +43,12 @@
 
   <script type="text/javascript" src="<%= scripts.jquery %>"></script>
   <script type="text/javascript" src="<%= scripts.enhancement %>"></script>
+
+  <% if (scripts.analytics) { %>
+    <!-- The beautifying is a bit incongruous here, but that is what it is -->
+    <script type="text/javascript">
+      <%= readFile(scripts.analytics) %>
+    </script>
+  <% } %>
 </body>
 </html>
