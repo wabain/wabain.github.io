@@ -89,7 +89,8 @@ module.exports = function (grunt) {
                     data: {
                         index_banner: '<%= banner.replace(/\\n\\s*/, "\\n     ") %>',
                         version: '<%= pkg.version %>',
-                        cookieDomain: '<%= grunt.option("release") ? "mcgill.ca" : "none" %>',
+                        cookieDomain: '<%= grunt.option("release") ? "cs.mcgill.ca" : "none" %>',
+                        cookiePath: '<%= grunt.option("release") ? "/~wbain" : "/" %>',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
@@ -118,6 +119,7 @@ module.exports = function (grunt) {
                         index_banner: 'Local dev build at <%= grunt.template.today("yyyy-mm-dd hh:MM") %>',
                         version: '<%= pkg.version %>',
                         cookieDomain: 'none',
+                        cookiePath: '/',
                         sections: {
                             about: 'sections/about.html',
                             projects: 'sections/projects.html',
