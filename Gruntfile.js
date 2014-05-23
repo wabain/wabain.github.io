@@ -95,7 +95,7 @@ module.exports = function (grunt) {
                         },
                         scripts: {
                             html5shiv: 'home-assets/html5shiv.min.js',
-                            jquery: 'http://code.jquery.com/jquery-1.11.0.min.js',
+                            jquery: '//code.jquery.com/jquery-1.11.0.min.js',
                             enhancement: 'home-assets/cs-homepage.min.js'
                             // enhancement: '<%= uglify.dist.dest %>'
                         },
