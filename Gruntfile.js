@@ -4,8 +4,8 @@ module.exports = function (grunt) {
     grunt.initConfig({
         // Metadata
         pkg: grunt.file.readJSON('package.json'),
-        banner: '<%= pkg.name %> v<%= pkg.version %>'+
-            '<%= grunt.option("release") ? "" : "-alpha" %>, ' +
+        banner: '<%= pkg.name %> v<%= pkg.version %> '+
+            '<%= grunt.option("release") ? "" : "[dev build]" %>, ' +
             '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
             '   Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>',
         // Task configuration
