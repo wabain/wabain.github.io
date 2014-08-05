@@ -9,16 +9,22 @@
         baseTitle = '[dev] ' + baseTitle;
     }
 
-    $(document).ready(function () {
-        /* If there is already a hash id in the URL, try to get a nav link
+    $(document).ready(function initializeSectionNavigation() {
+        /* If there is already a hash ID in the URL, try to get a nav link
            that matches it */
-        var initialSection = getHashNavLinks();
-        var href;
+        var href,
+            initialSection = getNavLinksForHash();
 
+        /* If there was a hash ID in the URL and it had a corresponding link
+           in the navbar, retitle the page appropriately */
+        if (initialSection && initialSection.length > 0) {
+            href = initialSection.attr('href');
+            updateTitle(href);
+        }
         /* Use the about section as a fallback */
-        if (!initialSection || initialSection.length === 0) {
-            initialSection = $('nav a[href="#about"]');
+        else {
             href = '#about';
+            initialSection = $('nav a[href="#about"]');
 
             /* Return if the fallback fails */
             if (initialSection.length === 0) return;
@@ -31,18 +37,18 @@
 
             document.title = baseTitle + ' - About';
         }
-        else {
-            href = initialSection.attr('href');
-            updateTitle(href);
-        }
 
-        /* Set the nav link to the active color and hide the other sections */
+
+        /* Set the selected nav link to the active color and hide the other
+           sections */
         initialSection.addClass('active-link');
         $('.content').not(href).addClass('hidden');
     });
 
-    $(window).on('hashchange', function () {
-        var navs = getHashNavLinks(), href, target;
+    $(window).on('hashchange', function updateOnHashChange() {
+        var href,
+            target,
+            navs = getNavLinksForHash();
 
         /* If there are no nav links to the current hash id then return */
         if (!navs || navs.length === 0) return;
@@ -98,7 +104,7 @@
         }
     }
 
-    function getHashNavLinks() {
+    function getNavLinksForHash() {
         var hash = window.location.hash;
 
         if (typeof hash === 'string' && hash.length > 1) {
