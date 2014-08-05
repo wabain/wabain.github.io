@@ -36,6 +36,18 @@
             margin-left: 0px;
         }
     }
+
+    @media (min-width: 501px) {
+        position: sticky;
+        top: 0px;
+        background-color: rgba(255, 255, 255, 0.7);
+
+        transition: background-color 1s;
+
+        &:hover {
+            background-color: #FFF;
+        }
+    }
 }
 
 .navbar {
