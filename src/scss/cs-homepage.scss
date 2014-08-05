@@ -142,5 +142,17 @@ a {
 }
 
 dt {
+    clear: both;
+    margin: 10px 0 5px 0;
     font-weight: bold;
+}
+
+@media (max-width: 449px) {
+    dd {
+        margin-left: 0;
+    }
+}
+
+.clearfix {
+    clear: both;
 }
