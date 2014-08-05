@@ -11,3 +11,12 @@ ga('create', 'UA-51279886-1', {
     cookiePath: '<%= cookiePath %>'
 });
 ga('send', 'pageview');
+
+/* Track nav clicks */
+$('nav a').on('click', function () {
+    ga('send', 'event', {
+        eventCategory: 'nav href',
+        eventAction: 'click',
+        eventLabel: $(this).attr('href') || '(null)'
+    });
+});

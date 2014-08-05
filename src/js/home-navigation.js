@@ -85,17 +85,6 @@
         });
     });
 
-    // Track nav clicks with Google Analytics
-    if (typeof ga !== 'undefined') {
-        $('nav a').on('click', function () {
-            ga('send', 'event', {
-                eventCategory: 'nav href',
-                eventAction: 'click',
-                eventLabel: $(this).attr('href') || '(null)'
-            });
-        });
-    }
-
     function updateTitle(id) {
         var header = $(id+' > h2'), text = null;
         if (header.length === 1) {
