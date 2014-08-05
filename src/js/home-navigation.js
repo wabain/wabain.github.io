@@ -5,6 +5,10 @@
 
     var baseTitle = 'William Bain';
 
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        baseTitle = '[dev] ' + baseTitle;
+    }
+
     $(document).ready(function () {
         /* If there is already a hash id in the URL, try to get a nav link
            that matches it */
@@ -16,7 +20,7 @@
             initialSection = $('nav a[href="#about"]');
             href = '#about';
 
-            /* Return if the callback fails */
+            /* Return if the fallback fails */
             if (initialSection.length === 0) return;
 
             /* Set the URL to include the appropriate hash */
