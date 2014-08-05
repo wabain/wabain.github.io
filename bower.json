@@ -15,6 +15,7 @@
   ],
   "dependencies": {
     "jquery": "1.11.0",
-    "html5shiv": "~3.7.2"
+    "html5shiv": "~3.7.2",
+    "fancybox": "~2.1.5"
   }
 }

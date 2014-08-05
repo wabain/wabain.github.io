@@ -77,6 +77,27 @@
     display: none;
 }
 
+.img-preview {
+    display: block;
+
+    margin: 0 auto;
+    max-width: 250px;
+
+    @media (min-width: 450px) {
+        float: left;
+        margin: 0 5px 5px;
+    }
+
+    > img {
+        max-width: 250px;
+        height: auto;
+    }
+
+    + p {
+        margin-top: 0;
+    }
+}
+
 
 /* Text formatting */
 

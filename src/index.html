@@ -50,5 +50,14 @@
       <%= readFile(scripts.analytics) %>
     </script>
   <% } %>
+
+  <script type="text/javascript" src="../bower_components/fancybox/source/jquery.fancybox.js"></script>
+  <link rel="stylesheet" type="text/css" href="../bower_components/fancybox/source/jquery.fancybox.css" media="screen">
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.fancybox').fancybox();
+    });
+  </script>
 </body>
 </html>
