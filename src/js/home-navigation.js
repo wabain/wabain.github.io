@@ -1,5 +1,5 @@
 'use strict';
-(function ($) {
+(function initializeSectionNavigation($) {
     /* Don't try to enhance navigation if onhashchange is not supported. */
     if (!('onhashchange' in window)) return;
 
@@ -9,7 +9,7 @@
         baseTitle = '[dev] ' + baseTitle;
     }
 
-    $(document).ready(function initializeSectionNavigation() {
+    $(document).ready(function setInitialNavSection() {
         /* If there is already a hash ID in the URL, try to get a nav link
            that matches it */
         var href,
