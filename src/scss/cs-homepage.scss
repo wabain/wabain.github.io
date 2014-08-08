@@ -39,13 +39,7 @@
     @media (min-width: 501px) {
         position: sticky;
         top: 0px;
-        background-color: rgba(255, 255, 255, 0.7);
-
-        transition: background-color 1s;
-
-        &:hover {
-            background-color: #FFF;
-        }
+        background-color: #FFF;
     }
 }
 
@@ -96,7 +90,7 @@
 
     @media (min-width: 450px) {
         float: left;
-        margin: 0 5px 5px;
+        margin: 0 10px 10px;
     }
 
     > img {
@@ -128,7 +122,7 @@ body {
     font-family: 'Ubuntu', Helvetica, sans-serif;
     font-weight: 500;
 
-    & > small {
+    > small {
         margin-left: 5px;
         color: #a9a9a9;
     }
