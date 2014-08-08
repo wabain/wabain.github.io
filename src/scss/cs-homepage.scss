@@ -101,8 +101,13 @@
     }
 
     > img {
+        border: none;
         max-width: 250px;
         height: auto;
+    }
+
+    > .bordered {
+        border: solid 1px;
     }
 
     + p {
