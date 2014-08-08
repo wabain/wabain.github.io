@@ -1,6 +1,5 @@
 /* Import fonts */
-@import url(//fonts.googleapis.com/css?family=Ubuntu);
-@import url(//fonts.googleapis.com/css?family=Raleway);
+@import url(//fonts.googleapis.com/css?family=Ubuntu:500|Raleway:400,700);
 
 .container {
     max-width: 900px;
@@ -127,6 +126,7 @@ body {
 
 .heading {
     font-family: 'Ubuntu', Helvetica, sans-serif;
+    font-weight: 500;
 
     & > small {
         margin-left: 5px;
