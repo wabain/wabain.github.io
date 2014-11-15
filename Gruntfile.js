@@ -144,7 +144,8 @@ module.exports = function (grunt) {
         jsbeautifier: {
             options: {
                 html: {
-                    indentSize: 2
+                    indentSize: 2,
+                    indentScripts: 'keep'
                 }
             },
             dist: {
