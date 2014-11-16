@@ -18,7 +18,11 @@
     {{~/if}}"></script>
   <![endif]-->
 
-  <title>{{#if release}}{{^}}[dev] {{/if}}William Bain</title>
+  <title>
+    {{~#if release}}{{^}}[dev] {{/if~}}
+    William Bain
+    {{~#if title}} - {{title}}{{/if~}}
+  </title>
 </head>
 {{#prettify}}
 <body>
