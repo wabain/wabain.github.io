@@ -1,0 +1,10 @@
+<header class="header-block">
+  <h1 class="heading">William Bain</h1>
+  <nav class="navbar">
+    <ul>
+    {{~#withSort pages "data.priority"}}
+      <li><a href="{{filename}}" {{~#is filename ../filename}} class="active-link" {{~/is}}>{{data.title}}</a></li>
+    {{~/withSort}}
+    </ul>
+  </nav>
+</header>

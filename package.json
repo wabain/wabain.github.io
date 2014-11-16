@@ -1,6 +1,6 @@
 {
   "name": "cs-homepage",
-  "version": "0.1.4",
+  "version": "0.1.5-alpha",
   "author": {
     "name": "William Bain"
   },
@@ -16,9 +16,9 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-copy": "~0.5.0",
     "grunt-contrib-watch": "~0.6.1",
-    "grunt-template": "~0.2.3",
     "grunt-concurrent": "~0.5.0",
-    "grunt-jsbeautifier": "~0.2.7",
-    "grunt-http-server": "0.0.5"
+    "grunt-http-server": "0.0.5",
+    "assemble": "~0.4.42",
+    "prettify": "~0.1.7"
   }
 }
