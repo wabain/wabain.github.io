@@ -78,8 +78,22 @@
     }
 }
 
+.fading {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+
+    &.faded-out {
+        opacity: 0;
+    }
+}
+
 .hidden {
     display: none;
+}
+
+.loading-indicator {
+    display: block;
+    margin: 1em auto 0;
 }
 
 .img-preview {
