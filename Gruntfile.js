@@ -143,7 +143,7 @@ module.exports = function (grunt) {
             },
             sass: {
                 files: ['src/scss/**/*.scss'],
-                tasks: ['sass:dev']
+                tasks: ['copy:sass', 'sass:dev']
             },
             html: {
                 files: ['src/scaffolding/**/*', 'src/content/**/*'],
