@@ -1,0 +1,8 @@
+Allow from All
+
+RewriteBase /~wbain/
+
+RewriteEngine On
+
+RewriteRule ^$ about\.html [L]
+RewriteRule ^index\.html/?$ about\.html [L]
