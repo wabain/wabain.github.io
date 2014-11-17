@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- cs-homepage v0.1.5, 2014-11-17
+   Copyright (c) 2014 William Bain -->
+
+<html lang="en">
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=11">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+
+  <link type="text/css" rel="stylesheet" href="home-assets/cs-homepage.min.css">
+
+  <!--[if lt IE 9]>
+  <script type="text/javascript" src="home-assets/vendor/html5shiv.min.js"></script>
+  <![endif]-->
+
+  <title>William Bain - About</title>
+</head>
+<body>
+  <div class="container">
+    <header class="header-block">
+      <h1 class="heading">William Bain</h1> 
+      <nav class="navbar">
+        <ul>
+          <li>
+            <a href="about.html" class="active-link">About</a> 
+          </li>
+          <li>
+            <a href="projects.html">Projects</a> 
+          </li>
+          <li>
+            <a href="cv.html">CV</a> 
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <section class="content">
+      <h2 class="heading">About</h2> 
+      <p>I'm an undergraduate at McGill University, where I am studying computer science with minors in political theory and the history and philosophy of science. My other academic interests include political science, Canadian history, and linguistics.
+        In my free time I like to play soccer and guitar.</p>
+    </section>
+  </div>
+
+
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script type="text/javascript" src="home-assets/cs-homepage.min.js"></script>
+  <script type="text/javascript">
+    /* jshint asi: true, expr: true */
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    /* *hopefully* this will let it play nice with other cookies */
+    ga('create', 'UA-51279886-1', {
+        cookieName: '_ga51279886',
+        cookieDomain: 'cs.mcgill.ca',
+        cookiePath: '/~wbain'
+    });
+    ga('send', 'pageview');
+
+    /* Track nav clicks */
+    (function trackNavClicks($) {
+        $('nav a').on('click', function () {
+            ga('send', 'event', {
+                eventCategory: 'nav href',
+                eventAction: 'click',
+                eventLabel: $(this).attr('href') || '(null)'
+            });
+        });
+    })(jQuery);
+  </script>
+
+  <script type="text/javascript" src="home-assets/vendor/fancybox/jquery.fancybox.pack.js"></script>
+  <link rel="stylesheet" type="text/css" href="home-assets/vendor/fancybox/jquery.fancybox.css" media="screen">
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.fancybox').fancybox();
+    });
+  </script>
+</body>
+</html>
