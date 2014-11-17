@@ -31,6 +31,9 @@ function ask {
 
 ask "Overwrite files on mimi.cs.mcgill.ca?" || exit
 
-ssh mimi.cs.mcgill.ca cd \~/public_html; \rm -r home-assets
-scp -r index.html home-assets mimi.cs.mcgill.ca:\~/public_html
-ssh mimi.cs.mcgill.ca cd \~/public_html; chmod 755 home-assets; chmod 644 index.html home-assets/*
+ssh mimi.cs.mcgill.ca "cd ~/public_html; rm -fr home-assets section-partial"
+scp -r *.html home-assets section-partial "mimi.cs.mcgill.ca:~/public_html"
+ssh mimi.cs.mcgill.ca \
+  "cd ~/public_html; \
+  chmod 644 *.html $( find home-assets section-partial -type f ); \
+  chmod 755 $( find home-assets section-partial -type d )"
