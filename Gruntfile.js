@@ -4,8 +4,8 @@ module.exports = function (grunt) {
     grunt.initConfig({
         // Metadata
         pkg: grunt.file.readJSON('package.json'),
-        banner: '<%= pkg.name %> v<%= pkg.version %> '+
-            '<%= grunt.option("release") ? "" : "[dev build]" %>, ' +
+        banner: '<%= pkg.name %> v<%= pkg.version %>'+
+            '<%= grunt.option("release-build") ? "" : " [dev build]" %>, ' +
             '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
             '   Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>',
 
@@ -26,8 +26,8 @@ module.exports = function (grunt) {
             pages: {
                 options: {
                     pkg: '<%= pkg %>',
-                    banner: "<%= pkg.name %> v<%= pkg.version %> <%= grunt.option('release') ? '' : '[dev build]' %>, <%= grunt.template.today('yyyy-mm-dd') %>\n   Copyright (c) <%= grunt.template.today('yyyy') %> <%= pkg.author.name %>",
-                    release: '<%= grunt.option("assemble-release") %>'
+                    banner: '<%= banner %>',
+                    release: '<%= grunt.option("release-build") %>'
                 },
                 cwd: 'src/content',
                 dest: 'dist/',
@@ -78,7 +78,7 @@ module.exports = function (grunt) {
                 options: {
                     // Prepend the banner
                     process: function (content) {
-                        return '/* '+grunt.config('banner')+' */\n'+content;
+                        return '/* '+grunt.config('banner')+' */\n\n'+content;
                     }
                 },
                 files: [
@@ -238,7 +238,7 @@ module.exports = function (grunt) {
         buildMode = verifyBuildMode(buildMode);
 
         if (buildMode === 'release') {
-            grunt.option('assemble-release', true);
+            grunt.option('release-build', true);
         }
 
         tasks = [
