@@ -1,6 +1,6 @@
 .container {
+  margin: 100px auto 0;
   max-width: 900px;
-  margin: 100px auto 0px;
 
   // Shrink the top margin when the screen is small
   @media (max-height: 400px) {
@@ -13,53 +13,51 @@
   display: block;
   margin-bottom: 50px;
 
-  & > * {
+  > * {
     display: inline;
-  }
 
-  & > * + * {
-    margin-left: 40px;
+    + * {
+      margin-left: 40px;
+    }
   }
 
   @media (max-width: 500px) {
     margin-bottom: 10px;
 
-    & > * {
+    > * {
       display: block;
     }
 
-    & > * + * {
-      margin-left: 0px;
+    > * + * {
+      margin-left: 0;
     }
   }
 
   @media (min-width: 501px) {
     position: sticky;
-    top: 0px;
-    background-color: #FFF;
+    top: 0;
+    background-color: #fff;
   }
 }
 
 .navbar {
-  & > ul {
+  > ul {
     display: inline;
-    padding: 0px;
+    padding: 0;
     font-size: 14pt;
 
-    & > li {
+    > li {
       display: inline;
-    }
 
-    & > li + li {
-      margin-left: 15px;
+      + li {
+        margin-left: 15px;
+      }
     }
   }
 
   a {
-    text: {
-      decoration: none;
-      transform: lowercase;
-    }
+    text-transform: lowercase;
+    text-decoration: none;
   }
 }
 
@@ -69,15 +67,15 @@
   // Magic number to have the size of the content box start/stop growing
   // without a jump in dimensions
   @media (max-width: 916px) {
-    margin-right: 0px;
+    margin-right: 0;
     margin-left: auto;
     max-width: 750px;
   }
 }
 
 .fading {
-  opacity: 1;
   transition: opacity 0.5s ease;
+  opacity: 1;
 
   &.faded-out {
     opacity: 0;
@@ -105,7 +103,7 @@
   }
 
   > img {
-    border: none;
+    border: 0;
     max-width: 250px;
     height: auto;
   }
@@ -140,7 +138,7 @@ body {
 }
 
 h1.heading {
-  color: black;
+  color: #000;
   font-size: 2em;
 }
 
@@ -150,22 +148,23 @@ h2.heading {
 }
 
 a {
-  color: rgb(90, 80, 190);
   text-decoration: none;
+  color: rgb(90, 80, 190);
 
   &:hover {
-    color: rgb(100, 160, 175);
     text-decoration: underline;
+    color: rgb(100, 160, 175);
   }
 
-  &:active, &.active-link {
+  &:active,
+  &.active-link {
     color: rgb(255, 0, 0);
   }
 }
 
 dt {
   clear: both;
-  margin: 10px 0 5px 0;
+  margin: 10px 0 5px;
   font-weight: bold;
 }
 

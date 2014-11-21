@@ -19,6 +19,7 @@
     "grunt-concurrent": "~0.5.0",
     "grunt-http-server": "0.0.5",
     "assemble": "~0.4.42",
-    "prettify": "~0.1.7"
+    "prettify": "~0.1.7",
+    "grunt-scss-lint": "~0.3.4"
   }
 }

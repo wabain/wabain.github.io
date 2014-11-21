@@ -144,13 +144,17 @@ module.exports = function (grunt) {
             }
         },
 
+        scsslint: {
+          files: ['src/scss/**/*.scss']
+        },
+
         watch: {
             options: {
                 spawn: true
             },
             sass: {
                 files: ['src/scss/**/*.scss'],
-                tasks: ['copy:sass', 'sass:dev']
+                tasks: ['scsslint', 'copy:sass', 'sass:dev']
             },
             html: {
                 files: ['src/scaffolding/**/*', 'src/content/**/*'],
@@ -250,6 +254,7 @@ module.exports = function (grunt) {
 
         tasks = [
             'jshint',
+            'scsslint',
             'clean:dist',
             'copy:sass',
             'sass:'+buildMode,
