@@ -22,7 +22,7 @@
       if (currentHref) cache[currentHref] = $contentElem.html();
     }
 
-    $('nav a[href]').each(function (index, elem) {
+    $('.header-block a[href]').each(function (index, elem) {
       var $elem = $(elem);
       if (isRelative($elem.attr('href'))) {
         $elem.on('click', doDynamicNavigation);
@@ -33,6 +33,7 @@
   function doDynamicNavigation(e) {
     var $elem = $(e.currentTarget),
         href = getNormalizedHref($elem),
+        navLink,
         cached,
         hasNewContent,
         displayedNewContent;
@@ -40,7 +41,6 @@
     if (currentHref === href) return;
 
     currentHref = href;
-
     if (!$contentElem || !href) return;
 
     e.preventDefault();
@@ -55,10 +55,15 @@
     $contentElem.addClass('fading');
     $contentElem.addClass('faded-out');
 
-    $('nav a.active-link').not($elem).removeClass('active-link');
-    $elem.addClass('active-link');
+    navLink = $('nav a[href="'+href+'"]');
+    $('nav a[href]').not(navLink).removeClass('active-link');
+    if (navLink.length > 0) {
+      navLink.addClass('active-link');
+    } else {
+      navLink = null;
+    }
     window.history.pushState(null, document.title, href);
-    document.title = baseTitle + ' - ' + $elem.text();
+    document.title = baseTitle + ' - ' + (navLink || $elem).text();
 
     displayedNewContent = $.when(hasNewContent, waitFor(500));
 
