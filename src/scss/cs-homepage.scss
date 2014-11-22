@@ -94,12 +94,12 @@
 .img-preview {
   display: block;
 
-  margin: 0 auto;
+  margin: 1em auto;
   max-width: 250px;
 
   @media (min-width: 450px) {
     float: left;
-    margin: 0 10px 10px;
+    margin: 0 10px 10px 0;
   }
 
   > img {
@@ -127,7 +127,12 @@ body {
   }
 }
 
-.heading {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Ubuntu', Helvetica, sans-serif;
   font-weight: 500;
 
@@ -137,12 +142,12 @@ body {
   }
 }
 
-h1.heading {
+h1 {
   color: #000;
   font-size: 2em;
 }
 
-h2.heading {
+h2 {
   color: #989898;
   font-size: 1.5em;
 }
@@ -162,18 +167,16 @@ a {
   }
 }
 
-dt {
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+
+.clearfix:after {
   clear: both;
-  margin: 10px 0 5px;
-  font-weight: bold;
 }
 
-@media (max-width: 449px) {
-  dd {
-    margin-left: 0;
-  }
-}
-
-.clearfix {
+.cleared {
   clear: both;
 }
