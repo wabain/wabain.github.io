@@ -148,7 +148,7 @@ module.exports = function (grunt) {
 
     watch: {
       options: {
-        spawn: true
+        livereload: true
       },
       sass: {
         files: ['src/scss/**/*.scss'],
@@ -168,23 +168,13 @@ module.exports = function (grunt) {
       }
     },
 
-    concurrent: {
+    connect: {
       options: {
-        logConcurrentOutput: true
-      },
-      dev: ['watch:sass', 'watch:html', 'watch:js', 'watch:nodestuff']
-    },
-
-    'http-server': {
-      default: {
-        port: 8282,
-        host: "127.0.0.1"
-      },
-      async: {
         port: 8282,
         host: "127.0.0.1",
-        runInBackground: true
-      }
+        livereload: true
+      },
+      default: {}
     },
 
     jshint: {
@@ -235,9 +225,9 @@ module.exports = function (grunt) {
     buildMode = verifyBuildMode(buildMode);
 
     if (grunt.option('watch')) {
-      grunt.task.run('build:'+buildMode, 'http-server:async', 'concurrent:'+buildMode);
+      grunt.task.run('build:'+buildMode, 'connect', 'watch');
     } else {
-      grunt.task.run('build:'+buildMode, 'http-server');
+      grunt.task.run('build:'+buildMode, 'connect::keepalive');
     }
   });
 
