@@ -115,14 +115,14 @@ $screen-xs-max: $screen-sm-min - 1px;
     margin: 0 10px 10px 0;
   }
 
-  > img {
+  img {
     border: 0;
     max-width: 250px;
     height: auto;
-  }
 
-  > .bordered {
-    border: solid 1px;
+    &.bordered {
+      border: solid 1px;
+    }
   }
 
   + p {
