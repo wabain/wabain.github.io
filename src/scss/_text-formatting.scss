@@ -1,0 +1,48 @@
+// Text formatting
+
+body {
+  font: {
+    family: 'Raleway', Verdana, sans-serif;
+    size: 12pt;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Ubuntu', Helvetica, sans-serif;
+  font-weight: 500;
+
+  > small {
+    margin-left: 5px;
+    color: $light-gray;
+  }
+}
+
+h1 {
+  color: $off-black;
+  font-size: 2em;
+}
+
+h2 {
+  color: $light-gray;
+  font-size: 1.5em;
+}
+
+a {
+  text-decoration: none;
+  color: $link-color;
+
+  &:hover {
+    text-decoration: underline;
+    color: $link-hover-color;
+  }
+
+  &:active,
+  &.active-link {
+    color: $link-active-color;
+  }
+}

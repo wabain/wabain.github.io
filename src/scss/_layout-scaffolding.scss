@@ -1,0 +1,19 @@
+.container {
+  margin: 100px auto 0;
+  max-width: 900px;
+
+  // Shrink the top margin when the screen is small
+  @media (max-height: 400px) {
+    margin-top: 30px;
+  }
+}
+
+.content {
+  margin: 0;
+  max-width: 750px;
+
+  @media (min-width: $screen-md-min) {
+    margin-left: 150px;
+    max-width: auto;
+  }
+}

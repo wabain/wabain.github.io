@@ -1,0 +1,13 @@
+.fading {
+  transition: opacity 0.5s ease;
+  opacity: 1;
+
+  &.faded-out {
+    opacity: 0;
+  }
+}
+
+.loading-indicator {
+  display: block;
+  margin: 1em auto 0;
+}

@@ -1,0 +1,17 @@
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.cleared {
+  clear: both;
+}
+
+.hidden {
+  display: none;
+}

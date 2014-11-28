@@ -1,0 +1,25 @@
+.img-preview {
+  display: block;
+
+  margin: 1em auto;
+  max-width: 250px;
+
+  @media (min-width: $screen-sm-min) {
+    float: left;
+    margin: 0 10px 10px 0;
+  }
+
+  img {
+    border: 0;
+    max-width: 250px;
+    height: auto;
+
+    &.bordered {
+      border: solid 1px;
+    }
+  }
+
+  + p {
+    margin-top: 0;
+  }
+}

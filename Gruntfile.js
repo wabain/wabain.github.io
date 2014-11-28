@@ -86,7 +86,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'src/scss/',
             src: ['**/*.scss'],
-            dest: 'dist/home-assets/'
+            dest: 'dist/home-assets/scss/'
           }
         ]
       },
@@ -130,14 +130,14 @@ module.exports = function (grunt) {
         options: {
           style: 'compressed'
         },
-        src: 'dist/home-assets/cs-homepage.scss',
+        src: 'dist/home-assets/scss/cs-homepage.scss',
         dest: 'dist/home-assets/cs-homepage.min.css'
       },
       dev: {
         options: {
           style: 'expanded'
         },
-        src: 'dist/home-assets/cs-homepage.scss',
+        src: 'dist/home-assets/scss/cs-homepage.scss',
         dest: 'dist/home-assets/cs-homepage.css'
       }
     },
