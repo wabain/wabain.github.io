@@ -162,9 +162,9 @@ module.exports = function (grunt) {
         files: ['src/js/**/*.js'],
         tasks: ['jshint:src', 'concat']
       },
-      nodestuff: {
-        files: ['gruntfile.js', 'test/**/*.js'],
-        tasks: ['jshint:nodestuff']
+      gruntfile: {
+        files: ['gruntfile.js'],
+        tasks: ['jshint:gruntfile', 'build']
       }
     },
 
@@ -198,8 +198,8 @@ module.exports = function (grunt) {
         },
         boss: true
       },
-      nodestuff: {
-        src: ['gruntfile.js', 'test/**/*.js']
+      gruntfile: {
+        src: ['gruntfile.js']
       },
       src: {
         src: 'src/**/*.js'
