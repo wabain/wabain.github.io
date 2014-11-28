@@ -1,13 +1,15 @@
 Allow from All
 
-Header set Cache-Control "max-age=86400"
-
 RewriteBase /~wbain/
 
 RewriteEngine On
 
 RewriteRule ^$ about.html [L]
 RewriteRule ^index\.html$ about.html
+
+<ifModule mod_headers.c>
+Header set Cache-Control "max-age=86400"
+</ifModule>
 
 <ifModule mod_gzip.c>
 mod_gzip_on Yes
