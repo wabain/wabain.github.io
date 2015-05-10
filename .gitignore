@@ -1,4 +1,6 @@
 dist
 node_modules
 .sass-cache
-cs-homepage.sublime-workspace
+
+# Sublime Text files
+*.sublime-*
