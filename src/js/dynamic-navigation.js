@@ -134,7 +134,7 @@
   function getContentElem() {
     var $contentElem = $('section.content');
     if ($contentElem.length === 0) return null;
-    if ($contentElem.length > 1) return $($contentElem[0]);
+    if ($contentElem.length > 1) return $contentElem.first();
     return $contentElem;
   }
 
