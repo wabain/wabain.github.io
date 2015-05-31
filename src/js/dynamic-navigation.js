@@ -7,7 +7,7 @@
     $contentElem = getContentElem();
 
     if ($contentElem) {
-      // The base title is all text up to a "-", excluding trailing whitespace
+      // The base title is all text up to the final "-", excluding trailing whitespace
       baseTitle = (/(.*?)(?:\s*-[^-]*)?$/).exec(document.title)[1];
 
       // Initialize the content cache
