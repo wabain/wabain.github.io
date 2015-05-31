@@ -29,12 +29,10 @@
       }
     }
 
-    $('.header-block a[href]').each(function (index, elem) {
-      var $elem = $(elem);
-      if (isRelativeHref($elem.attr('href'))) {
-        $elem.on('click', doDynamicNavigation);
-      }
-    });
+    // Bind local links in the header
+    $('.header-block a[href]').filter(function () {
+      return isRelativeHref($(this).attr('href'));
+    }).on('click', doDynamicNavigation);
   }
 
   function doDynamicNavigation(e) {
