@@ -53,7 +53,7 @@
 
     // If the href is null (perhaps because it was absolute) then return
     // and let the default occur.
-    if (!$contentElem || !href)
+    if (!href)
       return;
 
     // Stop the page from reloading
