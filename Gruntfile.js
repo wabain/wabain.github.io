@@ -163,7 +163,7 @@ module.exports = function (grunt) {
         tasks: ['jshint:src', 'concat']
       },
       gruntfile: {
-        files: ['gruntfile.js'],
+        files: ['Gruntfile.js'],
         tasks: ['jshint:gruntfile', 'build']
       }
     },
