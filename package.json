@@ -1,5 +1,6 @@
 {
   "name": "cs-homepage",
+  "private": true,
   "version": "0.1.7-alpha",
   "author": {
     "name": "William Bain"
