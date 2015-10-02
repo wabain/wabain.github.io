@@ -3,7 +3,9 @@
   <nav class="navbar">
     <ul>
     {{~#withSort pages "data.priority"}}
-      <li><a href="{{filename}}" {{~#is filename ../filename}} class="active-link" {{~/is}}>{{data.title}}</a></li>
+      {{#isnt data.title "About"~}}
+        <li><a href="{{filename}}" {{~#is filename ../../filename}} class="active-link" {{~/is}}>{{data.title}}</a></li>
+      {{~/isnt}}
     {{~/withSort}}
       <li><a href="https://github.com/wabain/" target="_blank">GitHub</a></li>
     </ul>
