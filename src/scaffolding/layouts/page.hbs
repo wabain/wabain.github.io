@@ -19,7 +19,7 @@
   <![endif]-->
 
   <title>
-    {{~#if release}}{{^}}[dev] {{/if~}}
+    {{~#unless release}}[dev] {{/unless~}}
     William Bain
     {{~#if title}} - {{title}}{{/if~}}
   </title>
