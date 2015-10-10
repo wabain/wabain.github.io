@@ -199,7 +199,7 @@ module.exports = function (grunt) {
         boss: true
       },
       gruntfile: {
-        src: ['gruntfile.js']
+        src: ['Gruntfile.js']
       },
       src: {
         src: 'src/**/*.js'
