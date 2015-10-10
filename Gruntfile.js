@@ -16,7 +16,7 @@ module.exports = function (grunt) {
         layoutdir: 'src/scaffolding/layouts/',
         partials: 'src/scaffolding/partials/**/*.hbs',
         assets: 'dist/home-assets',
-        helpers: ['prettify'],
+        helpers: ['prettify', './src/assemble-helpers/**/*.js'],
         prettify: {
           indent: 2,
           condense: true,
