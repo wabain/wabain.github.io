@@ -204,11 +204,6 @@ module.exports = function (grunt) {
       src: {
         src: 'src/**/*.js'
       }
-    },
-
-    // Not yet implemented
-    qunit: {
-      files: ['test/**/*.html']
     }
   });
 
