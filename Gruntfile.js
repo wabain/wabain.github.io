@@ -209,7 +209,7 @@ module.exports = function (grunt) {
 
   // Load NPM tasks
   for (var task in grunt.config('pkg').devDependencies) {
-    if (task.substr && task.substr(0,6) === 'grunt-') {
+    if (task.substr(0,6) === 'grunt-' && task !== 'grunt-cli') {
       grunt.loadNpmTasks(task);
     }
   }

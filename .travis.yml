@@ -1,0 +1,13 @@
+language: node_js
+sudo: false
+node_js:
+  - "node"
+env:
+  - GH_REF: github.com/wabain/wabain.github.io.git
+before_install:
+    - gem install --version 0.29.0 scss-lint
+before_script:
+  - git config --global user.email "bain.william.a@gmail.com"
+  - git config --global user.name "Travis CI"
+script:
+  - ./deploy.sh
