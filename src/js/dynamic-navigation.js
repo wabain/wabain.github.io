@@ -39,6 +39,7 @@
     var $elem = $(e.currentTarget),
         href = getNormalizedHref($elem),
         navLink,
+        specificTitle,
         cached,
         hasNewContent,
         displayedNewContent;
@@ -82,7 +83,9 @@
 
     // Update the URL and document title
     window.history.pushState(null, document.title, href);
-    document.title = baseTitle + ' - ' + (navLink || $elem).text();
+
+    specificTitle = (navLink || $elem).attr('data-pagetitle') || (navLink || $elem).text();
+    document.title = baseTitle + ' - ' + specificTitle;
 
     // Wait for at least 500ms and for the new content to load
     displayedNewContent = $.when(hasNewContent, waitFor(500));
