@@ -45,7 +45,7 @@
         displayedNewContent;
 
     // Special-case the handling of index.html
-    if (href === '')
+    if (href === '.')
       href = 'index.html';
 
     // If the current href is the same as the one which was clicked, return
@@ -163,7 +163,7 @@
 
   function isRelativeHref(path) {
     if (path == null) return false;
-    if (path.length === 0) return true;
-    return (/^\s*[^:/\s]+(\/|\s*$)/).test(path);
+    if (path === '') return true;
+    return (/^\s*([^:/\s]|\.)+(\/|\s*$)/).test(path);
   }
 })(jQuery);
