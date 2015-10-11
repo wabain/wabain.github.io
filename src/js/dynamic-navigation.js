@@ -44,6 +44,10 @@
         hasNewContent,
         displayedNewContent;
 
+    // Special-case the handling of index.html
+    if (href === '')
+      href = 'index.html';
+
     // If the current href is the same as the one which was clicked, return
     // and let the page reload. The rationale is that if the user is continuing
     // to click, then the page probably hasn't been responding as desired.
@@ -158,7 +162,8 @@
   }
 
   function isRelativeHref(path) {
-    if (!path || path.length === 0) return false;
+    if (path == null) return false;
+    if (path.length === 0) return true;
     return (/^\s*[^:/\s]+(\/|\s*$)/).test(path);
   }
 })(jQuery);
