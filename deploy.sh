@@ -27,5 +27,7 @@ then
     # /dev/null to hide any sensitive credential data that might otherwise be exposed.
     git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master > /dev/null 2>&1
 else
+    # Don't deploy on other branches, but lint and ensure compiling works
     npm run lint
+    npm run compile
 fi
