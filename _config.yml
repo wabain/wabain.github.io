@@ -10,8 +10,6 @@ exclude:
   - package.json
   - "*.sh"
   - "*.sublime-*"
-permalink:
-  pretty
 defaults:
   -
     scope:
