@@ -5,27 +5,26 @@
 
 set -e # exit with nonzero exit code if anything fails
 
-echo "$TRAVIS_BRANCH"
-
 # Deploy only if we push to the develop branch
 if [ "$TRAVIS_BRANCH" = "develop" ] && [ "$TRAVIS_PULL_REQUEST" != "true" ]
 then
     npm run pre-jekyll
 
-    # go to the output directory and create a *new* Git repo
-    cd dist
-    git init
+    local_branch=travis-build
+    remote_branch=master
 
-    # The first and only commit to this new Git repo contains all the
+    # The first and only commit to this new branch contains all the
     # files present with the commit message "Deploy to GitHub Pages".
+    git checkout --orphan $local_branch
+    cat .ghpages-gitignore >> .gitignore
     git add .
     git commit -m "Deploy to GitHub Pages"
 
-    # Force push from the current repo's master branch to the remote
-    # repo's master branch. (All previous history on the master branch
-    # will be lost, since we are overwriting it.) We redirect any output to
-    # /dev/null to hide any sensitive credential data that might otherwise be exposed.
-    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master > /dev/null 2>&1
+    # Force push to the remote repo. (All previous history on the remote
+    # branch will be lost, since we are overwriting it.) We redirect any
+    # output to /dev/null to hide any sensitive credential data that might
+    # otherwise be exposed.
+    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" $local_branch:$remote_branch > /dev/null 2>&1
 else
     # Don't deploy on other branches, but lint and ensure compiling works
     npm run lint
