@@ -2,6 +2,10 @@ language: node_js
 sudo: false
 node_js:
   - "node"
+branches:
+  except:
+    # Master is the actually deployed code
+    - master
 env:
   global:
     - GH_REF: github.com/wabain/wabain.github.io.git
