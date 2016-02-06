@@ -10,7 +10,7 @@ echo "$TRAVIS_BRANCH"
 # Deploy only if we push to the develop branch
 if [ "$TRAVIS_BRANCH" = "develop" ] && [ "$TRAVIS_PULL_REQUEST" != "true" ]
 then
-    npm run compile
+    npm run pre-jekyll
 
     # go to the output directory and create a *new* Git repo
     cd dist
@@ -29,5 +29,5 @@ then
 else
     # Don't deploy on other branches, but lint and ensure compiling works
     npm run lint
-    npm run compile
+    npm run pre-jekyll
 fi

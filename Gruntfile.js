@@ -9,39 +9,8 @@ module.exports = function (grunt) {
       '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '   Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>',
 
-    // Task configuration
-    assemble: {
-      options: {
-        layout: 'page.hbs',
-        layoutdir: 'src/scaffolding/layouts/',
-        partials: 'src/scaffolding/partials/**/*.hbs',
-        assets: 'dist/home-assets',
-        helpers: ['./src/assemble-helpers/**/*.js']
-      },
-      pages: {
-        options: {
-          pkg: '<%= pkg %>',
-          banner: '<%= banner %>',
-          release: '<%= grunt.option("release-build") %>'
-        },
-        cwd: 'src/content',
-        dest: 'dist/',
-        expand: true,
-        src: '**/*.hbs'
-      },
-      'section-partials': {
-        options: {
-          layout: 'section-partial.hbs'
-        },
-        cwd: 'src/content',
-        dest: 'dist/section-partial/',
-        expand: true,
-        src: '**/*.hbs'
-      }
-    },
-
     clean: {
-      dist: ['dist/**', '!dist']
+      dist: ['home-assets/**', 'section-partial/**']
     },
 
     concat: {
@@ -51,7 +20,7 @@ module.exports = function (grunt) {
       },
       js: {
         src: ['src/js/**/*.js'],
-        dest: 'dist/home-assets/cs-homepage.js'
+        dest: 'home-assets/cs-homepage.js'
       }
     },
 
@@ -63,8 +32,8 @@ module.exports = function (grunt) {
         sourceMapName: function (name) {return name+'.map';}
       },
       default: {
-        src: 'dist/home-assets/cs-homepage.js',
-        dest: 'dist/home-assets/cs-homepage.min.js'
+        src: 'home-assets/cs-homepage.js',
+        dest: 'home-assets/cs-homepage.min.js'
       }
     },
 
@@ -81,9 +50,14 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'src/scss/',
             src: ['**/*.scss'],
-            dest: 'dist/home-assets/scss/'
+            dest: 'home-assets/scss/'
           }
         ]
+      },
+      section_partials: {
+        expand: true,
+        src: ['*.html'],
+        dest: 'section-partial/'
       },
       other_assets: {
         files: [
@@ -91,7 +65,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'src/assets',
             src: ['img/**/*'],
-            dest: 'dist/home-assets/'
+            dest: 'home-assets/'
           },
           {
             expand: true,
@@ -108,13 +82,13 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'bower_components/html5shiv/dist/',
             src: 'html5shiv.min.js',
-            dest: 'dist/home-assets/vendor/'
+            dest: 'home-assets/vendor/'
           },
           {
             expand: true,
             cwd: 'bower_components/fancybox/source/',
             src: '**/*',
-            dest: 'dist/home-assets/vendor/fancybox/'
+            dest: 'home-assets/vendor/fancybox/'
           }
         ]
       }
@@ -125,15 +99,15 @@ module.exports = function (grunt) {
         options: {
           style: 'compressed'
         },
-        src: 'dist/home-assets/scss/cs-homepage.scss',
-        dest: 'dist/home-assets/cs-homepage.min.css'
+        src: 'home-assets/scss/cs-homepage.scss',
+        dest: 'home-assets/cs-homepage.min.css'
       },
       dev: {
         options: {
           style: 'expanded'
         },
-        src: 'dist/home-assets/scss/cs-homepage.scss',
-        dest: 'dist/home-assets/cs-homepage.css'
+        src: 'home-assets/scss/cs-homepage.scss',
+        dest: 'home-assets/cs-homepage.css'
       }
     },
 
@@ -151,7 +125,7 @@ module.exports = function (grunt) {
       },
       html: {
         files: ['src/scaffolding/**/*', 'src/content/**/*'],
-        tasks: ['assemble']
+        tasks: ['copy:section_partials']
       },
       js: {
         files: ['src/js/**/*.js'],
@@ -161,15 +135,6 @@ module.exports = function (grunt) {
         files: ['Gruntfile.js'],
         tasks: ['jshint:gruntfile', 'build']
       }
-    },
-
-    connect: {
-      options: {
-        port: 8282,
-        host: "127.0.0.1",
-        livereload: true
-      },
-      default: {}
     },
 
     jshint: {
@@ -208,16 +173,15 @@ module.exports = function (grunt) {
       grunt.loadNpmTasks(task);
     }
   }
-  grunt.loadNpmTasks('assemble');
 
   // High-level tasks
   grunt.registerTask('default', 'Build and run', function (buildMode) {
     buildMode = verifyBuildMode(buildMode);
 
     if (grunt.option('watch')) {
-      grunt.task.run('build:'+buildMode, 'connect', 'watch');
+      grunt.task.run('build:'+buildMode, 'watch');
     } else {
-      grunt.task.run('build:'+buildMode, 'connect::keepalive');
+      grunt.task.run('build:'+buildMode);
     }
   });
 
@@ -243,7 +207,7 @@ module.exports = function (grunt) {
       tasks.push('uglify', 'copy:bower_assets');
     }
 
-    tasks.push('copy:other_assets', 'assemble');
+    tasks.push('copy:section_partials', 'copy:other_assets');
 
     grunt.task.run.apply(grunt.task, tasks);
   });

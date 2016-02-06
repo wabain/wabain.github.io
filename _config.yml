@@ -1,0 +1,24 @@
+gems:
+  - jekyll-redirect-from
+incremental:
+  true
+exclude:
+  - node_modules
+  - Gruntfile.js
+  - Vagrantfile
+  - bower.json
+  - package.json
+  - "*.sh"
+  - "*.sublime-*"
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      assets_dir: "/home-assets"
+      layout: "page"
+  -
+    scope:
+      path: "section-partial"
+    values:
+      layout: "section-partial"

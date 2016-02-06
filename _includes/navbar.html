@@ -1,0 +1,13 @@
+<header class="header-block">
+  <h1><a href="." data-pagetitle="About">William Bain</a></h1>
+  <nav class="navbar">
+    <ul>
+    {% for nav_page in site.pages | sort: 'priority' %}
+      {% if nav_page.title and nav_page.title != "About" and nav_page.layout != "section-partial" %}
+        <li><a href="{{ nav_page.url }}" {% if nav_page.url == page.url %} class="active-link" {% endif %}>{{ nav_page.title }}</a></li>
+      {% endif %}
+    {% endfor %}
+      <li><a href="https://github.com/wabain/" target="_blank">GitHub</a></li>
+    </ul>
+  </nav>
+</header>

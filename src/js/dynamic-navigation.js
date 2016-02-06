@@ -164,6 +164,6 @@
   function isRelativeHref(path) {
     if (path == null) return false;
     if (path === '') return true;
-    return (/^\s*([^:/\s]|\.)+(\/|\s*$)/).test(path);
+    return (/^\s*[^:]+(\/|\s*$)/).test(path);
   }
 })(jQuery);

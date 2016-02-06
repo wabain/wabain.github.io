@@ -1,8 +1,16 @@
 dist
-node_modules
-.sass-cache
 
-npm-debug.log
+.jekyll-metadata
+
+/_site/
+/section-partial/
+/home-assets/
+
+/node_modules/
+/.sass-cache/
+/.vagrant/
+
+npm-debug.log*
 
 # Sublime Text files
 *.sublime-*
