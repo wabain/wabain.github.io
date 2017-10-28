@@ -9,9 +9,16 @@ branches:
 env:
   global:
     - GH_REF: github.com/wabain/wabain.github.io.git
+    - YARN_VERSION: 1.2.1
     - secure: 25+b+bOOJTBmp9LDHU7K6FrzAFHywBwE8Up8aeVZvogu+Fs6aBX+1BsCoBhlQnF7PxBF9vWgwin60gjsgYagb7Udo84Gc5v4XPowuEEcpJcJ3J2i8QHhCsAZcWyEMznuikPxYjc+69wVValUoyDbw2t2SotfJUAEpvYdkYUm8uMaGnd1kavWMMtq+ffHhyGEP8LzwlmmjQkZvZXwcxyfTIyIeWHnHMQzQ25dghxZAFH0OotCfNiAiqwj8la2ahWZXfjmZ2uwlyQF4jrvwNiLAa/BJmQ1ybsE7VbX4P3dmaX49Z6pqFCZXLZqZ9dhTfcCvvpQa+/Mxt+H2/vN+YGdjaJwblRK3T/9yI4td6pG5q/J0sz+lZvCJ2r3tQV+52Q1R3TtnTmz9fsJMnoPukTCgPZvqmeuYk64nExsQcgOL7DgXNoy1qNF0EfkrfGzss6+nnwZTp+qC898ikhoSZZlQT3hRqMr2p+f5zyGpLQIw1uhrTOs+bMwALNgj0mMwreAC7uElY2a8f7VltICJ0cbOV0DBtynwyxGqexRPHOZFBTayIwAS31lHzQtTl11n3cNE7g4071px0mBxAM/btLk6+zzgnnbvLd5xqKuQkWweJBqvKttre41RODHZ+8ydQ6nik1axIRA4V7ts1dXN8ErEZCnNQ78JzR04i/vf0bg2rQ=
+cache:
+  yarn: true
 before_install:
   - gem install --version 0.29.0 scss-lint
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version $YARN_VERSION
+  - export PATH=$HOME/.yarn/bin:$PATH
+install:
+  - yarn install
 before_script:
   - git config --global user.email "bain.william.a@gmail.com"
   - git config --global user.name "Travis CI"

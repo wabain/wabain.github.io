@@ -6,8 +6,8 @@ exclude:
   - node_modules
   - Gruntfile.js
   - Vagrantfile
-  - bower.json
   - package.json
+  - yarn.lock
   - "*.sh"
   - "*.sublime-*"
 defaults:

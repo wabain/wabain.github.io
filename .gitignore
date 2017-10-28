@@ -1,7 +1,6 @@
-dist
-
 .jekyll-metadata
 
+/dist/
 /_site/
 /section-partial/
 /home-assets/
@@ -11,6 +10,7 @@ dist
 /.vagrant/
 
 npm-debug.log*
+yarn-error.log*
 
 # Sublime Text files
 *.sublime-*
