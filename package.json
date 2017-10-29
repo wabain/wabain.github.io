@@ -25,8 +25,8 @@
     "lint": "grunt jshint scsslint"
   },
   "dependencies": {
-    "@bower_components/fancybox": "git://github.com/fancyapps/fancyBox.git#~2.1.5",
-    "@bower_components/jquery": "git://github.com/jquery/jquery.git#1.11.0"
+    "fancybox": "git://github.com/fancyapps/fancyBox.git#~2.1.5",
+    "jquery": "~1.11.0"
   },
   "engines": {
     "yarn": ">= 1.0.0"

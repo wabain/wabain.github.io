@@ -2,14 +2,6 @@
 # yarn lockfile v1
 
 
-"@bower_components/fancybox@git://github.com/fancyapps/fancyBox.git#~2.1.5":
-  version "2.1.5"
-  resolved "git://github.com/fancyapps/fancyBox.git#c00852a5394ef18517598bfa3b9e885cdf5c7450"
-
-"@bower_components/jquery@git://github.com/jquery/jquery.git#1.11.0":
-  version "1.11.0"
-  resolved "git://github.com/jquery/jquery.git#91cd1587ed4a1d4f3834227e8eb3cc30cb385409"
-
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -192,6 +184,10 @@ eventemitter2@~0.4.13:
 exit@~0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/exit/-/exit-0.1.2.tgz#0632638f8d877cc82107d30a0fff1a17cba1cd0c"
+
+"fancybox@git://github.com/fancyapps/fancyBox.git#~2.1.5":
+  version "2.1.5"
+  resolved "git://github.com/fancyapps/fancyBox.git#c00852a5394ef18517598bfa3b9e885cdf5c7450"
 
 faye-websocket@~0.4.3:
   version "0.4.4"
@@ -432,6 +428,10 @@ isarray@~1.0.0:
 isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
+
+jquery@~1.11.0:
+  version "1.11.3"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-1.11.3.tgz#dd8b74278b27102d29df63eae28308a8cfa1b583"
 
 js-yaml@~2.0.5:
   version "2.0.5"

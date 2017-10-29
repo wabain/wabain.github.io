@@ -81,13 +81,19 @@ module.exports = function (grunt) {
           }
         ]
       },
-      bower_assets: {
+      vendor_assets: {
         files: [
           {
             expand: true,
-            cwd: 'bower_components/fancybox/source/',
+            cwd: 'node_modules/fancybox/source/',
             src: '**/*',
             dest: '<%= genAssetDir %>/vendor/fancybox/'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/jquery/dist',
+            src: '**/*',
+            dest: '<%= genAssetDir %>/vendor/jquery/'
           }
         ]
       }
@@ -203,10 +209,10 @@ module.exports = function (grunt) {
     ];
 
     if (buildMode === 'release') {
-      tasks.push('uglify', 'copy:bower_assets');
+      tasks.push('uglify');
     }
 
-    tasks.push('copy:section_partials', 'copy:other_assets');
+    tasks.push('copy:vendor_assets', 'copy:section_partials', 'copy:other_assets');
 
     grunt.task.run.apply(grunt.task, tasks);
   });
