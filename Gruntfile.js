@@ -9,8 +9,12 @@ module.exports = function (grunt) {
       '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '   Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>',
 
+    // Directories
+    genAssetDir: 'content/home-assets',
+    genPartialDir: 'content/section-partial',
+
     clean: {
-      dist: ['home-assets/**', 'section-partial/**']
+      dist: ['<%= genAssetDir %>', '<%= genPartialDir %>']
     },
 
     concat: {
@@ -20,7 +24,7 @@ module.exports = function (grunt) {
       },
       js: {
         src: ['src/js/**/*.js'],
-        dest: 'home-assets/cs-homepage.js'
+        dest: '<%= genAssetDir %>/cs-homepage.js'
       }
     },
 
@@ -32,8 +36,8 @@ module.exports = function (grunt) {
         sourceMapName: function (name) {return name+'.map';}
       },
       default: {
-        src: 'home-assets/cs-homepage.js',
-        dest: 'home-assets/cs-homepage.min.js'
+        src: '<%= genAssetDir %>/cs-homepage.js',
+        dest: '<%= genAssetDir %>/cs-homepage.min.js'
       }
     },
 
@@ -50,14 +54,15 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'src/scss/',
             src: ['**/*.scss'],
-            dest: 'home-assets/scss/'
+            dest: '<%= genAssetDir %>/scss/'
           }
         ]
       },
       section_partials: {
         expand: true,
+        cwd: 'content/',
         src: ['*.html'],
-        dest: 'section-partial/'
+        dest: '<%= genPartialDir %>/'
       },
       other_assets: {
         files: [
@@ -65,7 +70,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'src/assets',
             src: ['img/**/*'],
-            dest: 'home-assets/'
+            dest: '<%= genAssetDir %>/'
           },
           {
             expand: true,
@@ -82,7 +87,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'bower_components/fancybox/source/',
             src: '**/*',
-            dest: 'home-assets/vendor/fancybox/'
+            dest: '<%= genAssetDir %>/vendor/fancybox/'
           }
         ]
       }
@@ -93,15 +98,15 @@ module.exports = function (grunt) {
         options: {
           style: 'compressed'
         },
-        src: 'home-assets/scss/cs-homepage.scss',
-        dest: 'home-assets/cs-homepage.min.css'
+        src: '<%= genAssetDir %>/scss/cs-homepage.scss',
+        dest: '<%= genAssetDir %>/cs-homepage.min.css'
       },
       dev: {
         options: {
           style: 'expanded'
         },
-        src: 'home-assets/scss/cs-homepage.scss',
-        dest: 'home-assets/cs-homepage.css'
+        src: '<%= genAssetDir %>/scss/cs-homepage.scss',
+        dest: '<%= genAssetDir %>/cs-homepage.css'
       }
     },
 
@@ -118,7 +123,7 @@ module.exports = function (grunt) {
         tasks: ['scsslint', 'copy:sass', 'sass:dev']
       },
       html: {
-        files: ['*.html'],
+        files: ['content/*.html'],
         tasks: ['copy:section_partials']
       },
       js: {

@@ -2,8 +2,9 @@
 
 /dist/
 /_site/
-/section-partial/
-/home-assets/
+
+/content/home-assets/
+/content/section-partial/
 
 /node_modules/
 /.sass-cache/
