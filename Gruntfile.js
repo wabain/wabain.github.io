@@ -71,13 +71,6 @@ module.exports = function (grunt) {
             cwd: 'src/assets',
             src: ['img/**/*'],
             dest: '<%= genAssetDir %>/'
-          },
-          {
-            expand: true,
-            dot: true,
-            cwd: 'src/assets/root',
-            src: '**/*',
-            dest: 'dist/'
           }
         ]
       },
