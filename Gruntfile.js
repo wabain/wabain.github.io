@@ -118,7 +118,7 @@ module.exports = function (grunt) {
         tasks: ['scsslint', 'copy:sass', 'sass:dev']
       },
       html: {
-        files: ['src/scaffolding/**/*', 'src/content/**/*'],
+        files: ['*.html'],
         tasks: ['copy:section_partials']
       },
       js: {
