@@ -80,12 +80,6 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            cwd: 'bower_components/html5shiv/dist/',
-            src: 'html5shiv.min.js',
-            dest: 'home-assets/vendor/'
-          },
-          {
-            expand: true,
             cwd: 'bower_components/fancybox/source/',
             src: '**/*',
             dest: 'home-assets/vendor/fancybox/'

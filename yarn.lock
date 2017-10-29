@@ -6,10 +6,6 @@
   version "2.1.5"
   resolved "git://github.com/fancyapps/fancyBox.git#c00852a5394ef18517598bfa3b9e885cdf5c7450"
 
-"@bower_components/html5shiv@git://github.com/aFarkas/html5shiv.git#~3.7.2":
-  version "3.7.3"
-  resolved "git://github.com/aFarkas/html5shiv.git#ed28c56c071bddfe7d635ad88995674957a016be"
-
 "@bower_components/jquery@git://github.com/jquery/jquery.git#1.11.0":
   version "1.11.0"
   resolved "git://github.com/jquery/jquery.git#91cd1587ed4a1d4f3834227e8eb3cc30cb385409"

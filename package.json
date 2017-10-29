@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@bower_components/fancybox": "git://github.com/fancyapps/fancyBox.git#~2.1.5",
-    "@bower_components/html5shiv": "git://github.com/aFarkas/html5shiv.git#~3.7.2",
     "@bower_components/jquery": "git://github.com/jquery/jquery.git#1.11.0"
   },
   "engines": {
