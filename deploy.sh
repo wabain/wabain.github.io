@@ -8,7 +8,7 @@ set -e # exit with nonzero exit code if anything fails
 # Deploy only if we push to the develop branch
 if [ "$TRAVIS_BRANCH" = "develop" ] && [ "$TRAVIS_PULL_REQUEST" != "true" ]
 then
-    npm run pre-jekyll
+    yarn run pre-jekyll
 
     local_branch=travis-build
     remote_branch=master
@@ -26,7 +26,7 @@ then
     # otherwise be exposed.
     git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" $local_branch:$remote_branch > /dev/null 2>&1
 else
-    # Don't deploy on other branches, but lint and ensure compiling works
-    npm run lint
-    npm run pre-jekyll
+    # Don't deploy on other branches, but lint and ensure the Jekyll build works
+    yarn run lint
+    yarn run build
 fi

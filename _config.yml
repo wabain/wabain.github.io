@@ -1,4 +1,4 @@
-gems:
+plugins:
   - jekyll-redirect-from
 incremental:
   true
@@ -6,6 +6,7 @@ exclude:
   - node_modules
   - Gruntfile.js
   - Vagrantfile
+  - Gemfile*
   - package.json
   - yarn.lock
   - "*.sh"

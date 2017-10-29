@@ -7,7 +7,6 @@
 
 /node_modules/
 /.sass-cache/
-/.vagrant/
 
 npm-debug.log*
 yarn-error.log*
