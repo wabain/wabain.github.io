@@ -10,21 +10,17 @@ if [ "$TRAVIS_BRANCH" = "develop" ] && [ "$TRAVIS_PULL_REQUEST" != "true" ]
 then
     yarn run pre-jekyll
 
-    local_branch=travis-build
-    remote_branch=master
+    cd content
+    git init
 
-    # The first and only commit to this new branch contains all the
+    # The first and only commit to this new Git repo contains all the
     # files present with the commit message "Deploy to GitHub Pages".
-    git checkout --orphan $local_branch
-    cat .ghpages-gitignore >> .gitignore
     git add .
     git commit -m "Deploy to GitHub Pages"
 
-    # Force push to the remote repo. (All previous history on the remote
-    # branch will be lost, since we are overwriting it.) We redirect any
-    # output to /dev/null to hide any sensitive credential data that might
-    # otherwise be exposed.
-    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" $local_branch:$remote_branch > /dev/null 2>&1
+    # Redirect output to /dev/null to hide any sensitive credential data that
+    # might otherwise be exposed.
+    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master > /dev/null 2>&1
 else
     # Don't deploy on other branches, but lint and ensure the Jekyll build works
     yarn run lint

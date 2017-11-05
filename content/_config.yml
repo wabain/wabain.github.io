@@ -2,7 +2,6 @@ plugins:
   - jekyll-redirect-from
 incremental:
   true
-source: content
 defaults:
   -
     scope:

@@ -20,8 +20,8 @@
   },
   "scripts": {
     "pre-jekyll": "grunt build:release",
-    "build": "yarn run pre-jekyll && JEKYLL_ENV=production bundle exec jekyll build",
-    "serve": "grunt build && bundle exec jekyll serve -H 0.0.0.0 -P 8080 --force_polling",
+    "build": "yarn run pre-jekyll && JEKYLL_ENV=production bundle exec jekyll build --source content",
+    "serve": "grunt build && bundle exec jekyll serve --source content -H 0.0.0.0 -P 8080",
     "lint": "grunt jshint scsslint"
   },
   "dependencies": {
