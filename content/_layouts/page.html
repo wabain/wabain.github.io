@@ -7,9 +7,9 @@
   <link type="text/css" rel="stylesheet" href="{{ page.assets_dir }}/cs-homepage{% if jekyll.environment == 'production' %}.min.css{% else %}.css{% endif %}">
 
   <title>
-    {% if jekyll.environment != 'production' %}[dev] {% endif %}
+    {%- if jekyll.environment != 'production' %}[dev] {% endif -%}
     William Bain
-    {% if page.title %} - {{ page.title }}{% endif %}
+    {%- if page.title %} - {{ page.title }}{% endif -%}
   </title>
 </head>
 <body>
