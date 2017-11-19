@@ -1,0 +1,40 @@
+---
+title: Projects
+in_nav: true
+nav_priority: 1
+---
+
+{% capture img_dir %}{{ page.assets_dir }}/img{% endcapture %}
+
+<h2>Projects</h2>
+
+<h3 class="cleared">Cantus Ultimus</h3>
+<p>Since May 2015 I've been working at the <a href="https://ddmal.music.mcgill.ca" target="_blank">Distributed Digital Music Archives and Libraries Lab</a> at McGill University. My primary focus in summer 2015 was the <a href="http://cantus.simssa.ca/manuscript/133/" target="_blank">Cantus Ultimus</a> project (<a href="https://github.com/DDMAL/cantus" target="_blank">GitHub</a>), which digitizes medieval musical manuscripts and makes them searchable online. My role focused on implementing rich, domain-specific search interfaces, on improving search performance, and on improving code maintainability.</p>
+
+<h3 class="cleared"><a href="http://cs.mcgill.ca/~wbain/future-explorer" target="_blank">Future Explorer</a></h3>
+<figure class="img-preview">
+  <a href="{{ img_dir }}/future-explorer-screenshot.png" title="Future Explorer screenshot" target="_blank" class="fancybox" data-fancybox-group="projects">
+    <img src="{{ img_dir }}/future-explorer-screenshot-preview.png" alt="Future Explorer screenshot" title="Click to enlarge"
+        srcset="{{ img_dir }}/future-explorer-screenshot.png 2x">
+  </a>
+</figure>
+<p>A single&ndash;page web application for career planning and exploration. The goal will be to aggregate useful information released by Canadian governments along with some tools to help users apply it to their plans for the future. This is a publicly accessible <a href="http://en.wikipedia.org/wiki/Software_release_life_cycle#Alpha" title="&ldquo;Alpha release&rdquo; on Wikipedia" target="_blank">alpha release</a>.</p>
+
+<h3 class="cleared">European Territories in North America</h3>
+<figure class="img-preview">
+  <a href="{{ img_dir }}/namerica-territories-screenshot.png" title="North American territories screenshot" target="_blank" class="fancybox" data-fancybox-group="projects">
+    <img class="bordered" src="{{ img_dir }}/namerica-territories-screenshot-preview.png" alt="North American territories screenshot" title="Click to enlarge"
+        srcset="{{ img_dir }}/namerica-territories-screenshot.png 2x">
+  </a>
+</figure>
+<p>An interactive map of the European-dominated territories in North America since 1713. It will be possible to click on each region and see its development over the centuries. The map is rendered using inline SVG.</p>
+
+<h3 class="cleared">&ldquo;Sorry!&rdquo; A desktop implementation</h3>
+<figure class="img-preview">
+  <a href="{{ img_dir }}/sorry-screenshot.png" title="&ldquo;Sorry!&rdquo; screenshot" target="_blank" class="fancybox" data-fancybox-group="projects">
+    <img src="{{ img_dir }}/sorry-screenshot-preview.png" alt="&ldquo;Sorry!&rdquo; screenshot" title="Click to enlarge"
+        srcset="{{ img_dir }}/sorry-screenshot.png 2x">
+  </a>
+</figure>
+<p>This emulation of the board game <a href="http://en.wikipedia.org/wiki/Sorry!_%28game%29" title="&ldquo;Sorry!&rdquo; on Wikipedia" target="_blank">&ldquo;Sorry!&rdquo;</a> was one of my earlier projects. It supported both AI and multiple human players as well as multi-turn undo/redo. It was written in Python using Tkinter for the user interface.</p>
+<p>(As the game is still manufactured by Hasbro, I have not released any code from this project publicly.)</p>

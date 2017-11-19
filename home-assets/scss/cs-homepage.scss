@@ -1,0 +1,22 @@
+/* cs-homepage v0.1.7-alpha, 2017-11-19
+   Copyright (c) 2017 William Bain */
+
+$off-black: #222;
+$light-gray: #a9a9a9;
+$link-color: rgb(90, 80, 190);
+$link-hover-color: rgb(100, 160, 175);
+$link-active-color: #f00;
+
+$screen-md-min: 917px;
+// Magic number to have the size of the content box start/stop growing
+// without a jump in dimensions
+$screen-sm-max: $screen-md-min - 1px;
+$screen-sm-min: 500px;
+$screen-xs-max: $screen-sm-min - 1px;
+
+@import "text-formatting";
+@import "utils";
+@import "layout-scaffolding";
+@import "header";
+@import "img-preview";
+@import "loading-effects";
