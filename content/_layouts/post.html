@@ -1,0 +1,9 @@
+{% capture post_content %}
+<h2>{{ page.title }}</h2>
+<time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date_to_long_string }}</time>
+
+<hr/>
+
+{{ content }}
+{% endcapture %}
+{%- include page-base.html content=post_content %}

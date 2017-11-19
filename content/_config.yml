@@ -3,14 +3,22 @@ plugins:
 incremental:
   true
 defaults:
-  -
-    scope:
+  - scope:
       path: ""
     values:
       assets_dir: "/home-assets"
-      layout: "page"
-  -
-    scope:
+      layout: page
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+  - scope:
+      path: ""
+      type: drafts
+    values:
+      layout: post
+  - scope:
       path: "section-partial"
     values:
       layout: "section-partial"

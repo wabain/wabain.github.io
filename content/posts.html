@@ -1,0 +1,12 @@
+---
+title: Posts
+in_nav: true
+nav_priority: 2
+---
+
+<h2>Posts</h2>
+{% for post in site.posts %}
+<div>
+    <a href="{{ post.url }}">{{ post.title }}</a>
+</div>
+{% endfor %}
