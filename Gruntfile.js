@@ -12,9 +12,10 @@ module.exports = function (grunt) {
     // Directories
     genAssetDir: 'content/home-assets',
     genPartialDir: 'content/section-partial',
+    compiledSiteDir: '_site',
 
     clean: {
-      dist: ['<%= genAssetDir %>', '<%= genPartialDir %>']
+      dist: ['<%= genAssetDir %>', '<%= genPartialDir %>', '<%= compiledSiteDir %>']
     },
 
     concat: {
