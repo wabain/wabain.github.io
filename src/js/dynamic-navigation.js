@@ -1,3 +1,5 @@
+import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
+
 (function ($) {
   'use strict';
   var baseTitle, $contentElem, cache, currentHref, loadingIndicator;
@@ -21,8 +23,9 @@
   function initializeNavigation() {
     // Cache the active content of the page, if available
     var active = $('nav a.active-link');
+    // FIXME: Currently the index page is not caught by this check
     if (active) {
-      currentHref = getNormalizedHref(active);
+      currentHref = getDomainRelativeUrl(active.attr('href'));
 
       if (currentHref) {
         cache[currentHref] = $contentElem.html();
@@ -37,16 +40,12 @@
 
   function doDynamicNavigation(e) {
     var $elem = $(e.currentTarget),
-        href = getNormalizedHref($elem),
+        href = getDomainRelativeUrl($elem.attr('href')),
         navLink,
         specificTitle,
         cached,
         hasNewContent,
         displayedNewContent;
-
-    // Special-case the handling of index.html
-    if (href === '.')
-      href = 'index.html';
 
     // If the current href is the same as the one which was clicked, return
     // and let the page reload. The rationale is that if the user is continuing
@@ -70,7 +69,8 @@
     if (cached) {
       hasNewContent = [cache[href], 'success', null];
     } else {
-      hasNewContent = $.get('section-partial/'+href);
+      var cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href);
+      hasNewContent = $.get(cacheUrl);
     }
 
     // Fade out the content
@@ -144,25 +144,9 @@
     return $contentElem;
   }
 
-  function getNormalizedHref($elem) {
-    var href = $elem.attr('href');
-
-    if (!isRelativeHref(href))
-      return null;
-
-    // Strip whitespace
-    return href.replace(/^\s+|\s+$/g, '');
-  }
-
   function waitFor(ms) {
     var q = new $.Deferred();
     setTimeout(function () {q.resolve();}, ms);
     return q;
-  }
-
-  function isRelativeHref(path) {
-    if (path == null) return false;
-    if (path === '') return true;
-    return (/^\s*[^:]+(\/|\s*$)/).test(path);
   }
 })(jQuery);
