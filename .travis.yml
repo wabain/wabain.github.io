@@ -2,6 +2,10 @@ language: node_js
 sudo: false
 node_js:
   - "node"
+addons:
+  apt:
+    packages:
+      - tree
 branches:
   except:
     # Master is the actually deployed code
@@ -27,4 +31,11 @@ before_script:
   - git config --global user.email "bain.william.a@gmail.com"
   - git config --global user.name "Travis CI"
 script:
-  - ./deploy.sh
+  - yarn run lint-build-infra
+  - JEKYLL_ENV=production yarn run pre-jekyll
+  # This generated Jekyll content will not be served; it's just used to try to
+  # smoke out any build issues. I don't remember if there's a reason I don't do
+  # the Jekyll build locally, since all this plumbing is here, but there might
+  # be.
+  - JEKYLL_ENV=production yarn run jekyll-build
+  - ./bin/deploy.sh

@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
 
-  <link type="text/css" rel="stylesheet" href="{{ page.assets_dir }}/cs-homepage{% if jekyll.environment == 'production' %}.min.css{% else %}.css{% endif %}">
+  {% if jekyll.environment == 'production' %}
+  <link type="text/css" rel="stylesheet" href="{{ page.assets_dir }}/cs-homepage.min.css">
+  {% endif -%}
 
   <title>
     {%- if jekyll.environment != 'production' %}[dev] {% endif -%}

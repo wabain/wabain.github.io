@@ -131,8 +131,7 @@
       waitFor(500).then(function () {
         $contentElem.removeClass('fading');
       });
-    })
-    .fail(function () {
+    }).fail(function () {
       // On failure just go to the referenced location
       window.location = href;
     });
