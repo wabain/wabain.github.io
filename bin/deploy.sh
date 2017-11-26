@@ -6,7 +6,7 @@
 set -e # exit with nonzero exit code if anything fails
 
 echo "Content to be deployed is:"
-tree -ah content
+tree -ah _site
 
 # Deploy only if we push to the develop branch
 if [ "$TRAVIS_BRANCH" != "develop" ] || [ "$TRAVIS_PULL_REQUEST" = "true" ]
