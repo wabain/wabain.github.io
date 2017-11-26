@@ -1,5 +1,16 @@
 import debugFactory from 'debug';
 import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href';
+import {
+  AnimationDispatcher,
+  updateProperty,
+  reverseTween,
+  classSet,
+  appendElem,
+} from './animation';
+
+var CONTENT_VISIBLE = 'content-in';
+var CONTENT_HIDDEN = 'content-out';
+var CONTENT_LOADING = 'content-load';
 
 var debug = debugFactory('dynamic-navigation');
 
@@ -17,7 +28,12 @@ function parseTitle(title) {
 
 (function ($) {
   'use strict';
-  var baseTitle, $contentElem, cache, loadingIndicator, initialPageData;
+  var baseTitle,
+      $contentElem,
+      cache,
+      initialPageData,
+      dispatcher,
+      pageContentAnimation;
 
   // Only initialize dynamic navigation if HTML5 history APIs are available
   if (!window.history || !window.history.pushState) {
@@ -54,6 +70,9 @@ function parseTitle(title) {
       currentHref);
 
     debug('initialize at %s, state %o', currentHref, initialPageData.state);
+
+    dispatcher = new AnimationDispatcher();
+    pageContentAnimation = createPageContentAnimation(dispatcher, $contentElem[0]);
 
     // Bind local links in the header
     $('[data-region-id="page-header"] a[href]').filter(function () {
@@ -143,31 +162,28 @@ function parseTitle(title) {
     debugLoad('set up navigation, state %o', state);
     setGlobalPageState(state);
 
-    // Fade out the content
-    $contentElem.addClass('fading faded-out');
+    var fadeOutComplete = promiseToDeferred(pageContentAnimation.goto(CONTENT_HIDDEN));
+    var hiddenStateId = pageContentAnimation.stateId;
 
     // Update the links in the navbar
     $('[data-region-id="page-header"] .active-link').not(navLink).removeClass('active-link');
     navLink.addClass('active-link');
 
-    var loadNewContent = loadSectionPartial(href).fail(function () {
+    var hasNewContent = loadSectionPartial(href).fail(function () {
       debugLoad('failed to resolve partial, doing hard load', href);
       window.location = href;
     });
 
     // Wait for at least 500ms and for the new content to load
-    var displayedNewContent = $.when(loadNewContent, waitFor(500));
+    var displayedNewContent = $.when(hasNewContent, fadeOutComplete);
 
     // If loading takes at least 750ms then show a loading indicator
     waitFor(750).then(function () {
-      if (loadingIndicator || displayedNewContent.state() !== 'pending')
+      if (pageContentAnimation.stateId !== hiddenStateId)
         return;
 
       debugLoad('load timeout exceeded, show loading indicator');
-      $contentElem.addClass('hidden');
-
-      loadingIndicator = $('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
-      $('body').append(loadingIndicator);
+      pageContentAnimation.goto(CONTENT_LOADING);
     });
 
     displayedNewContent.done(function (newContent) {
@@ -179,24 +195,7 @@ function parseTitle(title) {
       debugLoad('set content and fade in');
       $contentElem.html(newContent);
 
-      // Remove the loading indicator if one was there
-      if (loadingIndicator) {
-        loadingIndicator.remove();
-        loadingIndicator = null;
-      }
-
-      // Fade in the content element
-      $contentElem.removeClass('faded-out hidden');
-
-      waitFor(500).then(function () {
-        if (!isCurrentLocation(href)) {
-          debugLoad('current location has changed; bailing from fade-in');
-          return;
-        }
-
-        debugLoad('fade-in complete');
-        $contentElem.removeClass('fading');
-      });
+      pageContentAnimation.goto(CONTENT_VISIBLE);
     });
   }
 
@@ -246,4 +245,69 @@ function parseTitle(title) {
     setTimeout(function () {q.resolve();}, ms);
     return q;
   }
+
+  function promiseToDeferred(promise) {
+    var q = new $.Deferred();
+    promise.then(function (res) {
+      q.resolve(res);
+    }, function (err) {
+      q.reject(err);
+    });
+    return q;
+  }
 })(jQuery);
+
+function createPageContentAnimation(dispatcher, contentElem) {
+  var contentFadeTween = updateProperty({
+    el: contentElem,
+    prop: 'opacity',
+    start: 1,
+    end: 0,
+    duration: 500,
+  });
+
+  var transitions = [
+    {
+      from: CONTENT_VISIBLE,
+      to: CONTENT_HIDDEN,
+      tween: contentFadeTween,
+      bidir: true,
+    },
+    {
+      from: CONTENT_HIDDEN,
+      to: CONTENT_LOADING,
+    },
+    {
+      from: CONTENT_LOADING,
+      to: CONTENT_VISIBLE,
+      tween: reverseTween(contentFadeTween),
+    }
+  ];
+
+  var states = [
+    {
+      name: CONTENT_VISIBLE,
+      action: null,
+    },
+    {
+      name: CONTENT_HIDDEN,
+      action: classSet({
+        el: contentElem,
+        cls: 'hidden',
+      }),
+    },
+    {
+      name: CONTENT_LOADING,
+      action: appendElem({
+        parent: document.body,
+        getEl: function () {
+          var loadingIndicator =
+                jQuery('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
+          return loadingIndicator[0];
+        },
+      })
+    }
+  ];
+
+  return dispatcher.add(transitions, states, CONTENT_VISIBLE);
+}

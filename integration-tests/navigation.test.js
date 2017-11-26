@@ -10,7 +10,7 @@ describe('navigation', function () {
     const ctx = this
 
     beforeAll(async () => {
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000  // We're gonna be sloooow
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000  // We're gonna be sloooow
 
         ctx.webdriver = new Builder()
             .forBrowser(browser)
@@ -272,9 +272,19 @@ class NavigablePage {
         try {
             // should have new content
             const contentSection = await driver.findElement(By.css('[data-region-id="primary-content"]'), 1000)
-            const transitionClass = /\bfaded\b/  // could use a nicer way to do this
+            // const transitionClass = /\bfaded\b/  // could use a nicer way to do this
 
-            while (transitionClass.test(await contentSection.getAttribute('className'))) {
+            // while (transitionClass.test(await contentSection.getAttribute('className'))) {
+            while (true) {
+                const opacity = await this.driver.executeScript(
+                    'return arguments[0].style.opacity', contentSection)
+
+                console.log('opacity: %s', opacity)
+
+                if (opacity === '' || opacity|0 === 1) {
+                    break
+                }
+
                 await sleep(50)
             }
         } catch (e) {
