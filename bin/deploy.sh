@@ -22,14 +22,25 @@ then
     exit 1
 fi
 
+>./deploy-commit-msg cat <<EOF
+Deploy to GitHub Pages
+
+Source commit for this deployment:
+
+EOF
+>>./deploy-commit-msg git log -n1 --format=fuller
+
 cd content
 git init
 
-# The first and only commit to this new Git repo contains all the
-# files present with the commit message "Deploy to GitHub Pages".
-git add .
-git commit -m "Deploy to GitHub Pages"
-
 # Redirect output to /dev/null to hide any sensitive credential data that
 # might otherwise be exposed.
-git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master > /dev/null 2>&1
+git remote add origin "https://${GH_TOKEN}@${GH_REF}" > /dev/null 2>&1
+
+git fetch origin master
+git reset origin/master
+
+git add -A .
+git commit -F ../deploy-commit-msg
+
+git push > /dev/null 2>&1
