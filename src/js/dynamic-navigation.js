@@ -21,15 +21,10 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
   }
 
   function initializeNavigation() {
-    // Cache the active content of the page, if available
-    var active = $('nav a.active-link');
-    // FIXME: Currently the index page is not caught by this check
-    if (active) {
-      currentHref = getDomainRelativeUrl(active.attr('href'));
+    currentHref = getDomainRelativeUrl(location.href);
 
-      if (currentHref) {
-        cache[currentHref] = $contentElem.html();
-      }
+    if (currentHref) {
+      cache[currentHref] = $contentElem.html();
     }
 
     // Bind local links in the header
