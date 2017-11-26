@@ -66,32 +66,41 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await window.load({ page: firstPage })
         await firstPage.verifyBasicProperties({ window })
 
-        await navigateToPage(firstPage, secondPage)
-        await navigateToPage(secondPage, firstPage)
+        await navigateToPage(window, firstPage, secondPage)
+        await navigateToPage(window, secondPage, firstPage)
+    })
 
-        async function navigateToPage(currentPage, targetPage) {
-            const element = await currentPage.findNavLinkToPage({
-                domainRelativeUrl: targetPage.params.url,
-                window
-            })
+    it('should handle history navigation without reload', async () => {
+        const window = ctx.siteWindow
+        const secondPageParams = getTargetPageParams({
+            currentPageParams: pageParameters
+        })
 
-            await element.click()
+        const firstPage = new NavigablePage(pageParameters)
+        const secondPage = new NavigablePage(secondPageParams)
 
-            await targetPage.verifyBasicProperties({ window })
-            expect(await window.hasReloaded()).toBe(
-                false,
-                'Page should not have reloaded')
-        }
+        /* Load first page */
+        await window.load({ page: firstPage })
+        await firstPage.verifyBasicProperties({ window })
 
-        function getTargetPageParams({ currentPageParams }) {
-            const params = siteMeta.pages.find(
-                params => params !== currentPageParams
-            )
-            if (params) {
-                return params
-            }
-            throw new Error('no usable page')
-        }
+        /* Navigate to second */
+        await navigateToPage(window, firstPage, secondPage)
+
+        /* Go back/forwards (content should be cached) */
+        await jumpHistory({ window, targetPage: firstPage })
+        await jumpHistory({ window, targetPage: secondPage, goForward: true })
+
+        /* Refresh and revalidate (necessary to avoid race conditions) */
+        const driver = await window.resolveDriver()
+        await driver.navigate().refresh()
+
+        expect(await window.hasReloaded()).toBe(true, 'Page should have reloaded')
+        await window.installSentinel()
+
+        await secondPage.verifyBasicProperties({ window })
+
+        /* Go back (will require a new request) */
+        await jumpHistory({ window, targetPage: firstPage })
     })
 
     describe('external links', function() {
@@ -117,6 +126,44 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
             }
         })
     })
+
+    async function navigateToPage(window, currentPage, targetPage) {
+        const element = await currentPage.findNavLinkToPage({
+            domainRelativeUrl: targetPage.params.url,
+            window
+        })
+        await element.click()
+
+        await targetPage.verifyBasicProperties({ window })
+        expect(await window.hasReloaded()).toBe(
+            false,
+            'Page should not have reloaded')
+    }
+
+    async function jumpHistory({ window, goForward = false, targetPage }) {
+        const driver = await window.resolveDriver()
+
+        if (goForward) {
+            await driver.navigate().forward()
+        } else {
+            await driver.navigate().back()
+        }
+
+        await targetPage.verifyBasicProperties({ window })
+        expect(await window.hasReloaded()).toBe(
+            false,
+            'Page should not have reloaded')
+    }
+
+    function getTargetPageParams({ currentPageParams }) {
+        const params = siteMeta.pages.find(
+            params => params !== currentPageParams
+        )
+        if (params) {
+            return params
+        }
+        throw new Error('no usable page')
+    }
 }
 
 class SiteWindow {

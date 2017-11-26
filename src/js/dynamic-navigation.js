@@ -1,54 +1,69 @@
-import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
+import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href';
+
+/**
+ * Parse the document's title. The base title is all text up to the final "-",
+ * excluding trailing whitespace. Subsequent text is the page title.
+ */
+function parseTitle(title) {
+  var parsed = (/(.*?)(?:\s*-\s*([^-]*))?$/).exec(title);
+  return {
+    base: parsed[1],
+    page: parsed[2] || null,
+  };
+}
 
 (function ($) {
   'use strict';
-  var baseTitle, $contentElem, cache, currentHref, loadingIndicator;
+  var baseTitle, $contentElem, cache, loadingIndicator, initialPageData;
 
   // Only initialize dynamic navigation if HTML5 history APIs are available
   if (window.history && window.history.pushState) {
     $contentElem = getContentElem();
 
     if ($contentElem) {
-      // The base title is all text up to the final "-", excluding trailing whitespace
-      baseTitle = (/(.*?)(?:\s*-[^-]*)?$/).exec(document.title)[1];
-
-      // Initialize the content cache
       cache = {};
-
-      // Initialize the navigation bindings
       initializeNavigation();
     }
   }
 
   function initializeNavigation() {
-    currentHref = getDomainRelativeUrl(location.href);
+    var currentHref = getDomainRelativeUrl(location.href);
+    var parsedTitle = parseTitle(document.title);
 
-    if (currentHref) {
-      cache[currentHref] = $contentElem.html();
-    }
+    baseTitle = parsedTitle.base;
+    initialPageData = {
+      href: currentHref,
+      state: {
+        title: parsedTitle.page,
+      },
+    };
+
+    cache[currentHref] = $contentElem.html();
+    history.replaceState(
+      initialPageData.state,
+      initialPageData.state.title,
+      currentHref);
 
     // Bind local links in the header
     $('.header-block a[href]').filter(function () {
       return isRelativeHref($(this).attr('href'));
     }).on('click', doDynamicNavigation);
+
+    window.addEventListener('popstate', handlePopState, false);
   }
 
   function doDynamicNavigation(e) {
     var $elem = $(e.currentTarget),
         href = getDomainRelativeUrl($elem.attr('href')),
         navLink,
-        specificTitle,
-        cached,
-        hasNewContent,
-        displayedNewContent;
+        state,
+        specificTitle;
 
     // If the current href is the same as the one which was clicked, return
     // and let the page reload. The rationale is that if the user is continuing
     // to click, then the page probably hasn't been responding as desired.
-    if (currentHref === href)
+    if (isCurrentLocation(href))
       return;
-
-    currentHref = href;
 
     // If the href is null (perhaps because it was absolute) then return
     // and let the default occur.
@@ -58,36 +73,69 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
     // Stop the page from reloading
     e.preventDefault();
 
-    // If the content for this page is already cached, then take the cached value.
-    // Otherwise, make a request for it.
-    cached = cache.hasOwnProperty(href);
-    if (cached) {
-      hasNewContent = [cache[href], 'success', null];
-    } else {
-      var cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href);
-      hasNewContent = $.get(cacheUrl);
+    navLink = getNavLink(href);
+    if (navLink.length === 0)
+      navLink = $elem;
+
+    specificTitle = navLink.attr('data-pagetitle') || navLink.text();
+
+    state = { title: specificTitle };
+    window.history.pushState(state, specificTitle, href);
+
+    loadPageContent(href, state, navLink);
+  }
+
+  /**
+   * Look up the section partial in the cache, making a request for it
+   * if it is not already there.
+   *
+   * @param {String} href The href to load, which should be a normalized
+   * domain-relative URL
+   */
+  function loadSectionPartial(href) {
+    var isCached = cache.hasOwnProperty(href);
+
+    if (isCached) {
+      return $.when(cache[href]);
     }
+
+    var cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href);
+
+    return $.get(cacheUrl).then(function (newContent) {
+      if (!isCached)
+        cache[href] = newContent;
+
+      return newContent;
+    });
+  }
+
+  /**
+   * Load the content of the href, setting the page state to state and the
+   * current link to navLink.
+   */
+  function loadPageContent(href, state, navLink) {
+    var loadNewContent = loadSectionPartial(href).then(function (newContent) {
+      // If the href has changed in the mean time then don't display the new content
+      if (!isCurrentLocation(href))
+        return null;
+
+      return newContent;
+    }, function () {
+      // On failure just go to the referenced location
+      window.location = href;
+    });
+
+    setGlobalPageState(state);
 
     // Fade out the content
     $contentElem.addClass('fading faded-out');
 
     // Update the links in the navbar
-    navLink = $('nav a[href="'+href+'"]');
     $('nav a[href]').not(navLink).removeClass('active-link');
-    if (navLink.length > 0) {
-      navLink.addClass('active-link');
-    } else {
-      navLink = null;
-    }
-
-    // Update the URL and document title
-    window.history.pushState(null, document.title, href);
-
-    specificTitle = (navLink || $elem).attr('data-pagetitle') || (navLink || $elem).text();
-    document.title = baseTitle + ' - ' + specificTitle;
+    navLink.addClass('active-link');
 
     // Wait for at least 500ms and for the new content to load
-    displayedNewContent = $.when(hasNewContent, waitFor(500));
+    var displayedNewContent = $.when(loadNewContent, waitFor(500));
 
     // If loading takes at least 750ms then show a loading indicator
     waitFor(750).then(function () {
@@ -100,18 +148,12 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
       $('body').append(loadingIndicator);
     });
 
-    displayedNewContent.done(function (ajaxData) {
-      var newContent = ajaxData[0];
-
-      // Cache the content
-      if (!cached)
-        cache[href] = newContent;
-
-      // If the href has changed in the mean time then don't display the new content
-      if (currentHref !== href)
+    displayedNewContent.done(function (newContent) {
+      // If newContent is null, the load was preepted
+      if (newContent == null) {
         return;
+      }
 
-      // Load the content on the page
       $contentElem.html(newContent);
 
       // Remove the loading indicator if one was there
@@ -126,10 +168,41 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
       waitFor(500).then(function () {
         $contentElem.removeClass('fading');
       });
-    }).fail(function () {
-      // On failure just go to the referenced location
-      window.location = href;
     });
+  }
+
+  function getNavLink(href) {
+    return $('nav a[href="'+href+'"]');
+  }
+
+  function handlePopState(e) {
+    var href = getDomainRelativeUrl(location.href);
+    var newState;
+
+    if (e.state != null) {
+      newState = e.state;
+    } else if (href === initialPageData.href) {
+      /*
+       * On PhantomJS (and maybe other Webkit permutations - who knows)
+       * a popstate event is triggered sometime on initial navigation
+       * with null state, even though replaceState is called before
+       * the listener is added
+       */
+      newState = initialPageData.state;
+    } else {
+      location.reload();
+      return;
+    }
+
+    loadPageContent(href, newState, getNavLink(href));
+  }
+
+  function setGlobalPageState(state) {
+    if (state.title) {
+      document.title = baseTitle + ' - ' + state.title;
+    } else {
+      document.title = baseTitle;
+    }
   }
 
   function getContentElem() {
