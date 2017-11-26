@@ -1,8 +1,19 @@
 import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
+import {
+  AnimationDispatcher,
+  updateProperty,
+  reverseTween,
+  classSet,
+  appendElem,
+} from './animation';
+
+var CONTENT_VISIBLE = 'content-in';
+var CONTENT_HIDDEN = 'content-out';
+var CONTENT_LOADING = 'content-load';
 
 (function ($) {
   'use strict';
-  var baseTitle, $contentElem, cache, currentHref, loadingIndicator;
+  var baseTitle, $contentElem, cache, currentHref, dispatcher, pageContentAnimation;
 
   // Only initialize dynamic navigation if HTML5 history APIs are available
   if (window.history && window.history.pushState) {
@@ -26,6 +37,9 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
     if (currentHref) {
       cache[currentHref] = $contentElem.html();
     }
+
+    dispatcher = new AnimationDispatcher();
+    pageContentAnimation = createPageContentAnimation(dispatcher, $contentElem[0]);
 
     // Bind local links in the header
     $('.header-block a[href]').filter(function () {
@@ -68,8 +82,8 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
       hasNewContent = $.get(cacheUrl);
     }
 
-    // Fade out the content
-    $contentElem.addClass('fading faded-out');
+    var fadeOutComplete = promiseToDeferred(pageContentAnimation.goto(CONTENT_HIDDEN));
+    var hiddenStateId = pageContentAnimation.stateId;
 
     // Update the links in the navbar
     navLink = $('nav a[href="'+href+'"]');
@@ -87,17 +101,14 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
     document.title = baseTitle + ' - ' + specificTitle;
 
     // Wait for at least 500ms and for the new content to load
-    displayedNewContent = $.when(hasNewContent, waitFor(500));
+    displayedNewContent = $.when(hasNewContent, fadeOutComplete);
 
     // If loading takes at least 750ms then show a loading indicator
     waitFor(750).then(function () {
-      if (loadingIndicator || displayedNewContent.state() !== 'pending')
+      if (pageContentAnimation.stateId !== hiddenStateId)
         return;
 
-      $contentElem.addClass('hidden');
-
-      loadingIndicator = $('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
-      $('body').append(loadingIndicator);
+      pageContentAnimation.goto(CONTENT_LOADING);
     });
 
     displayedNewContent.done(function (ajaxData) {
@@ -114,18 +125,7 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
       // Load the content on the page
       $contentElem.html(newContent);
 
-      // Remove the loading indicator if one was there
-      if (loadingIndicator) {
-        loadingIndicator.remove();
-        loadingIndicator = null;
-      }
-
-      // Fade in the content element
-      $contentElem.removeClass('faded-out hidden');
-
-      waitFor(500).then(function () {
-        $contentElem.removeClass('fading');
-      });
+      pageContentAnimation.goto(CONTENT_VISIBLE);
     }).fail(function () {
       // On failure just go to the referenced location
       window.location = href;
@@ -144,4 +144,69 @@ import { getDomainRelativeUrl, isRelativeHref } from './normalize-href';
     setTimeout(function () {q.resolve();}, ms);
     return q;
   }
+
+  function promiseToDeferred(promise) {
+    var q = new $.Deferred();
+    promise.then(function (res) {
+      q.resolve(res);
+    }, function (err) {
+      q.reject(err);
+    });
+    return q;
+  }
 })(jQuery);
+
+function createPageContentAnimation(dispatcher, contentElem) {
+  var contentFadeTween = updateProperty({
+    el: contentElem,
+    prop: 'opacity',
+    start: 1,
+    end: 0,
+    duration: 500,
+  });
+
+  var transitions = [
+    {
+      from: CONTENT_VISIBLE,
+      to: CONTENT_HIDDEN,
+      tween: contentFadeTween,
+      bidir: true,
+    },
+    {
+      from: CONTENT_HIDDEN,
+      to: CONTENT_LOADING,
+    },
+    {
+      from: CONTENT_LOADING,
+      to: CONTENT_VISIBLE,
+      tween: reverseTween(contentFadeTween),
+    }
+  ];
+
+  var states = [
+    {
+      name: CONTENT_VISIBLE,
+      action: null,
+    },
+    {
+      name: CONTENT_HIDDEN,
+      action: classSet({
+        el: contentElem,
+        cls: 'hidden',
+      }),
+    },
+    {
+      name: CONTENT_LOADING,
+      action: appendElem({
+        parent: document.body,
+        getEl: function () {
+          var loadingIndicator =
+                jQuery('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
+          return loadingIndicator[0];
+        },
+      })
+    }
+  ];
+
+  return dispatcher.add(transitions, states, CONTENT_VISIBLE);
+}

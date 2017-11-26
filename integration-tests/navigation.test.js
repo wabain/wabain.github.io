@@ -6,7 +6,7 @@ const expect = require('expect')
 module.exports = function ({ origin, browser, siteMeta }) {
     describe('navigation', function () {
         const ctx = this
-        ctx.timeout(10000)  // We're gonna be sloooow
+        ctx.timeout(20 * 1000)  // We're gonna be sloooow
 
         before(() => {
             ctx.webdriver = new Builder()
@@ -157,9 +157,18 @@ class NavigablePage {
 
         // should have new content
         const contentSection = await this.driver.findElement(By.css('section.content'), 1000)
-        const transitionClass = /\bfaded\b/  // could use a nicer way to do this
 
-        while (transitionClass.test(await contentSection.getAttribute('className'))) {
+        // while (transitionClass.test(await contentSection.getAttribute('className'))) {
+        while (true) {
+            const opacity = await this.driver.executeScript(
+                'return arguments[0].style.opacity', contentSection)
+
+            console.log('opacity: %s', opacity)
+
+            if (opacity === '' || opacity|0 === 1) {
+                break
+            }
+
             await sleep(50)
         }
 
