@@ -2,6 +2,8 @@ plugins:
   - jekyll-redirect-from
 incremental:
   true
+include:
+  - .site-meta.json
 defaults:
   -
     scope:
