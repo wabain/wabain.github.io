@@ -43,4 +43,4 @@ git reset origin/master
 git add -A .
 git commit -F ../deploy-commit-msg
 
-git push > /dev/null 2>&1
+git push origin master > /dev/null 2>&1
