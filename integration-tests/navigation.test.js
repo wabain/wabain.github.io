@@ -8,10 +8,15 @@ module.exports = function ({ origin, browser, siteMeta }) {
         const ctx = this
         ctx.timeout(10000)  // We're gonna be sloooow
 
-        before(() => {
+        before(async () => {
             ctx.webdriver = new Builder()
                 .forBrowser(browser)
                 .build()
+
+            ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
+                origin,
+                driver: ctx.webdriver,
+            })
         })
 
         after(() => {
@@ -29,52 +34,56 @@ module.exports = function ({ origin, browser, siteMeta }) {
 /**
  * Test navigation from the given page
  */
-function testPageNavigation({ ctx, origin, pageParameters, siteMeta }) {
+function testPageNavigation({ ctx, pageParameters, siteMeta }) {
     it('should reload when current page link is clicked', async () => {
-        const page = await NavigablePage.load({
-            origin,
-            driver: ctx.webdriver,
-            pageParameters,
+        const window = ctx.siteWindow
+        const page = new NavigablePage(pageParameters)
+
+        await window.load({ page })
+        await page.verifyBasicProperties({ window })
+
+        const element = await page.findNavLinkToPage({
+            domainRelativeUrl: page.params.url,
+            window,
         })
+        await element.click()
 
-        await page.verifyBasicProperties()
-
-        const element = await page.findNavLinkToPage(pageParameters)
-        const reloadedPage = await page.navigateToSameOriginLink(element, pageParameters)
-
-        const hasReloaded = await reloadedPage.hasReloaded()
+        const hasReloaded = await window.hasReloaded()
         expect(hasReloaded).toBe(true, 'Page should have reloaded')
+
+        await page.verifyBasicProperties({ window })
     })
 
     it('should do local navigation without reload', async () => {
-        const secondPageParams = getTargetPage({
+        const window = ctx.siteWindow
+        const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
         })
 
-        const firstPage = await NavigablePage.load({
-            origin,
-            driver: ctx.webdriver,
-            pageParameters,
-        })
+        const firstPage = new NavigablePage(pageParameters)
+        const secondPage = new NavigablePage(secondPageParams)
 
-        await firstPage.verifyBasicProperties()
+        await window.load({ page: firstPage })
+        await firstPage.verifyBasicProperties({ window })
 
-        const secondPage = await navigateToPage(firstPage, secondPageParams)
-        await navigateToPage(secondPage, pageParameters)
+        await navigateToPage(firstPage, secondPage)
+        await navigateToPage(secondPage, firstPage)
 
-        async function navigateToPage(currentPage, targetParameters) {
-            const element = await currentPage.findNavLinkToPage(targetParameters)
-            const targetPage = await currentPage.navigateToSameOriginLink(element, targetParameters)
+        async function navigateToPage(currentPage, targetPage) {
+            const element = await currentPage.findNavLinkToPage({
+                domainRelativeUrl: targetPage.params.url,
+                window
+            })
 
-            await targetPage.verifyBasicProperties()
-            expect(await targetPage.hasReloaded()).toBe(
+            await element.click()
+
+            await targetPage.verifyBasicProperties({ window })
+            expect(await window.hasReloaded()).toBe(
                 false,
                 'Page should not have reloaded')
-
-            return targetPage
         }
 
-        function getTargetPage({ currentPageParams }) {
+        function getTargetPageParams({ currentPageParams }) {
             const params = siteMeta.pages.find(
                 params => params !== currentPageParams
             )
@@ -87,20 +96,18 @@ function testPageNavigation({ ctx, origin, pageParameters, siteMeta }) {
 
     describe('external links', function() {
         let page
+        let window
 
         before(async () => {
-            page = await NavigablePage.load({
-                origin,
-                driver: ctx.webdriver,
-                pageParameters,
-            })
-
-            await page.verifyBasicProperties()
+            window = ctx.siteWindow
+            page = new NavigablePage(pageParameters)
+            await window.load({ page })
+            await page.verifyBasicProperties({ window })
         })
 
         it('should always have target=_blank', async () => {
-            const externalLinks = (await page.getLinksOnPage()).filter(
-                ({ href }) => !href.startsWith(page.origin)
+            const externalLinks = (await window.getLinksOnPage()).filter(
+                ({ href }) => !href.startsWith(window.origin)
             )
 
             for (const link of externalLinks) {
@@ -112,58 +119,99 @@ function testPageNavigation({ ctx, origin, pageParameters, siteMeta }) {
     })
 }
 
-class NavigablePage {
-    static async load({ origin, driver, pageParameters }) {
-        const requestedUrl = origin + pageParameters.url
-
-        await driver.get(requestedUrl)
-        const page = new NavigablePage({
-            pageParameters,
-            requestedUrl,
+class SiteWindow {
+    static async forCurrentDriverWindow({ origin, driver }) {
+        return new SiteWindow({
             origin,
             driver,
+            handle: await driver.getWindowHandle()
         })
-        await page.installSentinel()
-        return page
     }
 
-    constructor({ pageParameters, requestedUrl, origin, driver }) {
-        this.params = pageParameters
-        this.requestedUrl = requestedUrl
+    constructor({ origin, driver, handle }) {
         this.origin = origin
-        this.driver = driver
+        this._driver = driver
+        this.handle = handle
+    }
+
+    async resolveDriver() {
+        const currentHandle = await this._driver.getWindowHandle()
+        if (this.handle !== currentHandle) {
+            throw new Error(`Expected current window to be ${this.handle} but got ${currentHandle}`)
+        }
+        return this._driver
+    }
+
+    async load({ page }) {
+        const driver = await this.resolveDriver()
+        await driver.get(page.getQualifiedUrl({ window: this }))
+        await this.installSentinel()
     }
 
     async installSentinel() {
-        this.driver.executeScript('window.__navTestSentinel = true')
+        const driver = await this.resolveDriver()
+        await driver.executeScript('window.__navTestSentinel = true')
     }
 
     async hasReloaded() {
-        const sentinel = await this.driver.executeScript('return !!window.__navTestSentinel')
+        const driver = await this.resolveDriver()
+        const sentinel = await driver.executeScript('return !!window.__navTestSentinel')
         return !sentinel
     }
 
-    async verifyBasicProperties() {
+    async getLinksOnPage(element = null) {
+        const searchRoot = element || await this.resolveDriver()
+        const elements = await searchRoot.findElements(By.css('a'))
+        return await Promise.all(elements.map(
+            async el => ({ elem: el, href: await el.getAttribute('href') })
+        ))
+    }
+
+    async dumpScreenshot(slug) {
+        const driver = await this.resolveDriver()
+        SiteWindow.screenshotCount++
+        const idx = SiteWindow.screenshotCount
+        const png = await driver.takeScreenshot()
+        const filename = `screenshot-${idx}-${asSlug(slug)}.png`
+
+        require('fs').writeFileSync(filename, new Buffer(png, 'base64'))
+    }
+}
+
+SiteWindow.screenshotCount = 0
+
+class NavigablePage {
+    constructor(pageParameters) {
+        this.params = pageParameters
+    }
+
+    getQualifiedUrl({ window }) {
+        return window.origin + this.params.url
+    }
+
+    async verifyBasicProperties({ window }) {
+        const driver = await window.resolveDriver()
+
         // should have requested URL
-        await this.driver.wait(until.urlIs(this.requestedUrl))
+        await driver.wait(until.urlIs(this.getQualifiedUrl({ window })), 1000)
 
         // should have expected title
         const expectedTitle = new RegExp('^(\\[dev\\] )?William Bain - ' + this.params.title + '$')
 
-        await this.driver.wait(until.titleMatches(expectedTitle), 1000)
+        await driver.wait(until.titleMatches(expectedTitle), 1000)
             .catch(async () => {
-                throw new Error(`Page title is "${await this.driver.getTitle()}"`)
+                throw new Error(`Page title is "${await driver.getTitle()}", expected "${this.params.title}"`)
             })
 
         // should have new content
-        const contentSection = await this.driver.findElement(By.css('section.content'), 1000)
+        const contentSection = await driver.findElement(By.css('section.content'), 1000)
         const transitionClass = /\bfaded\b/  // could use a nicer way to do this
 
         while (transitionClass.test(await contentSection.getAttribute('className'))) {
             await sleep(50)
         }
 
-        const contentTitle = await this.driver.findElement(By.css('section.content > h2'), 1000)
+        const contentTitle = await driver.findElement(By.css('section.content > h2'), 1000)
 
         // FIXME: titleText is intermittently empty. Maybe a race condition
         // I'm missing, or a webdriver bug (w/ chrome)?
@@ -178,60 +226,25 @@ class NavigablePage {
         expect(titleText).toBe(this.params.title, 'Unexpected content title')
     }
 
-    async findNavLinkToPage(targetPage) {
-        const links = await this.getLinksOnPage(await this.getHeaderElement())
-        const entry = links.find(({ href }) => href === this.origin + targetPage.url)
+    async findNavLinkToPage({ domainRelativeUrl, window }) {
+        const links = await window.getLinksOnPage(await this.getHeaderElement({ window }))
+        const entry = links.find(({ href }) => href === window.origin + domainRelativeUrl)
         if (!entry) {
             const hrefs = links.map(({ href }) => href)
-            throw new Error(`no usable link to ${targetPage.url}; found ${JSON.stringify(hrefs)}`)
+            throw new Error(`no usable link to ${domainRelativeUrl}; found ${JSON.stringify(hrefs)}`)
         }
         return entry.elem
     }
 
-    async getHeaderElement() {
-        const elem = await this.driver.findElement(By.css('header.header-block'))
+    async getHeaderElement({ window }) {
+        const driver = await window.resolveDriver()
+        const elem = await driver.findElement(By.css('header.header-block'))
         if (!elem) {
             throw new Error('Could not find header')
         }
         return elem
     }
-
-    async getLinksOnPage(element = null) {
-        const searchRoot = element || this.driver
-        const elements = await searchRoot.findElements(By.css('a'))
-        return await Promise.all(elements.map(
-            async el => ({ elem: el, href: await el.getAttribute('href') })
-        ))
-    }
-
-    async navigateToSameOriginLink(element, pageParameters) {
-        expect(await element.getTagName()).toBe('a')
-        const requestedUrl = await element.getAttribute('href')
-        await element.click()
-
-        return new NavigablePage({
-            pageParameters,
-            requestedUrl,
-            origin: this.origin,
-            driver: this.driver,
-        })
-    }
-
-    async dumpScreenshot(slug) {
-        NavigablePage.screenshotCount++
-        const idx = NavigablePage.screenshotCount
-
-        const png = await this.driver.takeScreenshot()
-        const titleSlug = this.params.title.toLowerCase()
-
-        const filename =
-            `screenshot-${idx}-${asSlug(titleSlug)}-${asSlug(slug)}.png`
-
-        require('fs').writeFileSync(filename, new Buffer(png, 'base64'))
-    }
 }
-
-NavigablePage.screenshotCount = 0
 
 function sleep(ms) {
     return new Promise(resolve => {
