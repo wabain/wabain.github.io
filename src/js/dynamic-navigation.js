@@ -1,4 +1,7 @@
+import debugFactory from 'debug';
 import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href';
+
+var debug = debugFactory('dynamic-navigation');
 
 /**
  * Parse the document's title. The base title is all text up to the final "-",
@@ -17,14 +20,20 @@ function parseTitle(title) {
   var baseTitle, $contentElem, cache, loadingIndicator, initialPageData;
 
   // Only initialize dynamic navigation if HTML5 history APIs are available
-  if (window.history && window.history.pushState) {
-    $contentElem = getContentElem();
-
-    if ($contentElem) {
-      cache = {};
-      initializeNavigation();
-    }
+  if (!window.history || !window.history.pushState) {
+    debug('bailing on initialization, no support for history api');
+    return;
   }
+
+  $contentElem = getContentElem();
+
+  if (!$contentElem) {
+    debug('bailing, failed to find content element (url %s)', location.href);
+    return;
+  }
+
+  cache = {};
+  initializeNavigation();
 
   function initializeNavigation() {
     var currentHref = getDomainRelativeUrl(location.href);
@@ -44,6 +53,8 @@ function parseTitle(title) {
       initialPageData.state.title,
       currentHref);
 
+    debug('initialize at %s, state %o', currentHref, initialPageData.state);
+
     // Bind local links in the header
     $('.header-block a[href]').filter(function () {
       return isRelativeHref($(this).attr('href'));
@@ -59,11 +70,17 @@ function parseTitle(title) {
         state,
         specificTitle;
 
+    debug('dynamic navigation triggered (href normalized %s, raw %s)',
+      href,
+      $elem.attr('href'));
+
     // If the current href is the same as the one which was clicked, return
     // and let the page reload. The rationale is that if the user is continuing
     // to click, then the page probably hasn't been responding as desired.
-    if (isCurrentLocation(href))
+    if (isCurrentLocation(href)) {
+      debug('dynamic navigation for current location, allowing default');
       return;
+    }
 
     // If the href is null (perhaps because it was absolute) then return
     // and let the default occur.
@@ -93,38 +110,37 @@ function parseTitle(title) {
    * domain-relative URL
    */
   function loadSectionPartial(href) {
-    var isCached = cache.hasOwnProperty(href);
-
-    if (isCached) {
+    if (cache.hasOwnProperty(href)) {
       return $.when(cache[href]);
     }
 
     var cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href);
 
+    debug('load %s: requesting partial %s', href, cacheUrl);
     return $.get(cacheUrl).then(function (newContent) {
-      if (!isCached)
-        cache[href] = newContent;
-
+      debug('load %s: writing entry to cache', href);
+      cache[href] = newContent;
       return newContent;
     });
   }
+
+  function noop(){}
 
   /**
    * Load the content of the href, setting the page state to state and the
    * current link to navLink.
    */
   function loadPageContent(href, state, navLink) {
-    var loadNewContent = loadSectionPartial(href).then(function (newContent) {
-      // If the href has changed in the mean time then don't display the new content
-      if (!isCurrentLocation(href))
-        return null;
+    var debugLoad = !debug.enabled ? noop : function (format) {
+      var args = ['load %s: ' + format, href];
+      var passedArgCount = arguments.length;
+      for (var i=1; i < passedArgCount; i++) {
+        args.push(arguments[i]);
+      }
+      debug.apply(null, args);
+    };
 
-      return newContent;
-    }, function () {
-      // On failure just go to the referenced location
-      window.location = href;
-    });
-
+    debugLoad('set up navigation, state %o', state);
     setGlobalPageState(state);
 
     // Fade out the content
@@ -134,6 +150,11 @@ function parseTitle(title) {
     $('nav a[href]').not(navLink).removeClass('active-link');
     navLink.addClass('active-link');
 
+    var loadNewContent = loadSectionPartial(href).fail(function () {
+      debugLoad('failed to resolve partial, doing hard load', href);
+      window.location = href;
+    });
+
     // Wait for at least 500ms and for the new content to load
     var displayedNewContent = $.when(loadNewContent, waitFor(500));
 
@@ -142,6 +163,7 @@ function parseTitle(title) {
       if (loadingIndicator || displayedNewContent.state() !== 'pending')
         return;
 
+      debugLoad('load timeout exceeded, show loading indicator');
       $contentElem.addClass('hidden');
 
       loadingIndicator = $('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
@@ -149,11 +171,12 @@ function parseTitle(title) {
     });
 
     displayedNewContent.done(function (newContent) {
-      // If newContent is null, the load was preepted
-      if (newContent == null) {
+      if (!isCurrentLocation(href)) {
+        debugLoad('current location has changed; bailing from image load');
         return;
       }
 
+      debugLoad('set content and fade in');
       $contentElem.html(newContent);
 
       // Remove the loading indicator if one was there
@@ -166,6 +189,12 @@ function parseTitle(title) {
       $contentElem.removeClass('faded-out hidden');
 
       waitFor(500).then(function () {
+        if (!isCurrentLocation(href)) {
+          debugLoad('current location has changed; bailing from fade-in');
+          return;
+        }
+
+        debugLoad('fade-in complete');
         $contentElem.removeClass('fading');
       });
     });
