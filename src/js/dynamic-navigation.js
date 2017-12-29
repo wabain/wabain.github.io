@@ -2,10 +2,10 @@ import debugFactory from 'debug';
 import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href';
 import {
   AnimationDispatcher,
-  updateProperty,
+  updatePropertyTween,
   reverseTween,
-  classSet,
-  appendElem,
+  classSetAction,
+  appendElemAction,
 } from './animation';
 
 var CONTENT_VISIBLE = 'content-in';
@@ -258,7 +258,7 @@ function parseTitle(title) {
 })(jQuery);
 
 function createPageContentAnimation(dispatcher, contentElem) {
-  var contentFadeTween = updateProperty({
+  var contentFadeTween = updatePropertyTween({
     el: contentElem,
     prop: 'opacity',
     start: 1,
@@ -291,14 +291,14 @@ function createPageContentAnimation(dispatcher, contentElem) {
     },
     {
       name: CONTENT_HIDDEN,
-      action: classSet({
+      action: classSetAction({
         el: contentElem,
         cls: 'hidden',
       }),
     },
     {
       name: CONTENT_LOADING,
-      action: appendElem({
+      action: appendElemAction({
         parent: document.body,
         getEl: function () {
           var loadingIndicator =
@@ -309,5 +309,9 @@ function createPageContentAnimation(dispatcher, contentElem) {
     }
   ];
 
-  return dispatcher.add(transitions, states, CONTENT_VISIBLE);
+  return dispatcher.createAnimation({
+    transitions: transitions,
+    states: states,
+    initialState: CONTENT_VISIBLE,
+  });
 }
