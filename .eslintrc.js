@@ -61,6 +61,18 @@ module.exports = {
         },
         // Test files
         {
+            "files": ["tests/**/*.js"],
+            "parserOptions": {
+                "ecmaVersion": 6,
+                "sourceType": "module"
+            },
+            "env": {
+                "browser": true,
+                "es6": true,
+                "mocha": true
+            },
+        },
+        {
             "files": ["integration-tests/**/*.js"],
             "parserOptions": {
                 "ecmaVersion": 2017

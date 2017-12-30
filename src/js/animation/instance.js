@@ -5,29 +5,31 @@ import { reverseTween } from './updaters'
 var debug = debugFactory('animation:instance')
 var debugTransitions = debugFactory('animation:transitions')
 
-var TT_EXIT_OLD = 0
-var TT_TWEEN = 1
-var TT_ENTER_NEW = 2
-var TT_COMPLETE = 3
-var TT_STATE_LOOKUP = [
-    'exit-old',
-    'tween',
-    'enter-new',
-    'complete',
-]
 var DEFAULT_TRANS_ENTRY = { tween: null }
 
 
+function tweensCompatible(a, b) {
+    if (!a)
+        return !b
+    else if (!b)
+        return false
+
+    return a.update === b.update &&
+        a.start === b.start &&
+        a.end === b.end
+}
+
 /**
- *
- * @param {*} dispatcher
+ * @param {AnimationSchedulerQueue} dispatchQueue
  * @param {*} transitions
  * @param {*} states
- * @param {*} initial
+ * @param {String} initial
  */
-export default function AnimationInstance(scheduler, transitions, states, initial) {
+export default function AnimationInstance(dispatchQueue, transitions, states, initial) {
     assert(this && this !== window)
-    this._sched = scheduler
+    assert(dispatchQueue && transitions && states)
+    assert(typeof initial === 'string')
+    this._q = dispatchQueue
 
     var transitionTable = {}
 
@@ -94,18 +96,16 @@ AnimationInstance.prototype.install = function () {
     var enter = this._stateEntry(this._cur).enter
     var res
     var promise = new Promise(function (_res) {
-        res = function () {
-            debug('Installation complete')
-            _res()
-        }
+        res = _res
     })
 
-    if (enter) {
-        this._pendingTrans = {}
-        this._sched.enq(function () {
+    if (!enter) {
+        res()
+    } else {
+        this._q.enq(function () {
             inst._installed = true
             inst._stateState = enter()
-            inst._pendingTrans = null
+            debug('Installation complete')
             res()
             return false
         })
@@ -119,29 +119,59 @@ AnimationInstance.prototype.install = function () {
  * when the transition is complete, and is rejected if the transition is
  * interrupted or encounters an error.
  */
-AnimationInstance.prototype.goto = function (next, opts) {
+AnimationInstance.prototype.goto = function (next) {
+    var inst = this
     var current = this._cur
-    var incremental = !!getProp(opts, 'incremental')
 
-    assert(!this._pendingTrans,
-        'State transition %s -> %s attempted while transition pending',
-        current, next)
+    // Sanity check: throw if the state does not exist
+    this._stateEntry(next)
+    var transEntry = this._getTrans(current, next)
 
     var res, rej
     var promise = new Promise(function (_res, _rej) {
-        res = function () {
-            debug('State transition %s -> %s complete', current, next)
-            _res()
-        }
-        rej = function (err) {
-            debug('State transition %s -> %s interrupted', current, next, err)
-            _rej(err)
-        }
+        res = _res
+        rej = _rej
     })
 
-    var task = this._getTransitionTask(this._cur, next, res, rej)
-    this._pendingTrans = {}
-    this._sched.enq(task)
+    var transitionDescriptor = {
+        tween: transEntry.tween,
+        from: current,
+        to: next,
+        onStateExit: function () {
+            var exit = inst._stateEntry(current).exit
+            if (exit) {
+                exit(inst._stateState)
+            }
+            inst._stateState = null
+        },
+        onStateEnter: function () {
+            debug('State transition %s -> %s complete', current, next)
+            var enter = inst._stateEntry(next).enter
+            if (enter) {
+                inst._stateState = enter()
+            }
+            res()
+        },
+        onInterrupt: function () {
+            debug('State transition %s -> %s interrupted', current, next)
+            rej()
+        }
+    }
+
+    if (this._pendingTrans) {
+        this._pendingTrans.interrupt(transitionDescriptor)
+    } else {
+        this._pendingTrans = new TransitionRunner(transitionDescriptor)
+        this._q.enq(function (ts) {
+            var ongoing = inst._pendingTrans.update(ts)
+            if (!ongoing) {
+                inst._pendingTrans = null
+                res()
+            }
+            return ongoing
+        })
+    }
+
     this._cur = next
     this._stateIdx++
 
@@ -156,86 +186,6 @@ AnimationInstance.prototype._stateEntry = function (state) {
     return entry
 }
 
-AnimationInstance.prototype._getTransitionTask = function (from, to, res, rej) {
-    var transEntry = this._getTrans(from, to)
-    var tween = transEntry.tween
-
-    var exit = this._stateEntry(from).exit
-    var enter = this._stateEntry(to).enter
-
-    var inst = this
-    var startTime = null
-    var ttState = TT_EXIT_OLD
-
-    return function (timestamp) {
-        var continueTransitionLoop = true
-        do {
-            debugTransitions('transition state %s', TT_STATE_LOOKUP[ttState])
-            switch (ttState) {
-            case TT_EXIT_OLD:
-                startTime = timestamp
-                if (exit) {
-                    exit(inst._stateState)
-                    inst._stateState = null
-                }
-                ttState = TT_TWEEN
-                break
-
-            case TT_TWEEN:
-                if (!tween) {
-                    ttState = TT_ENTER_NEW
-                    break
-                }
-
-                var tweenPoint = Math.min(timestamp - startTime, tween.duration)
-                var tweenComplete = tweenPoint === tween.duration
-
-                if (tween.reversed) {
-                    tweenPoint = tween.duration - tweenPoint
-                }
-
-                // XXX: starting w/ linear easing
-                var value = tween.start + (tween.end - tween.start) * (tweenPoint / tween.duration)
-                debugTransitions('tween value %s (reversed: %s)', value, !!tween.reversed)
-                tween.update(value)
-
-                if (tweenComplete) {
-                    ttState = TT_ENTER_NEW
-                } else {
-                    /* Wait for the next animation frame to be dispatched */
-                    continueTransitionLoop = false
-                }
-                break
-
-            case TT_ENTER_NEW:
-                if (enter) {
-                    inst._stateState = enter()
-                }
-                ttState = TT_COMPLETE
-                break
-
-            case TT_COMPLETE:
-                continueTransitionLoop = false
-                break
-
-            default:
-                assert(false, 'Unexpected transition state %s', ttState)
-                break
-            }
-        } while (continueTransitionLoop)
-
-        debugTransitions('transition ends in state %s', TT_STATE_LOOKUP[ttState])
-
-        var complete = ttState === TT_COMPLETE
-        if (complete) {
-            // XXX: not really the right place
-            inst._pendingTrans = null
-            res()
-        }
-        return !complete
-    }
-}
-
 AnimationInstance.prototype._getTrans = function (from, to) {
     var entry = getProp(getProp(this._trans, from), to)
 
@@ -245,8 +195,86 @@ AnimationInstance.prototype._getTrans = function (from, to) {
     return entry
 }
 
-// TODO
-AnimationInstance.prototype.clear = function () {}
+function TransitionRunner(descriptor) {
+    this._ongoing = descriptor
+    this._interrupt = null
+
+    this._started = false
+    this._startTime = null
+    this._startPoint = descriptor.tween && descriptor.tween.reversed ? 1 : 0
+    this._tweenPoint = this._startPoint
+}
+
+TransitionRunner.prototype.interrupt = function (descriptor) {
+    assert(
+        tweensCompatible(this._ongoing.tween, descriptor.tween),
+        'State transition %s -> %s interrupts incompatible transition %s -> %s',
+        descriptor.from, descriptor.to, this._ongoing.from, this._ongoing.to
+    )
+
+    this._interrupt = descriptor
+}
+
+TransitionRunner.prototype.update = function (timestamp) {
+    var descriptor = this._ongoing
+
+    if (!this._started) {
+        debugTransitions('transition starting')
+        this._startTime = timestamp
+        this._started = true
+
+        descriptor.onStateExit()
+    }
+
+    if (this._interrupt) {
+        debugTransitions('transition interrupted')
+        descriptor.onInterrupt()
+
+        descriptor = this._ongoing = this._interrupt
+        this._interrupt = null
+        this._startTime = timestamp
+        this._startPoint = this._tweenPoint
+    }
+
+    var tweenComplete = this._updateTween(timestamp)
+
+    if (tweenComplete) {
+        debugTransitions('transition complete')
+        descriptor.onStateEnter()
+    }
+
+    return !tweenComplete
+}
+
+TransitionRunner.prototype._updateTween = function (timestamp) {
+    var tween = this._ongoing.tween
+
+    if (!tween) {
+        return true
+    }
+
+    assert(typeof this._startTime === 'number', 'start time unset')
+
+    var timeOffset = timestamp - this._startTime
+    var tweenPoint = this._startPoint
+
+    if (tween.reversed)
+        tweenPoint -= timeOffset / tween.duration
+    else
+        tweenPoint += timeOffset / tween.duration
+
+    tweenPoint = Math.max(0, Math.min(1, tweenPoint))
+    this._tweenPoint = tweenPoint
+
+    var tweenComplete = tween.reversed ? tweenPoint === 0 : tweenPoint === 1
+
+    // XXX: starting w/ linear easing
+    var value = tween.start + (tween.end - tween.start) * tweenPoint
+    debugTransitions('tween value %s, point %s, reversed %s', value, tweenPoint, !!tween.reversed)
+    tween.update(value)
+
+    return tweenComplete
+}
 
 var hasOwnProp = Object.hasOwnProperty
 hasOwnProp = hasOwnProp.call.bind(Object.hasOwnProperty)

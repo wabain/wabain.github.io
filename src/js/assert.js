@@ -10,8 +10,6 @@ export function assert(cond, msg) {
     }
 
     var formattedMsg = 'Assert: ' + format(msg, args)
-
-    // console.error(formattedMsg) // eslint-disable-line no-console
     throw new Error(formattedMsg)
 }
 
@@ -57,6 +55,7 @@ export function assertWarning(cond, msg) {
 
 function format(msg, args) {
     var index = 0
+    msg = msg || ''
     msg = msg.replace(/%([a-zA-Z%])/g, function(match, format) {
         // if we encounter an escaped % then don't increase the array index
         if (match === '%%') return match
