@@ -162,7 +162,24 @@ function parseTitle(title) {
     debugLoad('set up navigation, state %o', state);
     setGlobalPageState(state);
 
-    var fadeOutComplete = promiseToDeferred(pageContentAnimation.goto(CONTENT_HIDDEN));
+    // var fadeOutComplete;
+    // switch (pageContentAnimation.state) {
+    // case CONTENT_VISIBLE:
+    // case CONTENT_LOADING:
+    //   fadeOutComplete = promiseToDeferred(pageContentAnimation.goto(CONTENT_HIDDEN));
+    // case CONTENT_HIDDEN:
+    //   fadeOutComplete = promiseToDeferred(pageContentAnimation.onStateEntered());
+    // default:
+    //   assert(false, 'unexpected state %s', pageContentAnimation.state);
+    // }
+
+    var fadeOutComplete;
+    if (pageContentAnimation.state !== CONTENT_HIDDEN) {
+      fadeOutComplete = promiseToDeferred(pageContentAnimation.goto(CONTENT_HIDDEN));
+    } else {
+      fadeOutComplete = waitFor(0);
+    }
+
     var hiddenStateId = pageContentAnimation.stateId;
 
     // Update the links in the navbar
@@ -178,7 +195,7 @@ function parseTitle(title) {
     var displayedNewContent = $.when(hasNewContent, fadeOutComplete);
 
     // If loading takes at least 750ms then show a loading indicator
-    waitFor(750).then(function () {
+    $.when(fadeOutComplete, waitFor(750)).then(function () {
       if (pageContentAnimation.stateId !== hiddenStateId)
         return;
 
@@ -187,6 +204,7 @@ function parseTitle(title) {
     });
 
     displayedNewContent.done(function (newContent) {
+    // displayedNewContent.then(function () { return waitFor(3000); }).done(function (newContent) {
       if (!isCurrentLocation(href)) {
         debugLoad('current location has changed; bailing from image load');
         return;
@@ -194,7 +212,6 @@ function parseTitle(title) {
 
       debugLoad('set content and fade in');
       $contentElem.html(newContent);
-
       pageContentAnimation.goto(CONTENT_VISIBLE);
     });
   }
@@ -263,7 +280,8 @@ function createPageContentAnimation(dispatcher, contentElem) {
     prop: 'opacity',
     start: 1,
     end: 0,
-    duration: 500,
+    // duration: 500,
+    duration: 5000,
   });
 
   var transitions = [

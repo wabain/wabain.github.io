@@ -30,6 +30,16 @@ export function assertWarning(cond, msg) {
     return cond
 }
 
+var registeredNotifiers = []
+
+export function registerErrorNotifier() {
+    // ...
+}
+
+export function notifyError(ctx, err) {
+
+}
+
 /*
  * Adapted from 'debug'
  *

@@ -275,11 +275,11 @@ class NavigablePage {
             // const transitionClass = /\bfaded\b/  // could use a nicer way to do this
 
             // while (transitionClass.test(await contentSection.getAttribute('className'))) {
-            while (true) {
-                const opacity = await this.driver.executeScript(
+            for (;;) {
+                const opacity = await driver.executeScript(
                     'return arguments[0].style.opacity', contentSection)
 
-                console.log('opacity: %s', opacity)
+                // console.log('opacity: %s', opacity)
 
                 if (opacity === '' || opacity|0 === 1) {
                     break

@@ -154,7 +154,7 @@ AnimationInstance.prototype.goto = function (next) {
         },
         onInterrupt: function () {
             debug('State transition %s -> %s interrupted', current, next)
-            rej()
+            rej(new Error('State transition ' + current + ' -> ' + next + ' interrupted'))
         }
     }
 
