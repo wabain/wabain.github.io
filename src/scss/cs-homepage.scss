@@ -1,8 +1,14 @@
+$color-primary: #5076be;
+$color-primary-light: #85afff;
+$color-primary-dark: #243f71;
+$color-complement: #f2b632;
+
 $off-black: #222;
 $light-gray: #a9a9a9;
-$link-color: rgb(90, 80, 190);
-$link-hover-color: rgb(100, 160, 175);
-$link-active-color: #f00;
+
+$link-color: $color-primary;
+$link-hover-color: $color-primary-light;
+$link-active-color: $color-complement;
 
 $screen-md-min: 917px;
 // Magic number to have the size of the content box start/stop growing
