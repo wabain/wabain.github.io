@@ -9,7 +9,7 @@ echo "Content to be deployed is:"
 tree -ah content
 
 # Deploy only if we push to the develop branch
-if [ "$TRAVIS_BRANCH" != "develop" ] || [ "$TRAVIS_PULL_REQUEST" = "true" ]
+if [ "$TRAVIS_BRANCH" != "develop" ] || [ "$TRAVIS_PULL_REQUEST" != "false" ]
 then
     echo "Not deploying (branch: $TRAVIS_BRANCH, pull request: $TRAVIS_PULL_REQUEST)"
     exit 0

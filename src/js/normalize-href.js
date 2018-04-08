@@ -20,6 +20,17 @@ export function isRelativeHref(href) {
   return setAndValidateHref(href);
 }
 
+/**
+ * Returns true if the href is the same as the current page
+ */
+export function isCurrentLocation(href) {
+  if (!setAndValidateHref(href)) {
+    return false;
+  }
+
+  return normalizeElem.href === location.href;
+}
+
 function setAndValidateHref(href) {
   if (typeof href !== 'string') {
     return false;
