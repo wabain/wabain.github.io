@@ -46,6 +46,12 @@ const commonRules = [
             fallback: 'style-loader'
         })
     },
+
+    {
+        test: /\.svg$/,
+        include: [local('src/buildtime-assets')],
+        use: ['url-loader'],
+    },
 ]
 
 const commonPlugins = [

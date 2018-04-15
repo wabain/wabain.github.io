@@ -1,0 +1,39 @@
+.about {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". about-intro"
+    ". about-more"
+    ". about-close";
+
+  @media (min-width: $screen-sm-min) {
+    grid-template-areas:
+      ". about-intro about-intro"
+      ". about-more about-more"
+      ". . about-close";
+  }
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . about-intro ."
+      ". . about-more about-more"
+      ". . . about-close";
+  }
+}
+
+.about-line {
+  margin: $eight-grid-size 0;
+  font-size: 24px;
+}
+
+.about-intro {
+  grid-area: about-intro;
+}
+
+.about-more {
+  grid-area: about-more;
+}
+
+.about-close {
+  grid-area: about-close;
+}
