@@ -36,7 +36,11 @@
   > ul {
     display: inline;
     padding: 0;
-    font-size: 14pt;
+
+    font: {
+      family: "Raleway", Helvetica, Arial, sans-serif;
+      weight: 500;
+    }
 
     > li {
       display: inline;
