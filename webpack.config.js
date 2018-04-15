@@ -29,7 +29,12 @@ const commonRules = [
         test: /\.scss$/,
         use: extractSass.extract({
             use: [
-                'css-loader',
+                {
+                    loader: 'css-loader',
+                    options: {
+                        minimize: IS_PROD,
+                    }
+                },
                 {
                     loader: 'sass-loader',
                     options: {

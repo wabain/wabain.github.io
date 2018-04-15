@@ -17,6 +17,7 @@ $screen-sm-max: $screen-md-min - 1px;
 $screen-sm-min: 500px;
 $screen-xs-max: $screen-sm-min - 1px;
 
+@import url("~normalize.css");
 @import "text-formatting";
 @import "utils";
 @import "layout-scaffolding";
