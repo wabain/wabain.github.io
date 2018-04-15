@@ -1,26 +1,34 @@
+$grid-size: 240px;
+$half-grid-size: 120px;
+$quart-grid-size: 60px;
+$eight-grid-size: 30px;
+
 $color-primary: #5076be;
 $color-primary-light: #85afff;
 $color-primary-dark: #243f71;
 $color-complement: #f2b632;
 
 $off-black: #222;
-$light-gray: #a9a9a9;
+$light-gray: #f0f0f0;
 
 $link-color: $color-primary;
 $link-hover-color: $color-primary-light;
 $link-active-color: $color-complement;
 
-$screen-md-min: 917px;
-// Magic number to have the size of the content box start/stop growing
-// without a jump in dimensions
+$screen-md-min: $grid-size * 3;
 $screen-sm-max: $screen-md-min - 1px;
-$screen-sm-min: 500px;
+$screen-sm-min: $grid-size * 2;
 $screen-xs-max: $screen-sm-min - 1px;
 
+// Base imports
 @import url("~normalize.css");
 @import "text-formatting";
 @import "utils";
 @import "layout-scaffolding";
-@import "header";
+// Sections
+@import "sections/header";
+@import "sections/about";
+@import "sections/legacy-page";
+// Utilities
 @import "img-preview";
 @import "loading-effects";

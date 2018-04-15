@@ -8,6 +8,26 @@ const concentricOrder = [
         'left',
     ],
     [
+        'grid',
+        'grid-area',
+        'grid-template',
+        'grid-template-areas',
+        'grid-template-rows',
+        'grid-template-columns',
+        'grid-row',
+        'grid-row-start',
+        'grid-row-end',
+        'grid-column',
+        'grid-column-start',
+        'grid-column-end',
+        'grid-auto-rows',
+        'grid-auto-columns',
+        'grid-auto-flow',
+        'grid-gap',
+        'grid-row-gap',
+        'grid-column-gap'
+    ],
+    [
         'columns',
         'column-gap',
         'column-fill',
@@ -143,6 +163,7 @@ module.exports = {
     ],
     rules: {
         'string-quotes': 'double',
-        'order/properties-order': [concentricOrder, { unspecified: 'bottom' }]
+        'order/properties-order': [concentricOrder, { unspecified: 'bottom' }],
+        'at-rule-no-unknown': [true, { ignoreAtRules: ['extend'] }],
     }
 }

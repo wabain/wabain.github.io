@@ -1,0 +1,60 @@
+$header-v-padding: 0.67rem;
+
+// Display inline if there is space, or collapse into multiple lines
+.header-block {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". header header header"
+    ". nav nav nav";
+  margin-bottom: $eight-grid-size;
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas: ". header nav nav";
+  }
+
+  h1 {
+    grid-area: header;
+    margin: $header-v-padding 7px;
+    justify-self: end;
+    align-self: end;
+
+    a,
+    a:hover {
+      color: inherit;
+    }
+  }
+}
+
+.navbar {
+  grid-area: nav;
+  align-self: end;
+
+  @media (max-width: $screen-sm-max) {
+    justify-self: end;
+  }
+
+  > ul {
+    // display: inline;
+    margin: $header-v-padding 0;
+    padding: 0;
+
+    font: {
+      family: "Raleway", Helvetica, Arial, sans-serif;
+      weight: 500;
+    }
+
+    > li {
+      display: inline;
+
+      + li {
+        margin-left: 15px;
+      }
+    }
+  }
+
+  a {
+    text-transform: lowercase;
+    text-decoration: none;
+  }
+}
