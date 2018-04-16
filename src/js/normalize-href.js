@@ -1,15 +1,15 @@
-var normalizeElem = document.createElement('a');
+var normalizeElem = document.createElement('a')
 
 /**
  * Get a URL relative to the root of this domain for the URL referred to by
  * href. If href is from a a different origin, return null.
  */
 export function getDomainRelativeUrl(href) {
-  if (!setAndValidateHref(href)) {
-    return null;
-  }
+    if (!setAndValidateHref(href)) {
+        return null
+    }
 
-  return normalizeElem.pathname + normalizeElem.search + normalizeElem.hash;
+    return normalizeElem.pathname + normalizeElem.search + normalizeElem.hash
 }
 
 /**
@@ -17,24 +17,24 @@ export function getDomainRelativeUrl(href) {
  * the same origin as this document.
  */
 export function isRelativeHref(href) {
-  return setAndValidateHref(href);
+    return setAndValidateHref(href)
 }
 
 /**
  * Returns true if the href is the same as the current page
  */
 export function isCurrentLocation(href) {
-  if (!setAndValidateHref(href)) {
-    return false;
-  }
+    if (!setAndValidateHref(href)) {
+        return false
+    }
 
-  return normalizeElem.href === location.href;
+    return normalizeElem.href === location.href
 }
 
 function setAndValidateHref(href) {
-  if (typeof href !== 'string') {
-    return false;
-  }
-  normalizeElem.href = href;
-  return normalizeElem.origin === location.origin;
+    if (typeof href !== 'string') {
+        return false
+    }
+    normalizeElem.href = href
+    return normalizeElem.origin === location.origin
 }
