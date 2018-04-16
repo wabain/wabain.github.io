@@ -258,19 +258,10 @@ class NavigablePage {
             await sleep(50)
         }
 
-        const contentTitle = await driver.findElement(By.css('section.content > h2'), 1000)
+        const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
+        const pageIdentifier = (await pageMeta.getAttribute('data-page-meta')) || ''
 
-        // FIXME: titleText is intermittently empty. Maybe a race condition
-        // I'm missing, or a webdriver bug (w/ chrome)?
-        let titleText
-        let titleLookupCount = 0
-
-        do {
-            titleText = (await contentTitle.getText()).trim()
-            titleLookupCount++
-        } while (titleText === '' && titleLookupCount < 5)
-
-        expect(titleText).toBe(this.params.title, 'Unexpected content title')
+        expect(pageIdentifier).toBe(this.params.title, 'Unexpected page identifier')
     }
 
     async findNavLinkToPage({ domainRelativeUrl, window }) {
