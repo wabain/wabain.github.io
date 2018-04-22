@@ -2,6 +2,7 @@
 
 body {
   line-height: 1.3;
+  color: $off-black;
   font: {
     family: "Roboto", Helvetica, Arial, sans-serif;
     size: 1.3rem;
@@ -13,21 +14,22 @@ h2,
 h3,
 h4,
 h5,
-h6 {
-  font: {
-    family: "Raleway", Helvetica, Arial, sans-serif;
-    weight: 500;
-    size: inherit;
-  }
+h6,
+.subhead {
+  font-family: "Raleway", Helvetica, Arial, sans-serif;
+  font-weight: 500;
 }
 
 h1 {
-  color: $off-black;
   font-size: 2rem;
 }
 
 h2 {
-  color: $color-complement;
+  font-size: 1.5rem;
+}
+
+.subhead {
+  font-size: 1.3rem;
 }
 
 a {
