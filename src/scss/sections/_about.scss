@@ -43,11 +43,15 @@
 
   margin: $eight-grid-size 0;
 
-  grid-template-areas: ". lisp-text lisp-text";
+  grid-template-areas: ". lisp-graph lisp-graph" ". lisp-text lisp-text";
 
   @media (min-width: $screen-md-min) {
-    grid-template-areas: ". . . lisp-text lisp-text";
+    grid-template-areas: ". lisp-graph lisp-graph lisp-text lisp-text";
   }
+}
+
+.cisco-lisp-graph {
+  grid-area: lisp-graph;
 }
 
 .cisco-lisp-text {
