@@ -37,3 +37,20 @@
 .about-close {
   grid-area: about-close;
 }
+
+.cisco-lisp {
+  @extend %grid-base;
+
+  margin: $eight-grid-size 0;
+
+  grid-template-areas: ". lisp-text lisp-text";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas: ". . . lisp-text lisp-text";
+  }
+}
+
+.cisco-lisp-text {
+  grid-area: lisp-text;
+  max-width: $grid-size * 2;
+}
