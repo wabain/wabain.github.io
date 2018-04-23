@@ -26,8 +26,10 @@ const T_PXTR = ident++
 const T_MSMR = ident++
 
 const YELLOW = '#f2b632'
+const YELLOW_SEMI_TRANSPARENT = 'rgba(242, 182, 50, 0.3)'
 const YELLOW_TRANSPARENT = 'rgba(242, 182, 50, 0)'
 const LIGHT_BLUE = '#5076be'
+const LIGHT_BLUE_SEMI_TRANSPARENT = 'rgba(80, 118, 190, 0.3)'
 const LIGHT_BLUE_TRANSPARENT = 'rgba(80, 118, 190, 0)'
 const DARK_BLUE = '#243f71'
 
@@ -80,14 +82,18 @@ const AREAS = [
 ]
 
 
+const SIMULATED_PACKET_MAX = 180
+
+
 export class LispAnimation {
     constructor({ canvas }) {
         this._canvas = canvas
         this._ctx = canvas.getContext('2d')
         this._bezierCtlPoints = selectBezierCtlPoints()
-        this._pendingFlows = []
-        this._transitPackets = []
-        this._renderBound = () => { this._render() }
+        this._pktBuffer = new PacketBuffer()
+
+        this._renderBound = this._render.bind(this)
+        this._renderPktBound = this._renderPkt.bind(this)
 
         canvas.width = AREA_WIDTH
         canvas.height = AREA_HEIGHT
@@ -108,29 +114,49 @@ export class LispAnimation {
                 })
             }
         }, 1000)
+
+        this.requestRender()
     }
 
-    startBurst(params) {
-        const sendOffsets = [0]
+    startBurst({ area, start, end, size }) {
+        const MS_PER_PIXEL = 10
+        const BEZIER_CTL_VARY = 5
 
-        for (let i = 1; i < params.size; i++) {
-            const y = Math.floor(Math.pow(Math.random() * 2 - 1, 2) * 800)
-            sendOffsets.push(y)
+        const { x: x1, y: y1 } = ENTITIES[start]
+        const { x: x2, y: y2 } = ENTITIES[end]
+
+        const [[cp1x, cp1y], [cp2x, cp2y]] = this._getBezierCtlPoints(area, start, end)
+
+        const now = performance.now()
+        const totalTime = pythagoras(x1 - x2, y1 - y2) * MS_PER_PIXEL
+
+        function pickInt(start, end) {
+            return start + Math.floor(Math.random() * (end - start))
         }
 
-        sendOffsets.sort((a, b) => a - b)
+        for (let i = 0; i < size; i++) {
+            let startDelay
 
-        const flow = {
-            params,
-            sendOffsets,
-            time: {
-                start: performance.now()
-            },
-        }
-        this._pendingFlows.push(flow)
+            if (i === 0) {
+                // Ensure at least one packet goes out immediately
+                startDelay = 0
+            } else {
+                startDelay = Math.floor(Math.pow(Math.random() * 2 - 1, 2) * 800)
+            }
 
-        if (this._transitPackets.length === 0) {
-            this.requestRender()
+            this._pktBuffer.insert(
+                area === 3 ? PKT_T_RLOC : PKT_T_EID,
+                now + startDelay,
+                totalTime,
+                x1,
+                y1,
+                x2,
+                y2,
+                cp1x + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
+                cp1y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
+                cp2x + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
+                cp2y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
+            )
         }
     }
 
@@ -142,106 +168,81 @@ export class LispAnimation {
         this._ctx.clearRect(0, 0, AREA_WIDTH, AREA_HEIGHT)
 
         const now = performance.now()
-
-        for (const flow of this._pendingFlows) {
-            this._emitPackets(flow, now)
-        }
-
-        this._transitPackets = this._transitPackets.filter((entry) => this._renderSend(entry, now))
+        this._renderPkts(now)
 
         this._renderBase()
-
-        if (this._transitPackets.length > 0 || this._pendingFlows.length > 0) {
-            this.requestRender()
-        }
+        this.requestRender()
     }
 
-    _emitPackets(flow, now) {
-        const { time: { start: startTime }, sendOffsets } = flow
+    _renderPkts(now) {
+        const buf = this._pktBuffer
 
-        const currentOffset = now - startTime
+        const state = buf._state
 
-        let i = 0
-        for (; i < sendOffsets.length; i++) {
-            if (sendOffsets[i] > currentOffset) {
-                break
+        for (let i = 0; i < SIMULATED_PACKET_MAX; i++) {
+            if (state[i] !== PKT_RUNNING) {
+                continue
             }
 
-            this._emitPacket(flow.params, now - (currentOffset - sendOffsets[i]))
-        }
+            let retain = false
 
-        if (i === sendOffsets.length) {
-            const idx = this._pendingFlows.indexOf(flow)
-            if (idx >= 0) {
-                this._pendingFlows.splice(idx, 1)
+            retain = this._renderPkt(
+                now,
+                buf._type[i],
+                buf._startTime[i],
+                buf._totalTime[i],
+                buf._startX[i],
+                buf._startY[i],
+                buf._endX[i],
+                buf._endY[i],
+                buf._cp1x[i],
+                buf._cp1y[i],
+                buf._cp2x[i],
+                buf._cp2y[i]
+            )
+
+            if (!retain) {
+                state[i] = PKT_INACTIVE
             }
-        } else if (i > 0) {
-            sendOffsets.splice(0, i)
         }
     }
 
-    _emitPacket(params, startTime) {
-        const MS_PER_PIXEL = 10
-        const BEZIER_CTL_VARY = 5
+    _renderPkt(now, type, startTime, totalTime, startX, startY, endX, endY, cp1x, cp1y, cp2x, cp2y) {
+        const funcPoint = (now - startTime) / totalTime
 
-        const { area, start, end } = params
-        const { x: x1, y: y1 } = ENTITIES[start]
-        const { x: x2, y: y2 } = ENTITIES[end]
-
-        const [[cp1x, cp1y], [cp2x, cp2y]] = this._getBezierCtlPoints(area, start, end)
-
-        function pickInt(start, end) {
-            return start + Math.floor(Math.random() * (end - start))
+        // Still pending
+        if (funcPoint < 0) {
+            return true
         }
-
-        this._transitPackets.push({
-            params,
-            time: {
-                total: pythagoras(x1 - x2, y1 - y2) * MS_PER_PIXEL,
-                start: startTime,
-            },
-            path: {
-                start: [x1, y1],
-                end: [x2, y2],
-                ctl: [
-                    [
-                        cp1x + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
-                        cp1y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
-                    ],
-                    [
-                        cp2x + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
-                        cp2y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
-                    ],
-                ],
-            },
-        })
-
-        console.log('total time', pythagoras(x1 - x2, y1 - y2) * MS_PER_PIXEL)
-    }
-
-    _renderSend(entry, now) {
-        const funcPoint = (now - entry.time.start) / entry.time.total
 
         if (funcPoint > 1) {
             return false
         }
 
-        const [x, y] = getCubicBezierPoint(funcPoint, entry.path.start, ...entry.path.ctl, entry.path.end)
-        const tailPoint = Math.max(funcPoint - 0.05, 0)
-        const [tx, ty] = getCubicBezierPoint(tailPoint, entry.path.start, ...entry.path.ctl, entry.path.end)
+        const [x, y] = getCubicBezierPoint(funcPoint, startX, startY, cp1x, cp1y, cp2x, cp2y, endX, endY)
+        const tailPoint = Math.max(funcPoint - 0.1, 0)
+        const [tx, ty] = getCubicBezierPoint(tailPoint, startX, startY, cp1x, cp1y, cp2x, cp2y, endX, endY)
 
         const ctx = this._ctx
 
         const gradient = ctx.createLinearGradient(x, y, tx, ty)
-        gradient.addColorStop(0, entry.params.area === 3 ? LIGHT_BLUE : YELLOW)
-        gradient.addColorStop(1, entry.params.area === 3 ? LIGHT_BLUE_TRANSPARENT : YELLOW_TRANSPARENT)
+        gradient.addColorStop(0, type === PKT_T_RLOC ? LIGHT_BLUE : YELLOW)
+
+        const headEnd = 5 / pythagoras(x - tx, y - ty)
+
+        if (headEnd < 1) {
+            gradient.addColorStop(headEnd, type === PKT_T_RLOC ? LIGHT_BLUE_SEMI_TRANSPARENT : YELLOW_SEMI_TRANSPARENT)
+        }
+
+        gradient.addColorStop(1, type === PKT_T_RLOC ? LIGHT_BLUE_TRANSPARENT : YELLOW_TRANSPARENT)
 
         ctx.save()
 
         ctx.beginPath()
 
         ctx.strokeStyle = gradient
-        ctx.lineWidth = 2
+        ctx.lineWidth = 3
+        ctx.lineCap = 'round'
 
         ctx.moveTo(x, y)
         ctx.lineTo(tx, ty)
@@ -294,6 +295,100 @@ export class LispAnimation {
     }
 }
 
+const PKT_INACTIVE = 0
+const PKT_RUNNING = 1
+
+const PKT_T_RLOC = 1
+const PKT_T_EID = 2
+
+/**
+ * This ugly little class avoids putting pressure on the GC while ***
+ */
+class PacketBuffer {
+    constructor() {
+        this._state = pktBufFill(PKT_INACTIVE)
+        this._type = pktBufFill(0)
+        this._startTime = pktBufFill(0)
+        this._totalTime = pktBufFill(0)
+
+        this._startX = pktBufFill(0)
+        this._startY = pktBufFill(0)
+        this._endX = pktBufFill(0)
+        this._endY = pktBufFill(0)
+
+        this._cp1x = pktBufFill(0)
+        this._cp1y = pktBufFill(0)
+        this._cp2x = pktBufFill(0)
+        this._cp2y = pktBufFill(0)
+    }
+
+    insert(type, startTime, totalTime, startX, startY, endX, endY, cp1x, cp1y, cp2x, cp2y) {
+        const state = this._state
+
+        for (let i = 0; i < SIMULATED_PACKET_MAX; i++) {
+            if (state[i] !== PKT_INACTIVE) {
+                continue
+            }
+
+            state[i] = PKT_RUNNING
+            this._type[i] = type
+            this._startTime[i] = startTime
+            this._totalTime[i] = totalTime
+            this._startX[i] = startX
+            this._startY[i] = startY
+            this._endX[i] = endX
+            this._endY[i] = endY
+            this._cp1x[i] = cp1x
+            this._cp1y[i] = cp1y
+            this._cp2x[i] = cp2x
+            this._cp2y[i] = cp2y
+
+            return
+        }
+
+        throw new Error(`packet count exceeded (expected max of ${SIMULATED_PACKET_MAX})`)
+    }
+
+    update(now, callback) {
+        const state = this._state
+
+        for (let i = 0; i < SIMULATED_PACKET_MAX; i++) {
+            if (state[i] !== PKT_RUNNING) {
+                continue
+            }
+
+            let retain = false
+
+            // try {
+                retain = callback(
+                    now,
+                    this._type[i],
+                    this._startTime[i],
+                    this._totalTime[i],
+                    this._startX[i],
+                    this._startY[i],
+                    this._endX[i],
+                    this._endY[i],
+                    this._cp1x[i],
+                    this._cp1y[i],
+                    this._cp2x[i],
+                    this._cp2y[i]
+                )
+            // } catch (e) {
+            //     console.error('Exception during packet buffer callback:', e)
+            // }
+
+            if (!retain) {
+                state[i] = PKT_INACTIVE
+            }
+        }
+    }
+}
+
+function pktBufFill(value) {
+    return Array(SIMULATED_PACKET_MAX).fill(value)
+}
+
 function selectBezierCtlPoints() {
     const ctlPoints = {}
 
@@ -318,7 +413,7 @@ function selectBezierCtlPoints() {
     return ctlPoints
 }
 
-function getCubicBezierPoint(t, [p0x, p0y], [cp1x, cp1y], [cp2x, cp2y], [p3x, p3y]) {
+function getCubicBezierPoint(t, p0x, p0y, cp1x, cp1y, cp2x, cp2y, p3x, p3y) {
     const x = (1-t)*(1-t)*(1-t)*p0x + 3*(1-t)*(1-t)*t*cp1x + 3*(1-t)*t*t*cp2x + t*t*t*p3x
     const y = (1-t)*(1-t)*(1-t)*p0y + 3*(1-t)*(1-t)*t*cp1y + 3*(1-t)*t*t*cp2y + t*t*t*p3y
     return [x, y]
