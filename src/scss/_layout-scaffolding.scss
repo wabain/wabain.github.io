@@ -9,12 +9,7 @@ body {
 }
 
 .container {
-  margin: $half-grid-size auto 0;
-
-  // Shrink the top margin when the screen is small
-  @media (max-height: 400px) {
-    margin-top: $eight-grid-size;
-  }
+  margin-top: $eight-grid-size;
 }
 
 // Base definition for the layout grid
