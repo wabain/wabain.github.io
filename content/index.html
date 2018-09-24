@@ -17,17 +17,102 @@ redirect_from: "/about.html"
     </p>
 </section>
 
-<section class="cisco-lisp">
-    <div class="cisco-lisp-text">
-        <header>
+<section>
+    <div class="projects-head">
+        <h1 class="projects-head-text">Projects</h1>
+    </div>
+
+    <section class="cisco-lisp">
+        <header class="cisco-lisp-header">
             <h2>
                 Locator/Identifier Separation Protocol
                 <div class="subhead">Cisco Systems, Ottawa</div>
             </h2>
         </header>
-        <p>I work on the team responsible for the development of <a href="https://tools.ietf.org/html/rfc6830" target="_blank">LISP</a>, bringing the advantages of *** to local-area and software-defined wide-area networking.</p>
-    </div>
-    <div class="cisco-lisp-graph">
-        <canvas id="cisco-lisp-animation"></canvas>
-    </div>
+
+        <div class="cisco-lisp-graph">
+            <canvas id="cisco-lisp-animation"></canvas>
+        </div>
+
+        <div class="cisco-lisp-text">
+            <p>
+                I work on the team responsible for the development of
+                <a href="https://tools.ietf.org/html/rfc6830" target="_blank">LISP</a>, a routing protocol which brings
+                the advantages of software-defined networking to
+                <a href="https://www.cisco.com/c/en_ca/solutions/enterprise-networks/software-defined-access/index.html" target="_blank">local-area</a>
+                and wide-area networks.
+            </p>
+        </div>
+    </section>
+
+    <section class="oss" id="open-source">
+        <header class="oss-header">
+            <h2>Open Source</h2>
+        </header>
+
+        <div class="oss-text">
+            <p>
+                Here are some recent side projects I'm happy with:
+            </p>
+            <ul>
+                <li>
+                    A <a href="https://github.com/wabain/rstarc" target="_blank">compiler and runtime</a>
+                    for a dynamically typed language using Rust and LLVM
+                </li>
+                <li>
+                    A <a href="https://github.com/wabain/google-font-info" target="_blank">little Go program</a>
+                    to extract font data for fonts served by Google Fonts
+                </li>
+            </ul>
+            <p>
+                When I find an issue in open-source code, I try to submit readily reproducible bug
+                reports and well-tested fixes. Some examples:
+            </p>
+            <ul>
+                <li>
+                    Some fixes to rbspy, a sampling Ruby profiler (minor fixes
+                    <a href="https://github.com/rbspy/rbspy/pull/170" target="_blank">1</a>,
+                    <a href="https://github.com/rbspy/rbspy/pull/169" target="_blank">2</a>;
+                    <a href="https://github.com/rbspy/rbspy/pull/177" target="_blank">a bigger change I'm still working on</a>)
+                </li>
+                <li>
+                    Fixing <a href="https://github.com/yarnpkg/yarn/pull/5400" target="_blank">an exception</a>
+                    in the Yarn package manager
+                </li>
+                <li>
+                    Adding a <a href="https://github.com/libgit2/libgit2/pull/4231" target="_blank">missing feature</a> in libgit2,
+                    a git library used by GitHub, Gitlab, Bitbucket, and others
+                </li>
+                <li>
+                    Identifying <a href="https://github.com/CiscoDevNet/ydk-gen/issues/363" target="_blank">standard-breaking behavior</a>
+                    in ydk-gen, an API binding generator for network management agents
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="ddmal">
+        <header class="ddmal-header">
+            <h2>
+                Distributed Digital Music Archives Lab
+                <div class="subhead">McGill University, Montreal</div>
+            </h2>
+        </header>
+        <div class="ddmal-image">
+            <img src="/home-assets/img/cantus-screenshot.png">
+        </div>
+        <div class="ddmal-text">
+            <p>As a research assistant on the SIMSSA initiative, I developed interfaces for searching and displaying musical texts.</p>
+            <p>
+                I worked on the 5.0 release of the <a href="http://ddmal.github.io/diva.js/" target="_blank">Diva.js</a>
+                document image viewer, rewriting core rendering and build systems.
+            </p>
+            <p>
+                I also developed the front-end prototype of <a href="https://musiclibs.net/" target="_blank">MusicLibs</a>,
+                a cross-library search engine for musical documents, and built out the website for
+                <a href="https://cantus.simssa.ca" target="_blank">Cantus Ultimus</a>, a fully-searchable repository
+                of medieval musical texts.
+            </p>
+        </div>
+    </section>
 </section>

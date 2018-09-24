@@ -38,15 +38,46 @@
   grid-area: about-close;
 }
 
+.projects-head {
+  @extend %grid-base;
+
+  grid-template-areas: "projects-text projects-text projects-text";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas: "projects-text projects-text . .";
+  }
+}
+
+.projects-head-text {
+  grid-area: projects-text;
+  @media (min-width: $screen-md-min) {
+    justify-self: end;
+    margin-right: 7px;
+  }
+}
+
 .cisco-lisp {
   @extend %grid-base;
 
-  margin: $eight-grid-size 0;
+  grid-template-areas:
+    ". lisp-header"
+    ". lisp-graph"
+    ". lisp-text";
 
-  grid-template-areas: ". lisp-graph lisp-graph" ". lisp-text lisp-text";
+  @media (min-width: $screen-sm-min) {
+    // Give the graph an extra row on its own so that extra space isn't
+    // distributed into the header/text rows
+    grid-template-areas:
+      ". lisp-graph lisp-header"
+      ". lisp-graph lisp-text"
+      ". lisp-graph .";
+  }
 
   @media (min-width: $screen-md-min) {
-    grid-template-areas: ". lisp-graph lisp-graph lisp-text lisp-text";
+    grid-template-areas:
+      ". lisp-graph lisp-header lisp-header"
+      ". lisp-graph lisp-text lisp-text"
+      ". lisp-graph . .";
   }
 }
 
@@ -54,7 +85,70 @@
   grid-area: lisp-graph;
 }
 
+.cisco-lisp-header {
+  grid-area: lisp-header;
+}
+
 .cisco-lisp-text {
   grid-area: lisp-text;
   max-width: $grid-size * 2;
+}
+
+.oss {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". oss-header"
+    ". oss-text";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". oss-header oss-header"
+      ". oss-text oss-text";
+  }
+}
+
+.oss-header {
+  grid-area: oss-header;
+}
+
+.oss-text {
+  grid-area: oss-text;
+}
+
+.ddmal {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". header header ."
+    ". image image image"
+    ". text text .";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . header header"
+      ". image image text";
+  }
+}
+
+.ddmal-header {
+  grid-area: header;
+}
+
+.ddmal-image {
+  grid-area: image;
+
+  img {
+    max-width: 100%;
+    object-fit: contain;
+
+    @media (min-width: $screen-md-min) {
+      margin-top: 1.67rem;
+      max-width: $grid-size * 2 - $eight-grid-size;
+    }
+  }
+}
+
+.ddmal-text {
+  grid-area: text;
 }
