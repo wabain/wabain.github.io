@@ -41,7 +41,8 @@ const STYLES = {
 }
 
 // Positioning
-const AREA_WIDTH = 320
+const WIDTH_SCALE = 1 // XXX
+const AREA_WIDTH = 320 * WIDTH_SCALE
 const AREA_HEIGHT = 275
 
 const ENTITIES = {
@@ -67,6 +68,25 @@ const ENTITIES = {
     [PXTR]: { t: T_PXTR, x: 15, y: 46 },
     [MSMR]: { t: T_MSMR, x: 117, y: 84 },
 }
+
+for (const value of Object.values(ENTITIES)) {
+    value.x *= WIDTH_SCALE
+}
+
+// {
+//     const getRadius = (t) => Math.floor(STYLES[t].d / 2)
+
+//     const minX = Math.min(...Object.values(ENTITIES).map(({ x, t }) => x - getRadius(t)))
+//     const maxX = Math.max(...Object.values(ENTITIES).map(({ x, t }) => x + getRadius(t)))
+
+//     const minY = Math.min(...Object.values(ENTITIES).map(({ y, t }) => y - getRadius(t)))
+//     const maxY = Math.max(...Object.values(ENTITIES).map(({ y, t }) => y + getRadius(t)))
+
+//     for (const value of Object.values(ENTITIES)) {
+//         value.x = Math.abs((value.x - minX) * (maxX - minX) / AREA_WIDTH)
+//         value.y = Math.abs((value.y - minY) * (maxY - minY) / AREA_HEIGHT)
+//     }
+// }
 
 // FIXME
 for (const entity of Object.values(ENTITIES)) {
@@ -110,7 +130,7 @@ export class LispAnimation {
                     area: areaIdx,
                     start: id1,
                     end: id2,
-                    size: 5 + Math.floor(Math.random() * 10),
+                    size: 5 + Math.floor(Math.random() * 5),
                 })
             }
         }, 1000)
@@ -155,7 +175,7 @@ export class LispAnimation {
                 cp1x + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
                 cp1y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
                 cp2x + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
-                cp2y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY),
+                cp2y + pickInt(-BEZIER_CTL_VARY, BEZIER_CTL_VARY)
             )
         }
     }
@@ -220,15 +240,17 @@ export class LispAnimation {
         }
 
         const [x, y] = getCubicBezierPoint(funcPoint, startX, startY, cp1x, cp1y, cp2x, cp2y, endX, endY)
+        const midPoint = Math.max(funcPoint - 0.05, 0)
+        const [x1, y1] = getCubicBezierPoint(midPoint, startX, startY, cp1x, cp1y, cp2x, cp2y, endX, endY)
         const tailPoint = Math.max(funcPoint - 0.1, 0)
-        const [tx, ty] = getCubicBezierPoint(tailPoint, startX, startY, cp1x, cp1y, cp2x, cp2y, endX, endY)
+        const [x2, y2] = getCubicBezierPoint(tailPoint, startX, startY, cp1x, cp1y, cp2x, cp2y, endX, endY)
 
         const ctx = this._ctx
 
-        const gradient = ctx.createLinearGradient(x, y, tx, ty)
+        const gradient = ctx.createLinearGradient(x, y, x2, y2)
         gradient.addColorStop(0, type === PKT_T_RLOC ? LIGHT_BLUE : YELLOW)
 
-        const headEnd = 5 / pythagoras(x - tx, y - ty)
+        const headEnd = 5 / pythagoras(x - x2, y - y2)
 
         if (headEnd < 1) {
             gradient.addColorStop(headEnd, type === PKT_T_RLOC ? LIGHT_BLUE_SEMI_TRANSPARENT : YELLOW_SEMI_TRANSPARENT)
@@ -245,7 +267,8 @@ export class LispAnimation {
         ctx.lineCap = 'round'
 
         ctx.moveTo(x, y)
-        ctx.lineTo(tx, ty)
+        // https://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
+        ctx.quadraticCurveTo(x1, y1, x2, y2)
         ctx.stroke()
 
         ctx.restore()
@@ -255,6 +278,8 @@ export class LispAnimation {
 
     _renderBase() {
         const ctx = this._ctx
+
+        ctx.save()
 
         for (const { t, x, y } of Object.values(ENTITIES)) {
             const { d, c } = STYLES[t]
@@ -267,11 +292,17 @@ export class LispAnimation {
             ctx.fill()
         }
 
+        ctx.restore()
+
         // this._drawTravelCurves()
     }
 
     _drawTravelCurves() {
         const ctx = this._ctx
+
+        ctx.save()
+        ctx.lineWidth = 1
+        ctx.strokeStyle = '#888'
 
         for (const [areaIdx, area] of AREAS.entries()) {
             for (const [idx, id1] of area.entries()) {
@@ -287,6 +318,8 @@ export class LispAnimation {
             }
             ctx.stroke()
         }
+
+        ctx.restore()
     }
 
     _getBezierCtlPoints(areaIdx, id1, id2) {
@@ -346,7 +379,7 @@ class PacketBuffer {
             return
         }
 
-        throw new Error(`packet count exceeded (expected max of ${SIMULATED_PACKET_MAX})`)
+        throw new Error(`Packet count exceeded (expected max of ${SIMULATED_PACKET_MAX})`)
     }
 
     update(now, callback) {
@@ -359,7 +392,7 @@ class PacketBuffer {
 
             let retain = false
 
-            // try {
+            try {
                 retain = callback(
                     now,
                     this._type[i],
@@ -374,9 +407,9 @@ class PacketBuffer {
                     this._cp2x[i],
                     this._cp2y[i]
                 )
-            // } catch (e) {
-            //     console.error('Exception during packet buffer callback:', e)
-            // }
+            } catch (e) {
+                console.error('Exception during packet buffer callback:', e)
+            }
 
             if (!retain) {
                 state[i] = PKT_INACTIVE
