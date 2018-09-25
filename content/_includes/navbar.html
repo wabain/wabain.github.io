@@ -1,7 +1,7 @@
 {% assign index_page = (site.pages | where: 'path', 'index.html' | first) %}
 
 <header class="header-block">
-  <h1><a href="{{ index_page.url }}" data-pagetitle="{{ index_page.title }}">William Bain</a></h1>
+  <h1><a href="{{ index_page.url }}" {% if index_page.url == page.url %} class="active-link" {% endif %} data-pagetitle="{{ index_page.title }}">William Bain</a></h1>
   <nav class="navbar">
     <ul>
       {% comment %} FIXME: Using a `where` filter to check in_nav should work but doesn't {% endcomment %}

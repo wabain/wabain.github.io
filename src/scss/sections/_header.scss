@@ -22,7 +22,16 @@ $header-v-padding: 0.67rem;
 
     a,
     a:hover {
+      text-decoration: none;
       color: inherit;
+    }
+
+    a:hover {
+      border-bottom: 1px solid $off-black;
+    }
+
+    a.active-link {
+      border-bottom: 1px solid $link-active-color;
     }
   }
 }

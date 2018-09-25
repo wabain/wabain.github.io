@@ -148,6 +148,7 @@ function parseTitle(title) {
 
     // Update the links in the navbar
     $('nav a[href]').not(navLink).removeClass('active-link');
+    $('.header-block a[href]').not(navLink).removeClass('active-link');
     navLink.addClass('active-link');
 
     var loadNewContent = loadSectionPartial(href).fail(function () {
