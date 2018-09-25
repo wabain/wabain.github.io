@@ -4,8 +4,8 @@
   <h1><a href="{{ index_page.url }}" {% if index_page.url == page.url %} class="active-link" {% endif %} data-pagetitle="{{ index_page.title }}">William Bain</a></h1>
   <nav class="navbar">
     <ul>
-      {% comment %} FIXME: Using a `where` filter to check in_nav should work but doesn't {% endcomment %}
-      {% for nav_page in site.pages | sort:'nav_priority' %}
+      {% assign nav_pages = site.pages | sort: 'nav_priority' %}
+      {% for nav_page in nav_pages %}
         {% if nav_page.in_nav and nav_page.layout != "section-partial" %}
           <li><a href="{{ nav_page.url }}" {% if nav_page.url == page.url %} class="active-link" {% endif %}>{{ nav_page.title }}</a></li>
         {% endif %}
