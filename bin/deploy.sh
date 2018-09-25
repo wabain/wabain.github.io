@@ -22,16 +22,18 @@ then
     exit 1
 fi
 
->./deploy-commit-msg cat <<EOF
+cat > ./deploy-commit-msg <<EOF
 Deploy to GitHub Pages
 
 Source commit for this deployment:
 
 EOF
->>./deploy-commit-msg git log -n1 --format=fuller
+
+git log -n1 --format=fuller >> ./deploy-commit-msg
 
 cd content
 git init
+git config core.excludesfile "$(pwd)/../.deploy-gitignore"
 
 # Redirect output to /dev/null to hide any sensitive credential data that
 # might otherwise be exposed.

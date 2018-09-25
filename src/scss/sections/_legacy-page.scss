@@ -1,0 +1,13 @@
+.legacy-page {
+  @extend %grid-base;
+
+  grid-template-areas: ". content content";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas: ". . content content";
+  }
+}
+
+.legacy-page-content {
+  grid-area: content;
+}

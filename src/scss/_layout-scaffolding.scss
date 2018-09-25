@@ -1,29 +1,34 @@
+// The normalize stylesheet ensures there's no body margin
 body {
-  margin: 10px;
+  background-image: url("../buildtime-assets/img/grid-bg.svg");
+  background-position: center;
 
-  @media (min-width: $screen-md-min) {
-    margin: 0;
+  @media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+    background-image: url("../buildtime-assets/img/grid-bg-center.svg");
   }
 }
 
 .container {
-  margin: 100px auto 0;
-  max-width: 900px;
-
-  // Shrink the top margin when the screen is small
-  @media (max-height: 400px) {
-    margin-top: 30px;
-  }
+  margin-top: $eight-grid-size;
 }
 
-.content {
-  // Setting margin-left to auto lets it transition incrementally from the
-  // margin for larger screens to 0 on mobile-size devices
-  margin: 0 0 0 auto;
-  max-width: 750px;
+// Base definition for the layout grid
+//
+// On very small screens, one full column is available. A zero-sized grid
+// cell is left so that the shape of the grid matches the shape on small
+// screens, where two columns are available.
+//
+// On larger screens, three columns are allocated for the primary content
+// (although there may well be more available)
+%grid-base {
+  display: grid;
+  grid-template-columns: 1fr $grid-size 0 1fr;
+
+  @media (min-width: $screen-sm-min) {
+    grid-template-columns: 1fr $grid-size $grid-size 1fr;
+  }
 
   @media (min-width: $screen-md-min) {
-    margin-left: 150px;
-    max-width: auto;
+    grid-template-columns: 1fr repeat(3, $grid-size) 1fr;
   }
 }

@@ -29,7 +29,12 @@ const commonRules = [
         test: /\.scss$/,
         use: extractSass.extract({
             use: [
-                'css-loader',
+                {
+                    loader: 'css-loader',
+                    options: {
+                        minimize: IS_PROD,
+                    }
+                },
                 {
                     loader: 'sass-loader',
                     options: {
@@ -40,6 +45,12 @@ const commonRules = [
             // use style-loader in development
             fallback: 'style-loader'
         })
+    },
+
+    {
+        test: /\.svg$/,
+        include: [local('src/buildtime-assets')],
+        use: ['url-loader'],
     },
 ]
 
@@ -67,11 +78,6 @@ const commonPlugins = [
 
         // Vendored assets
         // TODO: Should be able to import these directly from source files?
-        {
-            context: local('node_modules/fancybox/source'),
-            from: '**/*',
-            to: local(DIST_PATH, 'vendor/fancybox'),
-        },
         {
             context: local('node_modules/jquery/dist'),
             from: '**/*',

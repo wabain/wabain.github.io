@@ -39,7 +39,10 @@ module.exports = {
             "globals": {
                 "jQuery": false
             },
+        },
+        {
             // FIXME: Legacy rules, with varying degrees of weirdness
+            "files": ["src/js/dynamic-navigation.js"],
             "rules": {
                 "linebreak-style": [
                     "error",

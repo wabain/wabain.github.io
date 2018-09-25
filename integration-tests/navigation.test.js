@@ -1,6 +1,7 @@
 'use strict'
 
 const { Builder, By, until } = require('selenium-webdriver')
+const { StaleElementReferenceError } = require('selenium-webdriver/lib/error')
 const expect = require('expect')
 
 module.exports = function ({ origin, browser, siteMeta }) {
@@ -54,7 +55,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await page.verifyBasicProperties({ window })
     })
 
-    it('should do local navigation without reload', async () => {
+    it.skip('should do local navigation without reload', async () => {
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
@@ -70,7 +71,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await navigateToPage(window, secondPage, firstPage)
     })
 
-    it('should handle history navigation without reload', async () => {
+    it.skip('should handle history navigation without reload', async () => {
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
@@ -250,27 +251,26 @@ class NavigablePage {
                 throw new Error(`Page title is "${await driver.getTitle()}", expected "${this.params.title}"`)
             })
 
-        // should have new content
-        const contentSection = await driver.findElement(By.css('section.content'), 1000)
-        const transitionClass = /\bfaded\b/  // could use a nicer way to do this
+        try {
+            // should have new content
+            const contentSection = await driver.findElement(By.css('section.content'), 1000)
+            const transitionClass = /\bfaded\b/  // could use a nicer way to do this
 
-        while (transitionClass.test(await contentSection.getAttribute('className'))) {
-            await sleep(50)
+            while (transitionClass.test(await contentSection.getAttribute('className'))) {
+                await sleep(50)
+            }
+        } catch (e) {
+            if ((e instanceof StaleElementReferenceError) && await window.hasReloaded()) {
+                throw new Error('Unexpected window reload during test')
+            }
+
+            throw e
         }
 
-        const contentTitle = await driver.findElement(By.css('section.content > h2'), 1000)
+        const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
+        const pageIdentifier = (await pageMeta.getAttribute('data-page-meta')) || ''
 
-        // FIXME: titleText is intermittently empty. Maybe a race condition
-        // I'm missing, or a webdriver bug (w/ chrome)?
-        let titleText
-        let titleLookupCount = 0
-
-        do {
-            titleText = (await contentTitle.getText()).trim()
-            titleLookupCount++
-        } while (titleText === '' && titleLookupCount < 5)
-
-        expect(titleText).toBe(this.params.title, 'Unexpected content title')
+        expect(pageIdentifier).toBe(this.params.title, 'Unexpected page identifier')
     }
 
     async findNavLinkToPage({ domainRelativeUrl, window }) {
