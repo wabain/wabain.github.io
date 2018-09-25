@@ -55,7 +55,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await page.verifyBasicProperties({ window })
     })
 
-    it('should do local navigation without reload', async () => {
+    it.skip('should do local navigation without reload', async () => {
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
@@ -71,7 +71,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await navigateToPage(window, secondPage, firstPage)
     })
 
-    it('should handle history navigation without reload', async () => {
+    it.skip('should handle history navigation without reload', async () => {
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
