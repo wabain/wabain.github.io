@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "debug": "^3.1.0",
-    "fancybox": "git://github.com/fancyapps/fancyBox.git#~2.1.5",
     "jquery": "~1.11.0",
     "normalize.css": "^8.0.0"
   },

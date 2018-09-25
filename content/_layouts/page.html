@@ -34,13 +34,5 @@
 
   <script type="text/javascript" src="{% if jekyll.environment == 'production' %}//code.jquery.com/jquery-1.11.0.min.js{% else %}{{ page.assets_dir }}/vendor/jquery/jquery.js{% endif %}"></script>
   <script type="text/javascript" src="{{ page.assets_dir }}/cs-homepage{% if jekyll.environment == 'production' %}.min.js{% else %}.js{% endif %}"></script>
-  <script type="text/javascript"
-    src="{{ page.assets_dir }}/vendor/fancybox/{% if jekyll.environment == 'production' %}jquery.fancybox.pack.js{% else %}jquery.fancybox.js{% endif %}"></script>
-  <link rel="stylesheet" type="text/css" href="{{ page.assets_dir }}/vendor/fancybox/jquery.fancybox.css" media="screen">
-  <script type="text/javascript">
-    $(document).ready(function() {
-      $('.fancybox').fancybox();
-    });
-  </script>
 </body>
 </html>
