@@ -35,6 +35,7 @@ const commonRules = [
                         minimize: IS_PROD,
                     }
                 },
+                'postcss-loader',
                 {
                     loader: 'sass-loader',
                     options: {

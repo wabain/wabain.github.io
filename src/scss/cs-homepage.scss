@@ -28,7 +28,7 @@ $screen-xs-max: $screen-sm-min - 1px;
 // Sections
 @import "sections/header";
 @import "sections/about";
+@import "sections/projects";
 @import "sections/legacy-page";
 // Utilities
-@import "img-preview";
 @import "loading-effects";
