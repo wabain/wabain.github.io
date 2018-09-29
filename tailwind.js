@@ -669,7 +669,7 @@ module.exports = {
 
     plugins: [
         require('./tailwind-plugins/spaced-descendants')({
-            selectors: ['p'],
+            selectors: ['p', 'h1', 'h2'],
         }),
     ],
 

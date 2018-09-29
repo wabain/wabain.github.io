@@ -7,17 +7,33 @@
  * is used on the content to attach appropriate classes to each `<p>` element,
  * etc.
  */
-module.exports = ({ selectors = ['p'], variants = ['responsive'] }) => (
+module.exports = ({
+    selectors = ['p'],
+    declarations = {
+        mt: {
+            prop: 'marginTop',
+            config: 'margin',
+        },
+        mb: {
+            prop: 'marginBottom',
+            config: 'margin',
+        },
+    },
+    variants = ['responsive'],
+}) => (
     ({ e, config, addUtilities }) => {
         const utils = {}
-        const margins = config('margin', {})
-        const marginNames = Object.keys(margins)
 
         for (const selector of selectors) {
-            for (const name of marginNames) {
-                utils['.' + e(`spaced-${selector}-${name}`)] = {
-                    [selector]: {
-                        marginBottom: margins[name],
+            for (const declName of Object.keys(declarations)) {
+                const { prop, config: cfgKey } = declarations[declName]
+                const cfgValues = config(cfgKey, {})
+
+                for (const cfgName of Object.keys(cfgValues)) {
+                    utils['.' + e(`spaced-${selector}-${declName}-${cfgName}`)] = {
+                        [`${selector}:not(.spaced-escape)`]: {
+                            [prop]: cfgValues[cfgName],
+                        }
                     }
                 }
             }
