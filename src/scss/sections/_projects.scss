@@ -1,0 +1,112 @@
+.projects-head {
+  @extend %grid-base;
+
+  grid-template-areas: "projects-text projects-text projects-text";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas: "projects-text projects-text . .";
+  }
+}
+
+.projects-head-text {
+  grid-area: projects-text;
+
+  @media (min-width: $screen-md-min) {
+    margin-right: 7px;
+    justify-self: end;
+  }
+}
+
+.cisco-lisp {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". lisp-header"
+    ". lisp-text";
+
+  @media (min-width: $screen-sm-min) {
+    grid-template-areas:
+      ". . lisp-header"
+      ". . lisp-text";
+  }
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . lisp-header lisp-header"
+      ". . lisp-text lisp-text";
+  }
+}
+
+.cisco-lisp-header {
+  grid-area: lisp-header;
+}
+
+.cisco-lisp-text {
+  grid-area: lisp-text;
+  max-width: $grid-size * 2;
+}
+
+.oss {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". oss-header"
+    ". oss-text";
+
+  @media (min-width: $screen-sm-min) {
+    grid-template-areas:
+      ". oss-header oss-header"
+      ". oss-text oss-text";
+  }
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . oss-header oss-header"
+      ". . oss-text oss-text";
+  }
+}
+
+.oss-header {
+  grid-area: oss-header;
+}
+
+.oss-text {
+  grid-area: oss-text;
+}
+
+.ddmal {
+  @extend %grid-base;
+
+  grid-template-areas:
+    ". header header ."
+    ". image image image"
+    ". text text .";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . header header"
+      ". image image text";
+  }
+}
+
+.ddmal-header {
+  grid-area: header;
+}
+
+.ddmal-image {
+  grid-area: image;
+
+  img {
+    max-width: 100%;
+    object-fit: contain;
+
+    @media (min-width: $screen-md-min) {
+      margin-top: 1.67rem;
+      max-width: $grid-size * 2 - $eight-grid-size;
+    }
+  }
+}
+
+.ddmal-text {
+  grid-area: text;
+}
