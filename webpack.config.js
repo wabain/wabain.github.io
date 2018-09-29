@@ -1,9 +1,12 @@
 const path = require('path')
+const fs = require('fs')
 
 const StyleLintPlugin = require('stylelint-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const PurgecssPlugin = require('purgecss-webpack-plugin')
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const glob = require('glob')
 
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
@@ -85,7 +88,35 @@ const commonPlugins = [
             to: local(DIST_PATH, 'vendor/jquery'),
         },
     ]),
-    extractSass
+    extractSass,
+    new PurgecssPlugin({
+        paths: () => {
+            // WARNING: Although unfortunately the separation between source
+            // files and generated files is difficult to characterize,
+            // it's important to keep it straight so that local,
+            // non-checked-in files don't end up changing what is
+            // stripped. Aim to be conservative and hope things break
+            // in an obvious way if they do!
+
+            const patterns = [
+                'content/*.html',
+                'content/_layouts/**/*',
+                'content/_includes/**/*',
+                'src/js/**/*',
+            ]
+
+            const found = []
+
+            for (const pattern of patterns) {
+                const newFound = glob.sync(pattern, { cwd: __dirname })
+                    .filter((p) => !fs.statSync(p).isDirectory())
+
+                found.push(...newFound)
+            }
+
+            return found
+        },
+    })
 ]
 
 const devConfig = {
