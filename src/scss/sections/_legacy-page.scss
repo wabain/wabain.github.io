@@ -3,7 +3,7 @@
 
   grid-template-areas: ". content content";
 
-  @media (min-width: $screen-md-min) {
+  @screen md {
     grid-template-areas: ". . content content";
   }
 }

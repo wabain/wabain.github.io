@@ -3,7 +3,7 @@
 
   grid-template-areas: "projects-text projects-text projects-text";
 
-  @media (min-width: $screen-md-min) {
+  @screen md {
     grid-template-areas: "projects-text projects-text . .";
   }
 }
@@ -11,8 +11,9 @@
 .projects-head-text {
   grid-area: projects-text;
 
-  @media (min-width: $screen-md-min) {
-    margin-right: 7px;
+  @screen md {
+    @apply .mr-2;
+
     justify-self: end;
   }
 }
@@ -24,13 +25,13 @@
     ". lisp-header"
     ". lisp-text";
 
-  @media (min-width: $screen-sm-min) {
+  @screen sm {
     grid-template-areas:
       ". lisp-header lisp-header"
       ". lisp-text lisp-text";
   }
 
-  @media (min-width: $screen-md-min) {
+  @screen md {
     grid-template-areas:
       ". . lisp-header lisp-header"
       ". . lisp-text lisp-text";
@@ -52,13 +53,13 @@
     ". oss-header"
     ". oss-text";
 
-  @media (min-width: $screen-sm-min) {
+  @screen sm {
     grid-template-areas:
       ". oss-header oss-header"
       ". oss-text oss-text";
   }
 
-  @media (min-width: $screen-md-min) {
+  @screen md {
     grid-template-areas:
       ". . oss-header oss-header"
       ". . oss-text oss-text";
@@ -81,7 +82,7 @@
     ". image image image"
     ". text text .";
 
-  @media (min-width: $screen-md-min) {
+  @screen md {
     grid-template-areas:
       ". . header header"
       ". image image text";
@@ -93,17 +94,11 @@
 }
 
 .ddmal-image {
-  grid-area: image;
-
-  img {
-    max-width: 100%;
-    object-fit: contain;
-
-    @media (min-width: $screen-md-min) {
-      margin-top: 1.67rem;
-      max-width: $grid-size * 2 - $eight-grid-size;
-    }
+  @screen md {
+    @apply .mr-8;
   }
+
+  grid-area: image;
 }
 
 .ddmal-text {

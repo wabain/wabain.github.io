@@ -8,6 +8,5 @@
 }
 
 .loading-indicator {
-  display: block;
-  margin: 1em auto 0;
+  @apply .block .mt-4 .ml-auto .mr-auto;
 }

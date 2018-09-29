@@ -1,19 +1,5 @@
+// Keep variables in sync with tailwind.js!
 $grid-size: 320px;
-$half-grid-size: 160px;
-$quart-grid-size: 80px;
-$eight-grid-size: 40px;
-
-$color-primary: #5076be;
-$color-primary-light: #85afff;
-$color-primary-dark: #243f71;
-$color-complement: #f2b632;
-
-$off-black: #222;
-$light-gray: #f0f0f0;
-
-$link-color: $color-primary;
-$link-hover-color: $color-primary-light;
-$link-active-color: $color-complement;
 
 $screen-md-min: $grid-size * 3;
 $screen-sm-max: $screen-md-min - 1px;
@@ -21,14 +7,19 @@ $screen-sm-min: $grid-size * 2;
 $screen-xs-max: $screen-sm-min - 1px;
 
 // Base imports
-@import url("~normalize.css");
+@tailwind preflight;
+@tailwind components;
+
 @import "text-formatting";
-@import "utils";
 @import "layout-scaffolding";
+
 // Sections
 @import "sections/header";
 @import "sections/about";
 @import "sections/projects";
 @import "sections/legacy-page";
+
 // Utilities
 @import "loading-effects";
+
+@tailwind utilities;

@@ -164,6 +164,15 @@ module.exports = {
     rules: {
         'string-quotes': 'double',
         'order/properties-order': [concentricOrder, { unspecified: 'bottom' }],
-        'at-rule-no-unknown': [true, { ignoreAtRules: ['extend'] }],
+        'at-rule-no-unknown': [true, {
+            ignoreAtRules: [
+                // sass
+                'extend',
+                // tailwind
+                'tailwind',
+                'apply',
+                'screen',
+            ],
+        }],
     }
 }
