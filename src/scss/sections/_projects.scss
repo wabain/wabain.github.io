@@ -26,8 +26,8 @@
 
   @media (min-width: $screen-sm-min) {
     grid-template-areas:
-      ". . lisp-header"
-      ". . lisp-text";
+      ". lisp-header lisp-header"
+      ". lisp-text lisp-text";
   }
 
   @media (min-width: $screen-md-min) {
@@ -43,7 +43,6 @@
 
 .cisco-lisp-text {
   grid-area: lisp-text;
-  max-width: $grid-size * 2;
 }
 
 .oss {
