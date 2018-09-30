@@ -1,6 +1,4 @@
-.projects-head {
-  @extend %grid-base;
-
+.grid-projects-head {
   grid-template-areas: "projects-text projects-text projects-text";
 
   @media (min-width: $screen-md-min) {
@@ -8,7 +6,7 @@
   }
 }
 
-.projects-head-text {
+.grid-projects-head-text {
   grid-area: projects-text;
 
   @media (min-width: $screen-md-min) {
@@ -17,65 +15,59 @@
   }
 }
 
-.cisco-lisp {
-  @extend %grid-base;
-
+.grid-cisco-lisp {
   grid-template-areas:
-    ". lisp-header"
-    ". lisp-text";
+    ". header"
+    ". text";
 
   @media (min-width: $screen-sm-min) {
     grid-template-areas:
-      ". lisp-header lisp-header"
-      ". lisp-text lisp-text";
+      ". header header"
+      ". text text";
   }
 
   @media (min-width: $screen-md-min) {
     grid-template-areas:
-      ". . lisp-header lisp-header"
-      ". . lisp-text lisp-text";
+      ". . header header"
+      ". . text text";
   }
 }
 
-.cisco-lisp-header {
-  grid-area: lisp-header;
+.grid-cisco-lisp-header {
+  grid-area: header;
 }
 
-.cisco-lisp-text {
-  grid-area: lisp-text;
+.grid-cisco-lisp-text {
+  grid-area: text;
 }
 
-.oss {
-  @extend %grid-base;
-
+.grid-oss {
   grid-template-areas:
-    ". oss-header"
-    ". oss-text";
+    ". header"
+    ". text";
 
   @media (min-width: $screen-sm-min) {
     grid-template-areas:
-      ". oss-header oss-header"
-      ". oss-text oss-text";
+      ". header header"
+      ". text text";
   }
 
   @media (min-width: $screen-md-min) {
     grid-template-areas:
-      ". . oss-header oss-header"
-      ". . oss-text oss-text";
+      ". . header header"
+      ". . text text";
   }
 }
 
-.oss-header {
-  grid-area: oss-header;
+.grid-oss-header {
+  grid-area: header;
 }
 
-.oss-text {
-  grid-area: oss-text;
+.grid-oss-text {
+  grid-area: text;
 }
 
-.ddmal {
-  @extend %grid-base;
-
+.grid-ddmal {
   grid-template-areas:
     ". header header ."
     ". image image image"
@@ -95,11 +87,11 @@
   }
 }
 
-.ddmal-header {
+.grid-ddmal-header {
   grid-area: header;
 }
 
-.ddmal-image {
+.grid-ddmal-image {
   grid-area: image;
 
   @media (min-width: $screen-lg-min) {
@@ -113,6 +105,6 @@
   }
 }
 
-.ddmal-text {
+.grid-ddmal-text {
   grid-area: text;
 }

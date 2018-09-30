@@ -36,7 +36,7 @@ body {
 //
 // On larger screens, three or four columns are allocated for the primary
 // content (although there may be more space available).
-%grid-base {
+.grid-base {
   display: grid;
   grid-template-columns: $xs-main-margin-pct auto 0 $xs-main-margin-pct;
 
