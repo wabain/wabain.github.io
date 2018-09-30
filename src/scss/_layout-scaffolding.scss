@@ -34,9 +34,9 @@ body {
 // sized grid cell is left so that the grid definition matches the shape on
 // small screens, where two fixed-sized columns are available.
 //
-// On larger screens, three columns are allocated for the primary content
-// (although there may be more space available).
-%grid-base {
+// On larger screens, three or four columns are allocated for the primary
+// content (although there may be more space available).
+.grid-base {
   display: grid;
   grid-template-columns: $xs-main-margin-pct auto 0 $xs-main-margin-pct;
 
