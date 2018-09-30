@@ -3,6 +3,7 @@ const colors = {
 
     'off-black': '#222',
     'gray-light': '#f0f0f0',
+    'gray-lighter': '#fafafa',
 
     'primary': '#5076be',
     'primary-light': '#85afff',
@@ -538,6 +539,8 @@ module.exports = {
 
     zIndex: {
         'auto': 'auto',
+        '-20': -20,
+        '-10': -10,
         '0': 0,
         '10': 10,
         '20': 20,

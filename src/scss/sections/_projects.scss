@@ -1,3 +1,17 @@
+.projects-bg {
+  @extend %grid-base;
+
+  grid-template-areas: ". bg bg";
+
+  @screen md {
+    grid-template-areas: ". . bg bg";
+  }
+}
+
+.projects-bg-pane {
+  grid-area: bg;
+}
+
 .projects-head {
   @extend %grid-base;
 
@@ -94,10 +108,6 @@
 }
 
 .ddmal-image {
-  @screen md {
-    @apply .mr-8;
-  }
-
   grid-area: image;
 }
 
