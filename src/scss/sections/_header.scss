@@ -1,7 +1,5 @@
 // Display inline if there is space, or collapse into multiple lines
-.header-block {
-  @extend %grid-base;
-
+.grid-header {
   @apply .mb-8;
 
   grid-template-areas:
@@ -36,7 +34,7 @@
   }
 }
 
-.navbar {
+.grid-header-navbar {
   grid-area: nav;
   align-self: end;
   justify-self: end;
@@ -59,11 +57,11 @@
 }
 
 @screen md {
-  .header-block h1 {
+  .grid-header h1 {
     @apply .mt-0 .mb-0 .mr-2;
   }
 
-  .navbar {
+  .grid-header-navbar {
     justify-self: normal;
 
     > ul {

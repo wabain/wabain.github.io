@@ -16,7 +16,7 @@ body {
 //
 // On larger screens, three columns are allocated for the primary content
 // (although there may well be more available)
-%grid-base {
+.grid-base {
   display: grid;
   grid-template-columns: 1fr $grid-size 0 1fr;
 

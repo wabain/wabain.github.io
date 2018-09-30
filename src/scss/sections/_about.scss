@@ -1,6 +1,4 @@
-.about {
-  @extend %grid-base;
-
+.grid-about {
   grid-template-areas:
     ". about-intro"
     ". about-more"
@@ -25,14 +23,14 @@
   @apply .text-2xl .mt-8 .mb-8;
 }
 
-.about-intro {
+.grid-about-intro {
   grid-area: about-intro;
 }
 
-.about-more {
+.grid-about-more {
   grid-area: about-more;
 }
 
-.about-close {
+.grid-about-close {
   grid-area: about-close;
 }

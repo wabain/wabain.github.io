@@ -1,8 +1,15 @@
 {% assign index_page = (site.pages | where: 'path', 'index.html' | first) %}
 
-<header class="header-block">
-  <h1><a href="{{ index_page.url }}" {% if index_page.url == page.url %} class="active-link" {% endif %} data-pagetitle="{{ index_page.title }}">William Bain</a></h1>
-  <nav class="navbar">
+<header class="grid-base grid-header">
+  <h1>
+    <a
+      href="{{ index_page.url }}"
+      {% if index_page.url == page.url %} class="active-link" {% endif %}
+      data-pagetitle="{{ index_page.title }}">
+      William Bain
+    </a>
+  </h1>
+  <nav class="grid-header-navbar">
     <ul>
       {% assign nav_pages = site.pages | sort: 'nav_priority' %}
       {% for nav_page in nav_pages %}

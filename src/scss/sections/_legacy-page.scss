@@ -1,6 +1,4 @@
-.legacy-page {
-  @extend %grid-base;
-
+.grid-legacy-page {
   grid-template-areas: ". content content";
 
   @screen md {
@@ -8,6 +6,6 @@
   }
 }
 
-.legacy-page-content {
+.grid-legacy-page-content {
   grid-area: content;
 }

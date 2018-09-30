@@ -1,6 +1,4 @@
-.projects-bg {
-  @extend %grid-base;
-
+.grid-projects-bg {
   grid-template-areas: ". bg bg";
 
   @screen md {
@@ -8,13 +6,11 @@
   }
 }
 
-.projects-bg-pane {
+.grid-projects-bg-pane {
   grid-area: bg;
 }
 
-.projects-head {
-  @extend %grid-base;
-
+.grid-projects-head {
   grid-template-areas: "projects-text projects-text projects-text";
 
   @screen md {
@@ -22,7 +18,7 @@
   }
 }
 
-.projects-head-text {
+.grid-projects-head-text {
   grid-area: projects-text;
 
   @screen md {
@@ -32,9 +28,7 @@
   }
 }
 
-.cisco-lisp {
-  @extend %grid-base;
-
+.grid-cisco-lisp {
   grid-template-areas:
     ". lisp-header"
     ". lisp-text";
@@ -52,17 +46,15 @@
   }
 }
 
-.cisco-lisp-header {
+.grid-cisco-lisp-header {
   grid-area: lisp-header;
 }
 
-.cisco-lisp-text {
+.grid-cisco-lisp-text {
   grid-area: lisp-text;
 }
 
-.oss {
-  @extend %grid-base;
-
+.grid-oss {
   grid-template-areas:
     ". oss-header"
     ". oss-text";
@@ -80,17 +72,15 @@
   }
 }
 
-.oss-header {
+.grid-oss-header {
   grid-area: oss-header;
 }
 
-.oss-text {
+.grid-oss-text {
   grid-area: oss-text;
 }
 
-.ddmal {
-  @extend %grid-base;
-
+.grid-ddmal {
   grid-template-areas:
     ". header header ."
     ". image image image"
@@ -103,14 +93,14 @@
   }
 }
 
-.ddmal-header {
+.grid-ddmal-header {
   grid-area: header;
 }
 
-.ddmal-image {
+.grid-ddmal-image {
   grid-area: image;
 }
 
-.ddmal-text {
+.grid-ddmal-text {
   grid-area: text;
 }
