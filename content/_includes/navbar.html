@@ -1,6 +1,6 @@
 {% assign index_page = (site.pages | where: 'path', 'index.html' | first) %}
 
-<header class="grid-base grid-header">
+<header data-region-id="page-header" class="grid-base grid-header">
   <h1>
     <a
       href="{{ index_page.url }}"

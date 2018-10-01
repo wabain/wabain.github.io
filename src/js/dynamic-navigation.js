@@ -56,7 +56,7 @@ function parseTitle(title) {
     debug('initialize at %s, state %o', currentHref, initialPageData.state);
 
     // Bind local links in the header
-    $('.header-block a[href]').filter(function () {
+    $('[data-region-id="page-header"] a[href]').filter(function () {
       return isRelativeHref($(this).attr('href'));
     }).on('click', doDynamicNavigation);
 
@@ -147,8 +147,7 @@ function parseTitle(title) {
     $contentElem.addClass('fading faded-out');
 
     // Update the links in the navbar
-    $('nav a[href]').not(navLink).removeClass('active-link');
-    $('.header-block a[href]').not(navLink).removeClass('active-link');
+    $('[data-region-id="primary-content"]').not(navLink).removeClass('active-link');
     navLink.addClass('active-link');
 
     var loadNewContent = loadSectionPartial(href).fail(function () {
@@ -202,7 +201,7 @@ function parseTitle(title) {
   }
 
   function getNavLink(href) {
-    return $('nav a[href="'+href+'"]');
+    return $('[data-region-id="page-header"] a[href="'+href+'"]');
   }
 
   function handlePopState(e) {
@@ -236,7 +235,7 @@ function parseTitle(title) {
   }
 
   function getContentElem() {
-    var $contentElem = $('section.content');
+    var $contentElem = $('[data-region-id="primary-content"]');
     if ($contentElem.length === 0) return null;
     if ($contentElem.length > 1) return $contentElem.first();
     return $contentElem;
