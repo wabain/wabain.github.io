@@ -31,6 +31,16 @@ h2 {
   font-size: 1.3rem;
 }
 
+.longform {
+  margin: 0 0 1.2rem;
+  line-height: 1.5;
+  font-size: 17px;
+
+  @media (min-width: $screen-sm-min) {
+    font-size: 19px;
+  }
+}
+
 a {
   text-decoration: none;
   color: $link-color;
@@ -44,4 +54,12 @@ a {
   &.active-link {
     color: $link-active-color;
   }
+}
+
+// pre with syntax highlighting
+pre.highlight {
+  border-top: 1px solid $light-gray;
+  border-bottom: 1px solid $light-gray;
+  padding: 0.5rem 0;
+  overflow-x: auto;
 }

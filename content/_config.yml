@@ -1,7 +1,8 @@
 plugins:
   - jekyll-redirect-from
-incremental:
-  true
+# builds are fast enough that there's no need for the occasional
+# soundness issues that incremental builds create
+incremental: false
 include:
   - .site-meta.json
 defaults:
@@ -11,6 +12,12 @@ defaults:
     values:
       assets_dir: "/home-assets"
       layout: "page"
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
   -
     scope:
       path: "section-partial"
