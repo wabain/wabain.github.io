@@ -253,7 +253,7 @@ class NavigablePage {
 
         try {
             // should have new content
-            const contentSection = await driver.findElement(By.css('section.content'), 1000)
+            const contentSection = await driver.findElement(By.css('[data-region-id="primary-content"]'), 1000)
             const transitionClass = /\bfaded\b/  // could use a nicer way to do this
 
             while (transitionClass.test(await contentSection.getAttribute('className'))) {
@@ -285,7 +285,7 @@ class NavigablePage {
 
     async getHeaderElement({ window }) {
         const driver = await window.resolveDriver()
-        const elem = await driver.findElement(By.css('header.header-block'))
+        const elem = await driver.findElement(By.css('[data-region-id="page-header"]'))
         if (!elem) {
             throw new Error('Could not find header')
         }
