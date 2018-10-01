@@ -3,6 +3,10 @@ import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './norma
 
 var debug = debugFactory('dynamic-navigation');
 
+function trace(key) {
+  localStorage.setItem('trace:' + key, (localStorage.getItem('trace:' + key) | 0) + 1)
+}
+
 /**
  * Parse the document's title. The base title is all text up to the final "-",
  * excluding trailing whitespace. Subsequent text is the page title.
@@ -79,13 +83,16 @@ function parseTitle(title) {
     // to click, then the page probably hasn't been responding as desired.
     if (isCurrentLocation(href)) {
       debug('dynamic navigation for current location, allowing default');
+      trace('isCurrentHref')
       return;
     }
 
     // If the href is null (perhaps because it was absolute) then return
     // and let the default occur.
-    if (!href)
+    if (!href) {
+      trace('noLocalHref')
       return;
+    }
 
     // Stop the page from reloading
     e.preventDefault();
@@ -152,6 +159,7 @@ function parseTitle(title) {
 
     var loadNewContent = loadSectionPartial(href).fail(function () {
       debugLoad('failed to resolve partial, doing hard load', href);
+      trace('noResolve')
       window.location = href;
     });
 

@@ -216,6 +216,17 @@ class SiteWindow {
     async hasReloaded() {
         const driver = await this.resolveDriver()
         const sentinel = await driver.executeScript('return !!window.__navTestSentinel')
+
+        if (!sentinel) {
+            console.log(await driver.executeScript(`
+                var obj = {}
+                obj['trace:isCurrentHref'] = localStorage.getItem('trace:isCurrentHref') | 0
+                obj['trace:noLocalHref'] = localStorage.getItem('trace:noLocalHref') | 0
+                obj['trace:noResolve'] = localStorage.getItem('trace:noResolve') | 0
+                return obj
+            `))
+        }
+
         return !sentinel
     }
 
