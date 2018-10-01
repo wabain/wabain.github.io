@@ -1,0 +1,22 @@
+---
+title: Blog
+in_nav: true
+nav_priority: 2
+---
+
+<section data-page-meta="Blog">
+    <div class="grid-base grid-blog">
+        <div class="grid-blog-header">
+            <h2>Blog</h2>
+        </div>
+        <div class="grid-blog-listing">
+            {% for post in site.posts %}
+            <a href="{{ post.url }}" class="blog-post-link">
+                <h3>{{ post.title }}</h3>
+                <div>{{ post.date | date: "%B %-d, %Y" }}</div>
+                <div class="blog-post-excerpt">{{ post.excerpt | strip_html }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>

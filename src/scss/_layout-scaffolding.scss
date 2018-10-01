@@ -1,11 +1,15 @@
 $xs-main-margin-pct:
   percentage($quart-grid-size / (floor($screen-sm-min / $grid-size) * $grid-size));
 
-body {
-  // The normalize stylesheet ensures there's no body margin
+// The container is a top-level element wrapper within the body.
+// The normalize stylesheet ensures there's no body margin.
+.container {
+  box-sizing: border-box;
   background:
     url("../buildtime-assets/img/grid-bg-line-start.svg") left $xs-main-margin-pct center repeat-y,
     url("../buildtime-assets/img/grid-bg-line-end.svg") right $xs-main-margin-pct center repeat-y;
+  padding-top: $eight-grid-size;
+  min-height: 100vh;
 
   @media (min-width: $screen-sm-min) {
     background: url("../buildtime-assets/img/grid-bg-center-2x.svg") center repeat-y;
@@ -22,10 +26,18 @@ body {
       url("../buildtime-assets/img/grid-bg-center-hide.svg") center repeat-y,
       url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
   }
-}
 
-.container {
-  margin-top: $eight-grid-size;
+  .content-longform & {
+    background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
+
+    @media (min-width: $screen-sm-min) {
+      background: url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg") center repeat-y;
+    }
+
+    @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
+      background-position-x: left $grid-size;
+    }
+  }
 }
 
 // Base definition for the layout grid
@@ -37,6 +49,12 @@ body {
 //
 // On larger screens, three or four columns are allocated for the primary
 // content (although there may be more space available).
+//
+// Given longform content, the same rules apply except that the right margin
+// on small screens is fixed to allow a little more space, and instead of
+// space being evenly distributed to the right and left on medium-sized screens,
+// where there are between 3 and 4 columns available, all the space is allocated
+// to the right to keep the content closer to center.
 .grid-base {
   display: grid;
   grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $xs-main-margin-pct;
@@ -51,5 +69,21 @@ body {
 
   @media (min-width: $screen-lg-min) {
     grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
+  }
+
+  .content-longform & {
+    grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $sixteenth-grid-size;
+
+    @media (min-width: $screen-sm-min) {
+      grid-template-columns: 1fr $grid-size $grid-size 1fr;
+    }
+
+    @media (min-width: $screen-md-min) {
+      grid-template-columns: 0 repeat(3, $grid-size) minmax(0, auto);
+    }
+
+    @media (min-width: $screen-lg-min) {
+      grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
+    }
   }
 }

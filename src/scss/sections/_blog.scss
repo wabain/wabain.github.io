@@ -1,0 +1,46 @@
+.grid-blog {
+  grid-template-areas:
+    "header header header"
+    ". listing listing";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". header . ."
+      ". . listing listing";
+  }
+}
+
+.grid-blog-header {
+  grid-area: header;
+
+  @media (min-width: $screen-md-min) {
+    margin-right: 7px;
+    justify-self: end;
+  }
+}
+
+.grid-blog-listing {
+  grid-area: listing;
+}
+
+.blog-post-link,
+.blog-post-link:hover {
+  display: block;
+  margin-bottom: 2rem;
+  text-decoration: none;
+  color: inherit;
+
+  h3 {
+    margin: 0 0 0.5rem;
+  }
+}
+
+.blog-post-link:hover h3 {
+  color: $color-primary-light;
+}
+
+.blog-post-excerpt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
