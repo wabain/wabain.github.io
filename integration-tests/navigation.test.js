@@ -55,7 +55,17 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await page.verifyBasicProperties({ window })
     })
 
-    it.skip('should do local navigation without reload', async () => {
+    it('should do local navigation without reload', async function() {
+
+        // Occasionally, the Jekyll server seems to fail when a page partial
+        // is requested. This results in the dynamic navigation code performing
+        // its fallback action, which is to reload. I don't have the time or
+        // inclination to track down why this happens, so I'm just adding
+        // a retry for now. Apart from fixing this, or not using jekyll's
+        // embedded server, my best mitigation idea is to stick some tracing
+        // data in localStorage so I can detect the failure cause.
+        this.retries(2)
+
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
@@ -71,7 +81,11 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await navigateToPage(window, secondPage, firstPage)
     })
 
-    it.skip('should handle history navigation without reload', async () => {
+    it('should handle history navigation without reload', async function() {
+
+        // See comment on "...should do local navigation without reload"
+        this.retries(2)
+
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters
