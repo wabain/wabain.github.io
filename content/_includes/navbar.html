@@ -1,6 +1,6 @@
 {% assign index_page = (site.pages | where: 'path', 'index.html' | first) %}
 
-<header class="header-block">
+<header data-region-id="page-header" class="header-block">
   <h1><a href="{{ index_page.url }}" {% if index_page.url == page.url %} class="active-link" {% endif %} data-pagetitle="{{ index_page.title }}">William Bain</a></h1>
   <nav class="navbar">
     <ul>
