@@ -17,6 +17,10 @@
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-51279886-1"></script>
   <script>
+    if (location.hostname !== 'wabain.github.io') {
+      window['ga-disable-UA-51279886-1'] = true
+    }
+
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
