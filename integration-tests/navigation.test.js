@@ -4,33 +4,36 @@ const { Builder, By, until } = require('selenium-webdriver')
 const { StaleElementReferenceError } = require('selenium-webdriver/lib/error')
 const expect = require('expect')
 
-module.exports = function ({ origin, browser, siteMeta }) {
-    describe('navigation', function () {
-        const ctx = this
-        ctx.timeout(10000)  // We're gonna be sloooow
+describe('navigation', function () {
+    const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL
+    const { origin, browser, siteMeta } = global
+    const ctx = this
 
-        before(async () => {
-            ctx.webdriver = new Builder()
-                .forBrowser(browser)
-                .build()
+    beforeAll(async () => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000  // We're gonna be sloooow
 
-            ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
-                origin,
-                driver: ctx.webdriver,
-            })
+        ctx.webdriver = new Builder()
+            .forBrowser(browser)
+            .build()
+
+        ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
+            origin,
+            driver: ctx.webdriver,
         })
-
-        after(() => {
-            ctx.webdriver.quit()
-        })
-
-        for (const pageParameters of siteMeta.pages) {
-            describe(`page ${pageParameters.url}`, () => {
-                testPageNavigation({ ctx, origin, pageParameters, siteMeta })
-            })
-        }
     })
-}
+
+    afterAll(() => {
+        ctx.webdriver.quit()
+
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout
+    })
+
+    for (const pageParameters of siteMeta.pages) {
+        describe(`page ${pageParameters.url}`, () => {
+            testPageNavigation({ ctx, origin, pageParameters, siteMeta })
+        })
+    }
+})
 
 /**
  * Test navigation from the given page
@@ -64,7 +67,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         // a retry for now. Apart from fixing this, or not using jekyll's
         // embedded server, my best mitigation idea is to stick some tracing
         // data in localStorage so I can detect the failure cause.
-        this.retries(2)
+        // this.retries(2)
 
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
@@ -84,7 +87,8 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
     it('should handle history navigation without reload', async function() {
 
         // See comment on "...should do local navigation without reload"
-        this.retries(2)
+        // this.retries(2)
+        await sleep(1000)
 
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
@@ -122,7 +126,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         let page
         let window
 
-        before(async () => {
+        beforeEach(async () => {
             window = ctx.siteWindow
             page = new NavigablePage(pageParameters)
             await window.load({ page })
