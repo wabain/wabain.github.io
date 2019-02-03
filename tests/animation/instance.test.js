@@ -136,30 +136,30 @@ describe('animation instance', () => {
         })
     })
 
-    it('should warn and handle illegal transitions')
+    // it('should warn and handle illegal transitions')
 
-    it('should handle transition tweens'/*, () => {
-        const queue = createQueue()
+    // it('should handle transition tweens'/*, () => {
+    //     const queue = createQueue()
 
-        const { tracker: aTracker, action: aAction } = getActionTracker()
-        const { tracker: bTracker, action: bAction } = getActionTracker()
+    //     const { tracker: aTracker, action: aAction } = getActionTracker()
+    //     const { tracker: bTracker, action: bAction } = getActionTracker()
 
-        const states = [
-            { name: 'A', action: aAction },
-            { name: 'B', action: bAction },
-        ]
+    //     const states = [
+    //         { name: 'A', action: aAction },
+    //         { name: 'B', action: bAction },
+    //     ]
 
-        const transitions = [
-            { from: 'A', to: 'B' },
-        ]
+    //     const transitions = [
+    //         { from: 'A', to: 'B' },
+    //     ]
 
-    }*/)
+    // }*/)
 
-    it('should handle transition interruption', () => {
+    // it('should handle transition interruption', () => {
 
-    })
+    // })
 
-    it('should throw early(?) on transition interruption with incompatible tweens')
+    // it('should throw early(?) on transition interruption with incompatible tweens')
 })
 
 function createQueue() {

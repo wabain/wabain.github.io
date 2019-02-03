@@ -53,9 +53,20 @@
   },
   "jest": {
     "verbose": true,
-    "testMatch": [
-      "<rootDir>/integration-tests/**/*.test.js"
-    ],
-    "testEnvironment": "<rootDir>/integration-tests/integration-environment.js"
+    "projects": [
+      {
+        "displayName": "unit-tests",
+        "testMatch": [
+          "<rootDir>/tests/**/*.test.js"
+        ]
+      },
+      {
+        "displayName": "integration-tests",
+        "testMatch": [
+          "<rootDir>/integration-tests/**/*.test.js"
+        ],
+        "testEnvironment": "<rootDir>/integration-tests/integration-environment.js"
+      }
+    ]
   }
 }
