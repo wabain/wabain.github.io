@@ -280,8 +280,8 @@ function createPageContentAnimation(dispatcher, contentElem) {
     prop: 'opacity',
     start: 1,
     end: 0,
-    // duration: 500,
-    duration: 5000,
+    duration: 500,
+    // duration: 5000,
   });
 
   var transitions = [
