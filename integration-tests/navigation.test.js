@@ -26,8 +26,8 @@ describe('navigation', function () {
         })
     })
 
-    afterAll(() => {
-        ctx.webdriver.quit()
+    afterAll(async () => {
+        await ctx.webdriver.quit()
 
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout
     })
