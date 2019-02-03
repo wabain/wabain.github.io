@@ -2,6 +2,8 @@
 
 const { Builder, By, until } = require('selenium-webdriver')
 const { StaleElementReferenceError } = require('selenium-webdriver/lib/error')
+const { Options: FirefoxOptions } = require('selenium-webdriver/firefox')
+const { Options: ChromeOptions } = require('selenium-webdriver/chrome')
 const expect = require('expect')
 
 module.exports = function ({ origin, browser, siteMeta }) {
@@ -12,6 +14,8 @@ module.exports = function ({ origin, browser, siteMeta }) {
         before(async () => {
             ctx.webdriver = new Builder()
                 .forBrowser(browser)
+                .setFirefoxOptions((new FirefoxOptions()).headless())
+                .setChromeOptions((new ChromeOptions()).headless())
                 .build()
 
             ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
