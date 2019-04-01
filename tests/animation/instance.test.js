@@ -42,7 +42,7 @@ describe('animation instance', () => {
         }).toThrow()
     })
 
-    it('should throw if state change requested before install')
+    it.todo('should throw if state change requested before install')
 
     it('should handle single- and bidirectional state transitions', () => {
         const queue = createQueue()
@@ -136,30 +136,28 @@ describe('animation instance', () => {
         })
     })
 
-    // it('should warn and handle illegal transitions')
+    it.todo('should warn and handle illegal transitions')
 
-    // it('should handle transition tweens'/*, () => {
-    //     const queue = createQueue()
+    it.todo('should handle transition tweens'/*, () => {
+        const queue = createQueue()
 
-    //     const { tracker: aTracker, action: aAction } = getActionTracker()
-    //     const { tracker: bTracker, action: bAction } = getActionTracker()
+        const { tracker: aTracker, action: aAction } = getActionTracker()
+        const { tracker: bTracker, action: bAction } = getActionTracker()
 
-    //     const states = [
-    //         { name: 'A', action: aAction },
-    //         { name: 'B', action: bAction },
-    //     ]
+        const states = [
+            { name: 'A', action: aAction },
+            { name: 'B', action: bAction },
+        ]
 
-    //     const transitions = [
-    //         { from: 'A', to: 'B' },
-    //     ]
+        const transitions = [
+            { from: 'A', to: 'B' },
+        ]
 
-    // }*/)
+    }*/)
 
-    // it('should handle transition interruption', () => {
+    it.todo('should handle transition interruption')
 
-    // })
-
-    // it('should throw early(?) on transition interruption with incompatible tweens')
+    it.todo('should throw early(?) on transition interruption with incompatible tweens')
 })
 
 function createQueue() {

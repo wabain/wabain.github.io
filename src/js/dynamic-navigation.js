@@ -136,10 +136,12 @@ function parseTitle(title) {
     var cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href);
 
     debug('load %s: requesting partial %s', href, cacheUrl);
-    return $.get(cacheUrl).then(function (newContent) {
-      debug('load %s: writing entry to cache', href);
-      cache[href] = newContent;
-      return newContent;
+    return waitFor(5000).then(() => {
+      return $.get(cacheUrl).then(function (newContent) {
+        debug('load %s: writing entry to cache', href);
+        // cache[href] = newContent;
+        return newContent;
+      });
     });
   }
 
@@ -284,6 +286,11 @@ function createPageContentAnimation(dispatcher, contentElem) {
     // duration: 5000,
   });
 
+  var hideContentAction = classSetAction({
+    el: contentElem,
+    cls: 'hidden',
+  })
+
   var transitions = [
     {
       from: CONTENT_VISIBLE,
@@ -294,6 +301,7 @@ function createPageContentAnimation(dispatcher, contentElem) {
     {
       from: CONTENT_HIDDEN,
       to: CONTENT_LOADING,
+      bidir: true,
     },
     {
       from: CONTENT_LOADING,
@@ -309,21 +317,21 @@ function createPageContentAnimation(dispatcher, contentElem) {
     },
     {
       name: CONTENT_HIDDEN,
-      action: classSetAction({
-        el: contentElem,
-        cls: 'hidden',
-      }),
+      action: hideContentAction,
     },
     {
       name: CONTENT_LOADING,
-      action: appendElemAction({
-        parent: document.body,
-        getEl: function () {
-          var loadingIndicator =
-                jQuery('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
-          return loadingIndicator[0];
-        },
-      })
+      action: [
+        hideContentAction,
+        appendElemAction({
+          parent: document.body,
+          getEl: function () {
+            var loadingIndicator =
+                  jQuery('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
+            return loadingIndicator[0];
+          },
+        }),
+      ]
     }
   ];
 

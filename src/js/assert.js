@@ -1,3 +1,10 @@
+import process from 'process'
+
+let doThrowOnRecoverable = (process.env.NODE_ENV === 'test')
+
+/**
+ * Assert that the condition is true, throwing an error if it is not.
+ */
 export function assert(cond, msg) {
     if (cond) {
         return
@@ -13,6 +20,9 @@ export function assert(cond, msg) {
     throw new Error(formattedMsg)
 }
 
+/**
+ * Assert that the condition is true, logging a warning if it is not.
+ */
 export function assertWarning(cond, msg) {
     if (cond) {
         return cond
@@ -24,20 +34,24 @@ export function assertWarning(cond, msg) {
         args.push(arguments[i])
     }
 
-    var formattedMsg = 'Assert: ' + format(msg, args)
-
-    console.error(formattedMsg) // eslint-disable-line no-console
+    var formattedMsg = 'Assert(warning): ' + format(msg, args)
+    hitRecoverableError(formattedMsg)
     return cond
 }
 
-var registeredNotifiers = []
-
-export function registerErrorNotifier() {
-    // ...
-}
-
-export function notifyError(ctx, err) {
-
+export function hitRecoverableError(msg, err) {
+    if (doThrowOnRecoverable) {
+        if (err) {
+            console.error('[escalating recoverable] %s', msg, err)
+        }
+        throw new Error('[escalating recoverable] ' + msg)
+    } else {
+        const args = [msg]
+        if (err) {
+            args.push(err)
+        }
+        console.error(...args)  // eslint-disable-line no-console
+    }
 }
 
 /*

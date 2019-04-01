@@ -62,9 +62,50 @@ export default function AnimationInstance(dispatchQueue, transitions, states, in
 
     states.forEach(function (entry) {
         assert(!hasOwnProp(stateTable, entry.name))
+
+        let actions
+
+        if (Array.isArray(entry.action)) {
+            actions = entry.action
+        } else if (entry.action) {
+            actions = [entry.action]
+        } else {
+            actions = []
+        }
+
+        const enter = []
+        const exit = []
+
+        for (const action of actions) {
+            const enterCb = getProp(action, 'enter')
+            if (enterCb) {
+                enter.push(enterCb)
+            }
+
+            const exitCb = getProp(action, 'exit')
+            if (exitCb) {
+                exit.push(exitCb)
+            }
+        }
+
+        function mkCallback(e) {
+            const end = e.length
+            if (end === 0)
+                return null
+            return (state) => {
+                assert(!state || state.length === end, 'Unexpected state', state)
+                const retval = []
+                for (let i = 0; i < end; i++) {
+                    const out = e[i](state ? state[i] : undefined)
+                    retval.push(out)
+                }
+                return retval
+            }
+        }
+
         stateTable[entry.name] = {
-            enter: getProp(entry.action, 'enter'),
-            exit: getProp(entry.action, 'exit'),
+            enter: mkCallback(enter),
+            exit: mkCallback(exit),
         }
     })
 

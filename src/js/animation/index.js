@@ -1,4 +1,4 @@
-import { assert } from '../assert'
+import { assert, hitRecoverableError } from '../assert'
 import AnimationInstance from './instance'
 export * from './updaters'
 
@@ -103,8 +103,7 @@ function invokeGuarded(fn, ctx, args, fallback, invocationDescription) {
     try {
         returned = fn.apply(ctx, args)
     } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('Error in ' + invocationDescription, e)
+        hitRecoverableError('Error in ' + invocationDescription, e)
     }
     return returned
 }
