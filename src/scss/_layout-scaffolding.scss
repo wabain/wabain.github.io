@@ -1,10 +1,20 @@
-// The normalize stylesheet ensures there's no body margin
-body {
-  background-image: url("../buildtime-assets/img/grid-bg.svg");
-  background-position: center;
+$xs-main-margin-pct: percentage($quart-grid-size / $screen-sm-min);
 
-  @media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
-    background-image: url("../buildtime-assets/img/grid-bg-center.svg");
+body {
+  // The normalize stylesheet ensures there's no body margin
+
+  background:
+    url("../buildtime-assets/img/grid-bg-line-start.svg") left $xs-main-margin-pct center repeat-y,
+    url("../buildtime-assets/img/grid-bg-line-end.svg") right $xs-main-margin-pct center repeat-y;
+
+  @media (min-width: $screen-sm-min) {
+    background: url("../buildtime-assets/img/grid-bg-center-2x.svg") center repeat-y;
+  }
+
+  @media (min-width: $screen-md-min) {
+    background:
+      url("../buildtime-assets/img/grid-bg-hide.svg") center repeat-y,
+      url("../buildtime-assets/img/grid-bg.svg") center repeat;
   }
 }
 
@@ -14,15 +24,15 @@ body {
 
 // Base definition for the layout grid
 //
-// On very small screens, one full column is available. A zero-sized grid
-// cell is left so that the shape of the grid matches the shape on small
-// screens, where two columns are available.
+// On very small screens, all space is allocated to a single column. A zero-
+// sized grid cell is left so that the grid definition matches the shape on
+// small screens, where two fixed-sized columns are available.
 //
 // On larger screens, three columns are allocated for the primary content
-// (although there may well be more available)
+// (although there may be more space available).
 %grid-base {
   display: grid;
-  grid-template-columns: 1fr $grid-size 0 1fr;
+  grid-template-columns: $xs-main-margin-pct auto 0 $xs-main-margin-pct;
 
   @media (min-width: $screen-sm-min) {
     grid-template-columns: 1fr $grid-size $grid-size 1fr;
