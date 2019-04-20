@@ -16,11 +16,9 @@ $link-color: $color-primary;
 $link-hover-color: $color-primary-light;
 $link-active-color: $color-complement;
 
-$screen-lg-min: $grid-size * 4;
-$screen-md-min: $grid-size * 3;
-$screen-sm-max: $screen-md-min - 1px;
-$screen-sm-min: $grid-size * 2;
-$screen-xs-max: $screen-sm-min - 1px;
+$screen-lg-min: $grid-size * 4 + $sixteenth-grid-size;
+$screen-md-min: $grid-size * 3 + $sixteenth-grid-size;
+$screen-sm-min: $grid-size * 2 + $sixteenth-grid-size;
 
 // Base imports
 @import url("~normalize.css");
