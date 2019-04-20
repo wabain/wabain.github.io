@@ -15,6 +15,12 @@ body {
       url("../buildtime-assets/img/grid-bg-hide.svg") center repeat-y,
       url("../buildtime-assets/img/grid-bg.svg") center repeat;
   }
+
+  @media (min-width: $screen-lg-min) {
+    background:
+      url("../buildtime-assets/img/grid-bg-center-hide.svg") center repeat-y,
+      url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
+  }
 }
 
 .container {
@@ -28,8 +34,8 @@ body {
 // that the grid definition matches the shape on small screens, where two
 // fixed-sized columns are available.
 //
-// On larger screens, three columns are allocated for the primary content
-// (although there may be more space available).
+// On larger screens, three or four columns are allocated for the primary
+// content (although there may be more space available).
 %grid-base {
   display: grid;
   grid-template-columns: $xs-main-margin-pct auto 0 $xs-main-margin-pct;
@@ -40,5 +46,9 @@ body {
 
   @media (min-width: $screen-md-min) {
     grid-template-columns: 1fr repeat(3, $grid-size) 1fr;
+  }
+
+  @media (min-width: $screen-lg-min) {
+    grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
   }
 }
