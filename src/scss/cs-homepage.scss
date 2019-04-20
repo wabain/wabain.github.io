@@ -2,6 +2,7 @@ $grid-size: 320px;
 $half-grid-size: 160px;
 $quart-grid-size: 80px;
 $eight-grid-size: 40px;
+$sixteenth-grid-size: 20px;
 
 $color-primary: #5076be;
 $color-primary-light: #85afff;
@@ -15,6 +16,7 @@ $link-color: $color-primary;
 $link-hover-color: $color-primary-light;
 $link-active-color: $color-complement;
 
+$screen-lg-min: $grid-size * 4;
 $screen-md-min: $grid-size * 3;
 $screen-sm-max: $screen-md-min - 1px;
 $screen-sm-min: $grid-size * 2;
