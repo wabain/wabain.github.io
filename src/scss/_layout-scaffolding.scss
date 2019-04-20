@@ -16,6 +16,12 @@ body {
       url("../buildtime-assets/img/grid-bg-hide.svg") center repeat-y,
       url("../buildtime-assets/img/grid-bg.svg") center repeat;
   }
+
+  @media (min-width: $screen-lg-min) {
+    background:
+      url("../buildtime-assets/img/grid-bg-center-hide.svg") center repeat-y,
+      url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
+  }
 }
 
 .container {
@@ -40,5 +46,9 @@ body {
 
   @media (min-width: $screen-md-min) {
     grid-template-columns: 1fr repeat(3, $grid-size) 1fr;
+  }
+
+  @media (min-width: $screen-lg-min) {
+    grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
   }
 }
