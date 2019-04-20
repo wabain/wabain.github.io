@@ -1,4 +1,5 @@
-$xs-main-margin-pct: percentage($quart-grid-size / $screen-sm-min);
+$xs-main-margin-pct:
+  percentage($quart-grid-size / (floor($screen-sm-min / $grid-size) * $grid-size));
 
 body {
   // The normalize stylesheet ensures there's no body margin
@@ -38,7 +39,7 @@ body {
 // content (although there may be more space available).
 .grid-base {
   display: grid;
-  grid-template-columns: $xs-main-margin-pct auto 0 $xs-main-margin-pct;
+  grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $xs-main-margin-pct;
 
   @media (min-width: $screen-sm-min) {
     grid-template-columns: 1fr $grid-size $grid-size 1fr;
