@@ -16,11 +16,12 @@
   grid-area: listing;
 }
 
-.blog-post-link, .blog-post-link:hover {
+.blog-post-link,
+.blog-post-link:hover {
   display: block;
-  color: inherit;
-  text-decoration: none;
   margin-bottom: 1.5rem;
+  text-decoration: none;
+  color: inherit;
 
   h3 {
     margin: 0 0 0.5rem;

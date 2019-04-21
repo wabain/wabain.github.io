@@ -20,19 +20,18 @@
 
 .grid-post-separator {
   grid-area: separator;
-  background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
-  height: 4px;
   transform: translateX(-$sixteenth-grid-size);
-
   margin-top: 10px;
   margin-bottom: 20px;
+  background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
+  height: 4px;
 
   @media (min-width: $screen-md-min) {
     transform: translateX($quart-grid-size);
-    width: $grid-size;
     margin-top: 0;
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
+    width: $grid-size;
   }
 }
 

@@ -25,17 +25,14 @@ body {
   }
 
   &.focused-content {
-    background:
-      url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
+    background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
 
     @media (min-width: $screen-sm-min) {
-      background:
-        url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg") center repeat-y;
+      background: url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg") center repeat-y;
     }
 
     @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
-      background:
-        url("../buildtime-assets/img/grid-bg-center-hl-start.svg") left $grid-size center repeat-y;
+      background: url("../buildtime-assets/img/grid-bg-center-hl-start.svg") left $grid-size center repeat-y;
     }
   }
 }
