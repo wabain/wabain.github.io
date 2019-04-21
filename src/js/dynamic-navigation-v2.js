@@ -24,29 +24,22 @@ export class DynamicNavDispatcher {
         this.cache = {}
         this._fetchIdx = 0
 
-        this.root = this.contentElem = this.navElem = null
-        this.baseTitle = parseTitle(document.title).base
-
         // Only initialize dynamic navigation if HTML5 history APIs are available
         if (!window.history || !window.history.pushState) {
             debug('bailing on initialization, no support for history api')
             return
         }
 
-        // Regions
-        this.root = document.body
-        this.contentElem = document.querySelector('[data-region-id="primary-content"]')
-        this.navElem = document.querySelector('[data-region-id="page-header"]')
-
-        if (!(this.root && this.contentElem && this.navElem)) {
-            debug('bailing, failed to find content element (url %s)', location.href)
+        this.pageTrans = PageTransformer.forDocument(document)
+        if (!this.pageTrans) {
+            debug('bailing, failed to find expected page areas (url %s)', location.href)
             return
         }
 
         this.cache[getDomainRelativeUrl(location.href)] =
-            Promise.resolve({ content: this.contentElem.innerHTML })
+            Promise.resolve({ content: this.pageTrans.currentContent })
 
-        this.root.addEventListener('click', this._handleClick, false)
+        this.pageTrans.root.addEventListener('click', this._handleClick, false)
         window.addEventListener('popstate', this._handlePopState, false)
     }
 
@@ -73,27 +66,11 @@ export class DynamicNavDispatcher {
             throw new Error('unexpected navigation to ' + href)
 
         debug('dynamic navigation triggered (href %s)', relative)
-
-        this._setDocTitle(null)
-        this._updateNavLinks({ active: relative })
         this._loadContent(relative)
     }
 
-    _updateNavLinks({ active }) {
-        const collection = this.navElem.getElementsByTagName('a')
-        const len = collection.length
-
-        for (let i = 0; i < len; i++) {
-            const elem = collection[i]
-            if (getDomainRelativeUrl(elem.href) === active) {
-                elem.classList.add('active-link')
-            } else {
-                elem.classList.remove('active-link')
-            }
-        }
-    }
-
     _loadContent(href) {
+        this.pageTrans.setContentPending(true)
         const { idx, promise } = this._getOrFetch(href)
 
         promise.then(({ content }) => {
@@ -103,18 +80,7 @@ export class DynamicNavDispatcher {
             }
 
             debug('load %s: updating content', href)
-            this.contentElem.innerHTML = content
-
-            const title = this.contentElem.children ?
-                this.contentElem.children[0].getAttribute('data-page-meta') :
-                null
-
-            const isLongform = this.contentElem.children ?
-                this.contentElem.children[0].hasAttribute('data-content-longform') :
-                false
-
-            this._setDocTitle(title)
-            this._setContentLongform(isLongform)
+            this.pageTrans.receivedContent(href, content)
         }).catch((err) => {
             debug('load %s: fatal: %s', href, err)
             location.reload()
@@ -141,6 +107,88 @@ export class DynamicNavDispatcher {
         }
 
         return { idx, promise: this.cache[href] }
+    }
+}
+
+class PageTransformer {
+    constructor({ baseTitle, root, navElem, contentElem }) {
+        this.baseTitle = baseTitle
+        this.root = root
+        this.navElem = navElem
+        this.contentElem = contentElem
+
+        this.contentPending = false
+    }
+
+    static forDocument(document) {
+        const baseTitle = parseTitle(document.title).base
+        const root = document.body
+        const contentElem = document.querySelector('[data-region-id="primary-content"]')
+        const navElem = document.querySelector('[data-region-id="page-header"]')
+
+        if (!(root && contentElem && navElem)) {
+            return null
+        }
+
+        return new PageTransformer({ baseTitle, root, contentElem, navElem })
+    }
+
+    get currentContent() {
+        return this.contentElem.innerHTML
+    }
+
+    setContentPending(value) {
+        if (value === this.contentPending)
+            return
+
+        this.contentPending = value
+
+        if (value) {
+            // ...
+        } else {
+            // ...
+        }
+    }
+
+    receivedContent(href, content) {
+        this.setContentPending(false)
+
+        const temp = document.createElement('div')
+        temp.innerHTML = content
+
+        const frag = document.createDocumentFragment()
+        while (temp.firstChild !== null) {
+            frag.appendChild(temp.firstChild)
+        }
+
+        const title = frag.children ?
+            frag.children[0].getAttribute('data-page-meta') :
+            null
+
+        const isLongform = frag.children ?
+            frag.children[0].hasAttribute('data-content-longform') :
+            false
+
+        this.contentElem.innerHTML = ''
+        this.contentElem.appendChild(frag)
+        this._updateNavLinks({ active: href })
+        this._setContentLongform(isLongform)
+
+        this._setDocTitle(title)
+    }
+
+    _updateNavLinks({ active }) {
+        const collection = this.navElem.getElementsByTagName('a')
+        const len = collection.length
+
+        for (let i = 0; i < len; i++) {
+            const elem = collection[i]
+            if (getDomainRelativeUrl(elem.href) === active) {
+                elem.classList.add('active-link')
+            } else {
+                elem.classList.remove('active-link')
+            }
+        }
     }
 
     _setDocTitle(title) {
