@@ -32,7 +32,7 @@ body {
     }
 
     @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
-      background: url("../buildtime-assets/img/grid-bg-center-hl-start.svg") left $grid-size center repeat-y;
+      background-position-x: left $grid-size;
     }
   }
 }
@@ -43,21 +43,22 @@ body {
 
 // Base definition for the layout grid
 //
-// On very small screens, all space is allocated to a single column. A zero-
-// sized grid cell is left so that the grid definition matches the shape on
-// small screens, where two fixed-sized columns are available.
+// On very small screens, all space is allocated to a single column, with
+// percentage-based margins excepted. A zero-sized grid cell is left so
+// that the grid definition matches the shape on small screens, where two
+// fixed-sized columns are available.
 //
 // On larger screens, three or four columns are allocated for the primary
 // content (although there may be more space available).
+//
+// Given longform content, the same rules apply except that the right margin
+// on small screens is fixed to allow a little more space, and instead of
+// space being evenly distributed to the right and left on medium-sized screens,
+// where there are between 3 and 4 columns available, all the space is allocated
+// to the right to keep the content closer to center.
 .grid-base {
   display: grid;
   grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $xs-main-margin-pct;
-
-  @media (max-width: $screen-sm-min - 1) {
-    .content-longform & {
-      grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $sixteenth-grid-size;
-    }
-  }
 
   @media (min-width: $screen-sm-min) {
     grid-template-columns: 1fr $grid-size $grid-size 1fr;
@@ -67,13 +68,23 @@ body {
     grid-template-columns: 1fr repeat(3, $grid-size) 1fr;
   }
 
-  @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
-    .content-longform & {
-      grid-template-columns: 0 repeat(3, $grid-size) minmax(0, auto);
-    }
-  }
-
   @media (min-width: $screen-lg-min) {
     grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
+  }
+
+  .content-longform & {
+    grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $sixteenth-grid-size;
+
+    @media (min-width: $screen-sm-min) {
+      grid-template-columns: 1fr $grid-size $grid-size 1fr;
+    }
+
+    @media (min-width: $screen-md-min) {
+      grid-template-columns: 0 repeat(3, $grid-size) minmax(0, auto);
+    }
+
+    @media (min-width: $screen-lg-min) {
+      grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
+    }
   }
 }
