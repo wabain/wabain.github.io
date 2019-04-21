@@ -4,12 +4,19 @@
     ". listing listing";
 
   @media (min-width: $screen-md-min) {
-    grid-template-areas: ". header listing listing";
+    grid-template-areas:
+      ". header . ."
+      ". . listing listing";
   }
 }
 
 .grid-blog-header {
   grid-area: header;
+
+  @media (min-width: $screen-md-min) {
+    margin-right: 7px;
+    justify-self: end;
+  }
 }
 
 .grid-blog-listing {
