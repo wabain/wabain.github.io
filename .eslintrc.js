@@ -37,6 +37,7 @@ module.exports = {
                 "es6": false
             },
             "globals": {
+                "Promise": false,
                 "jQuery": false
             },
         },

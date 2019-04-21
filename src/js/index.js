@@ -1,2 +1,4 @@
 import '../scss/cs-homepage.scss'
-import './dynamic-navigation'
+import { DynamicNavDispatcher } from './dynamic-navigation-v2'
+
+window.__nav = new DynamicNavDispatcher()
