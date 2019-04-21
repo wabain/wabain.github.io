@@ -26,16 +26,16 @@ body {
 
   &.focused-content {
     background:
-      url("../buildtime-assets/img/grid-bg-line-start.svg") left $xs-main-margin-pct center repeat-y;
+      url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
 
     @media (min-width: $screen-sm-min) {
       background:
-        url("../buildtime-assets/img/grid-bg-center-2x-start.svg") center repeat-y;
+        url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg") center repeat-y;
     }
 
     @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
       background:
-        url("../buildtime-assets/img/grid-bg-center-start.svg") left $grid-size center repeat-y;
+        url("../buildtime-assets/img/grid-bg-center-hl-start.svg") left $grid-size center repeat-y;
     }
   }
 }
@@ -55,6 +55,12 @@ body {
 .grid-base {
   display: grid;
   grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $xs-main-margin-pct;
+
+  @media (max-width: $screen-sm-min - 1) {
+    .focused-content & {
+      grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $sixteenth-grid-size;
+    }
+  }
 
   @media (min-width: $screen-sm-min) {
     grid-template-columns: 1fr $grid-size $grid-size 1fr;

@@ -31,5 +31,7 @@ $screen-sm-min: $grid-size * 2 + $sixteenth-grid-size;
 @import "sections/about";
 @import "sections/projects";
 @import "sections/legacy-page";
+@import "sections/blog";
+@import "sections/posts";
 // Utilities
 @import "loading-effects";

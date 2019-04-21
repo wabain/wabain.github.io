@@ -32,12 +32,15 @@ h2 {
 }
 
 .longform {
-  margin: 0 0 1.2rem;
   line-height: 1.5;
   font-size: 17px;
 
   @media (min-width: $screen-sm-min) {
     font-size: 19px;
+  }
+
+  p {
+    margin: 0 0 1.2rem;
   }
 }
 

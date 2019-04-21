@@ -1,0 +1,55 @@
+.grid-post {
+  grid-template-areas:
+    ". header header"
+    ". meta meta"
+    ". separator ."
+    ". content content";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . header header"
+      ". separator separator ."
+      ". meta content content";
+  }
+}
+
+.grid-post-header {
+  grid-area: header;
+  margin-left: 15px;
+}
+
+.grid-post-separator {
+  grid-area: separator;
+  background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
+  height: 4px;
+  transform: translateX(-$sixteenth-grid-size);
+
+  margin-top: 10px;
+  margin-bottom: 20px;
+
+  @media (min-width: $screen-md-min) {
+    transform: translateX($quart-grid-size);
+    width: $grid-size;
+    margin-top: 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.grid-post-meta {
+  grid-area: meta;
+  margin-left: 20px;
+
+  // TODO: A serif here?
+  font-style: italic;
+
+  @media (min-width: $screen-md-min) {
+    margin-right: 15px;
+    text-align: right;
+  }
+}
+
+.grid-post-content {
+  grid-area: content;
+  margin-left: 15px;
+}

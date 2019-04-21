@@ -5,17 +5,17 @@ nav_priority: 2
 ---
 
 <section data-page-meta="Blog">
-    <div class="grid-base grid-projects-head">
-        <div class="grid-projects-head-text">
+    <div class="grid-base grid-blog">
+        <div class="grid-blog-header">
             <h2>Blog</h2>
         </div>
-    </div>
-
-    <div class="grid-base grid-oss">
-        <div class="grid-oss-text">
+        <div class="grid-blog-listing">
             {% for post in site.posts %}
-            <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
-            <div class="longform">{{ post.excerpt }}</div>
+            <a href="{{ post.url }}" class="blog-post-link">
+                <h3>{{ post.title }}</h3>
+                <div>{{ post.date | date: "%B %-d, %Y" }}</div>
+                <div class="blog-post-excerpt">{{ post.excerpt | strip_html }}</div>
+            </a>
             {% endfor %}
         </div>
     </div>
