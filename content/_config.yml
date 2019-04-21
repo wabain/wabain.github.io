@@ -12,6 +12,7 @@ defaults:
     values:
       assets_dir: "/home-assets"
       layout: "page"
+      partial_layout: "section-partial"
       longform: false
   -
     scope:
@@ -19,27 +20,5 @@ defaults:
       type: "posts"
     values:
       layout: "post"
-      longform: true
-  -
-    scope:
-      path: "section-partial"
-    values:
-      layout: "section-partial"
-  -
-    scope:
-      path: "section-partial/2018"
-    values:
-      layout: "post-partial"
-      longform: true
-  -
-    scope:
-      path: "section-partial/2019"
-    values:
-      layout: "post-partial"
-      longform: true
-  -
-    scope:
-      path: "section-partial/2020"
-    values:
-      layout: "post-partial"
+      partial_layout: "post-partial"
       longform: true
