@@ -1,8 +1,10 @@
 $xs-main-margin-pct:
   percentage($quart-grid-size / (floor($screen-sm-min / $grid-size) * $grid-size));
 
-body {
-  // The normalize stylesheet ensures there's no body margin
+// The container is a top-level *** within the body.
+// The normalize stylesheet ensures there's no body margin.
+.container {
+  padding-top: $eight-grid-size;
 
   background:
     url("../buildtime-assets/img/grid-bg-line-start.svg") left $xs-main-margin-pct center repeat-y,
@@ -24,7 +26,7 @@ body {
       url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
   }
 
-  &.content-longform {
+  body.content-longform & {
     background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
 
     @media (min-width: $screen-sm-min) {
@@ -35,10 +37,6 @@ body {
       background-position-x: left $grid-size;
     }
   }
-}
-
-.container {
-  margin-top: $eight-grid-size;
 }
 
 // Base definition for the layout grid

@@ -26,6 +26,7 @@ $screen-sm-min: $grid-size * 2 + $sixteenth-grid-size;
 @import "text-formatting";
 @import "utils";
 @import "layout-scaffolding";
+@import "layout-transition";
 // Sections
 @import "sections/header";
 @import "sections/about";

@@ -1,5 +1,6 @@
 import debugFactory from 'debug'
 import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href'
+import { transitionContent } from './layout-transition'
 
 const debug = debugFactory('dynamic-navigation[v2]')
 
@@ -53,23 +54,23 @@ export class DynamicNavDispatcher {
 
         evt.preventDefault()
         history.pushState({ handler: 'DynamicNavDispatcher/click' }, '', anchor.href)
-        this._handleNavigation(anchor.href)
+        this._handleNavigation(anchor.href, { hasManagedScroll: false })
     }
 
     _handlePopState() {
-        this._handleNavigation(location.href)
+        this._handleNavigation(location.href, { hasManagedScroll: true })
     }
 
-    _handleNavigation(href) {
+    _handleNavigation(href, options) {
         const relative = getDomainRelativeUrl(href)
         if (!relative)
             throw new Error('unexpected navigation to ' + href)
 
         debug('dynamic navigation triggered (href %s)', relative)
-        this._loadContent(relative)
+        this._loadContent(relative, options)
     }
 
-    _loadContent(href) {
+    _loadContent(href, options) {
         this.pageTrans.setContentPending(true)
         const { idx, promise } = this._getOrFetch(href)
 
@@ -80,7 +81,7 @@ export class DynamicNavDispatcher {
             }
 
             debug('load %s: updating content', href)
-            this.pageTrans.receivedContent(href, content)
+            this.pageTrans.receivedContent(href, content, options)
         }).catch((err) => {
             debug('load %s: fatal: %s', href, err)
             location.reload()
@@ -110,6 +111,22 @@ export class DynamicNavDispatcher {
     }
 }
 
+class TimedCallback {
+    constructor(fn, duration, key = '') {
+        this.complete = this.cancelled = false
+        this._id = setTimeout(() => {
+            this.complete = true
+            debug('Timer expired, %ss %s', duration, key)
+            fn()
+        }, duration)
+    }
+
+    cancel() {
+        this.complete = this.cancelled = true
+        clearTimeout(this._id)
+    }
+}
+
 class PageTransformer {
     constructor({ baseTitle, root, navElem, contentElem }) {
         this.baseTitle = baseTitle
@@ -118,6 +135,8 @@ class PageTransformer {
         this.contentElem = contentElem
 
         this.contentPending = false
+
+        this._slow = this._fadeOut = this._fadeIn = null
     }
 
     static forDocument(document) {
@@ -144,13 +163,22 @@ class PageTransformer {
         this.contentPending = value
 
         if (value) {
-            // ...
+            this._slow = new TimedCallback(() => {
+                this._contentPendingSlow()
+            }, 750)
         } else {
-            // ...
+            if (this._slow) {
+                this._slow.cancel()
+                this._slow = null
+            }
         }
     }
 
-    receivedContent(href, content) {
+    _contentPendingSlow() {
+        debug('content load is slow, should show a spinner')
+    }
+
+    receivedContent(href, content, options) {
         this.setContentPending(false)
 
         const temp = document.createElement('div')
@@ -161,20 +189,16 @@ class PageTransformer {
             frag.appendChild(temp.firstChild)
         }
 
-        const title = frag.children ?
-            frag.children[0].getAttribute('data-page-meta') :
-            null
+        const oldAttrs = getContentAttributes(this.contentElem)
+        const newAttrs = getContentAttributes(frag)
 
-        const isLongform = frag.children ?
-            frag.children[0].hasAttribute('data-content-longform') :
-            false
-
-        this.contentElem.innerHTML = ''
-        this.contentElem.appendChild(frag)
+        this._setDocTitle(newAttrs.title)
         this._updateNavLinks({ active: href })
-        this._setContentLongform(isLongform)
 
-        this._setDocTitle(title)
+        transitionContent(this.contentElem, oldAttrs, newAttrs, frag, options).catch((err) => {
+            debug('load %s: transition: fatal: %s', href, err)
+            location.reload()
+        })
     }
 
     _updateNavLinks({ active }) {
@@ -208,6 +232,19 @@ class PageTransformer {
     }
 }
 
+function getContentAttributes(root) {
+    if (!root.children) {
+        return { title: null, isLongform: false }
+    }
+
+    const e = root.children[0]
+
+    return {
+        title: e.getAttribute('data-page-meta'),
+        isLongform: e.hasAttribute('data-content-longform'),
+    }
+}
+
 function findAnchor(elem, guard) {
     while (elem && elem !== guard) {
         if (elem.nodeName === 'A')
@@ -217,4 +254,12 @@ function findAnchor(elem, guard) {
     }
 
     return null
+}
+
+function waitFor(ms) {
+    return new Promise((res) => {
+        setTimeout(function () {
+            res()
+        })
+    })
 }
