@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 
 const StyleLintPlugin = require('stylelint-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -73,8 +74,54 @@ const commonPlugins = [
         // Section partials
         {
             context: local('content'),
-            from: '*.html',
+            from: '**/*.{html,md}',
+            ignore: [
+                'section-partial/**/*',
+                '_*/**/*',
+            ],
             to: local('content/section-partial/')
+        },
+        {
+            context: local('content/_posts'),
+            from: '**/*.{html,md}',
+            to: local('content/section-partial'),
+
+            // Translate a post with basename YYYY-MM-DD-xyz to YYYY/MM/DD/xyz
+            // to emulate Jekyll. This is probably not exactly right but it's
+            // close enough.
+            transformPath(targetPath) {
+                const basename = path.basename(targetPath)
+                const m = (/([0-9]+)-([0-9]+)-([0-9]+)-(.*)/).exec(basename)
+                if (!m) {
+                    throw new Error('unexpected pattern for path ' + targetPath)
+                }
+                return `${path.dirname(targetPath)}/${m[1]}/${m[2]}/${m[3]}/${m[4]}`
+            },
+        },
+        {
+            context: local('content/_drafts'),
+            from: '**/*.{html,md}',
+            to: local('content/section-partial'),
+
+            // Translate a draft with basename xyz to YYYY/MM/DD/xyz using its
+            // atime to emulate Jekyll. This is probably not exactly right but
+            // hopefully it's close enough.
+            transformPath(targetPath, absolutePath) {
+                return new Promise((resolve, reject) => {
+                    fs.stat(absolutePath, (err, stats) => {
+                        if (err) {
+                            reject(err)
+                            return
+                        }
+
+                        // This seems to work, but there must be much
+                        // cleaner ways to get YYYY/MM/DD format in JS
+                        const date = stats.ctime.toLocaleDateString('en-CA').replace(/-/g, '/')
+
+                        resolve(`${path.dirname(targetPath)}/${date}/${path.basename(targetPath)}`)
+                    })
+                })
+            },
         },
 
         // Vendored assets

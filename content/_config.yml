@@ -25,3 +25,21 @@ defaults:
       path: "section-partial"
     values:
       layout: "section-partial"
+  -
+    scope:
+      path: "section-partial/2018"
+    values:
+      layout: "post-partial"
+      longform: true
+  -
+    scope:
+      path: "section-partial/2019"
+    values:
+      layout: "post-partial"
+      longform: true
+  -
+    scope:
+      path: "section-partial/2020"
+    values:
+      layout: "post-partial"
+      longform: true
