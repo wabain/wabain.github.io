@@ -185,6 +185,11 @@ function parseTitle(title) {
         loadingIndicator = null;
       }
 
+      // FIXME: Assume any page supporting dynamic navigation does not need content-longform.
+      // Currently there is no animation for the cases where content-longform changes grid
+      // sizing.
+      $('body').removeClass('content-longform')
+
       // Fade in the content element
       $contentElem.removeClass('faded-out hidden');
 

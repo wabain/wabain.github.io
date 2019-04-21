@@ -12,12 +12,14 @@ defaults:
     values:
       assets_dir: "/home-assets"
       layout: "page"
+      longform: false
   -
     scope:
       path: ""
       type: "posts"
     values:
       layout: "post"
+      longform: true
   -
     scope:
       path: "section-partial"

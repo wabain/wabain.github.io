@@ -24,7 +24,7 @@ body {
       url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
   }
 
-  &.focused-content {
+  &.content-longform {
     background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
 
     @media (min-width: $screen-sm-min) {
@@ -54,7 +54,7 @@ body {
   grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $xs-main-margin-pct;
 
   @media (max-width: $screen-sm-min - 1) {
-    .focused-content & {
+    .content-longform & {
       grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $sixteenth-grid-size;
     }
   }
@@ -68,7 +68,7 @@ body {
   }
 
   @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
-    .focused-content & {
+    .content-longform & {
       grid-template-columns: 0 repeat(3, $grid-size) minmax(0, auto);
     }
   }
