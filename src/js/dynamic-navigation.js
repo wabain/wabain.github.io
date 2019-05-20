@@ -2,7 +2,7 @@ import debugFactory from 'debug'
 import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href'
 import { transitionContent } from './layout-transition'
 
-const debug = debugFactory('dynamic-navigation[v2]')
+const debug = debugFactory('dynamic-navigation')
 
 /**
  * Parse the document's title. The base title is all text up to the first "-",
