@@ -5,6 +5,8 @@ $xs-main-margin-pct:
 // The normalize stylesheet ensures there's no body margin.
 .container {
   padding-top: $eight-grid-size;
+  min-height: 100vh;
+  box-sizing: border-box;
 
   background:
     url("../buildtime-assets/img/grid-bg-line-start.svg") left $xs-main-margin-pct center repeat-y,
