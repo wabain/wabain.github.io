@@ -16,6 +16,7 @@ env:
     - BUNDLE_PATH: ~/.bundle
     - GH_REF: github.com/wabain/wabain.github.io.git
     - PHANTOMJS_VERSION: "2.1"
+    - USER_INSTALL_DIR: ~/bin
     - secure: iaR8CNeimqE/vQhZf/WAZu5D2qZCBkF+j3HcGM5ZSPzLgZXz1UH0y/xVyYYqalIDNUburYQBrEbl/qRcUeD7foew4Kd4XbwiOdmoqOIPPiO2fwKq/EcCWxDpAiQRlSv7gocGOG6EOgnxQaE+K3PYXcDUcklKElIvYNYCq7g5ZXI1/yudkllOiffnmEZzdBcxOdkrLgNlPacML8q8P1ATrzk80AWeoE830rB9OIiOB0jXbfS1Iz8yELWNSdv0jRe6yYooUv+VM1nkCiorChr9GKRI2Y8I7TuoeKJ/XKbb5s9/ptSABVgWxVXFIcSfm1iwYs7/JNdcHftGpUQMCgZuEDsiah6BELBCbB+lVJHvodoxw/JuSBVcOFSQebvYTpYNi21bjAjKZr0ue4wf1iTxNonGEnbE7/fp87AXwzU/CaBXSlb/WwKWNXIN0n7iGu5tT+HU0c+VA+U9h3ulfBsY+1/3p2Ypj3suJgsPQ5R7S1LDBUNwA+LBOy/Q/ebQTl8PDhUXrByVneHFxWVzHW9dxfygIXsBCM7k3S53IedaAqbAUPy3RWeWMdOhGyv4pI/5/KExnTfh4INJUHUK9NKroSz8fw8GkBL1jZE9AmTgaXq28YxBaRhTyaqvE10kmg26OBi+gW7riItexmldZdj9j86zDrajh6ao/LfIMtkt4jI=
 cache:
   yarn: true
@@ -23,8 +24,9 @@ cache:
     - node_modules
     - $BUNDLE_PATH
 before_install:
+  - export PATH=$USER_INSTALL_DIR:$HOME/.yarn/bin:$PATH
+  - ./bin/ci-install-geckodriver.sh
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s
-  - export PATH=$HOME/.yarn/bin:$PATH
 install:
   - bundle install
   - yarn install
