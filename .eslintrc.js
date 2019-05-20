@@ -41,25 +41,6 @@ module.exports = {
                 "jQuery": false
             },
         },
-        {
-            // FIXME: Legacy rules, with varying degrees of weirdness
-            "files": ["src/js/dynamic-navigation.js"],
-            "rules": {
-                "linebreak-style": [
-                    "error",
-                    "windows"
-                ],
-                "indent": [
-                    "error",
-                    2,
-                    { "VariableDeclarator": 2 }
-                ],
-                "semi": [
-                    "error",
-                    "always"
-                ],
-            }
-        },
         // Test files
         {
             "files": ["integration-tests/**/*.js"],

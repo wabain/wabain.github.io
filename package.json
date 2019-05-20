@@ -42,7 +42,6 @@
   "dependencies": {
     "animejs": "^3.0.1",
     "debug": "^3.1.0",
-    "jquery": "~1.11.0",
     "normalize.css": "^8.0.0"
   },
   "engines": {
