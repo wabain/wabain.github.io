@@ -68,6 +68,8 @@ export function transitionContent(
 /**
  * Get difference of the offset of the start of primary content from the left
  * of the screen between longform to non-longform modes.
+ *
+ * See the style definition for a description of .layout-breakpoints.
  */
 function getLongformBodyOffset() {
     const body = document.body
@@ -75,20 +77,22 @@ function getLongformBodyOffset() {
     bpCheck.className = 'layout-breakpoints'
     body.appendChild(bpCheck)
 
-    const style = getComputedStyle(bpCheck)
-
     let offset
-    if (style.content !== '"md"') {
-        offset = 0
-    } else {
-        // FIXME: Less sloppy way to do this?
-        const gridSize = parseFloat(style.backgroundSize)
-        const nonLongformPos = (body.clientWidth / 2) - (gridSize / 2)
-        const longformPos = gridSize
-        offset = longformPos - nonLongformPos
+    try {
+        const style = getComputedStyle(bpCheck)
+
+        if (style.content !== '"md"') {
+            offset = 0
+        } else {
+            const gridSize = parseFloat(style.backgroundSize)
+            const nonLongformPos = (body.clientWidth / 2) - (gridSize / 2)
+            const longformPos = gridSize
+            offset = longformPos - nonLongformPos
+        }
+    } finally {
+        body.removeChild(bpCheck)
     }
 
-    body.removeChild(bpCheck)
     return offset
 }
 
