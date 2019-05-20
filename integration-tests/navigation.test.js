@@ -326,12 +326,6 @@ class NavigablePage {
     }
 }
 
-function sleep(ms) {
-    return new Promise(resolve => {
-        setTimeout(() => resolve(), ms)
-    })
-}
-
 function asSlug(string = '') {
     return String(string).replace(/[\s\W-]+/g, '-')
 }
