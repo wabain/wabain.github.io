@@ -176,6 +176,7 @@ class PageTransformer {
     }
 
     _contentPendingSlow() {
+        // XXX: Fill this in
         debug('content load is slow, should show a spinner')
     }
 
