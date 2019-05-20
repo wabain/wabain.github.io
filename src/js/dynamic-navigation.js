@@ -5,11 +5,11 @@ import { transitionContent } from './layout-transition'
 const debug = debugFactory('dynamic-navigation')
 
 /**
- * Parse the document's title. The base title is all text up to the final "-",
+ * Parse the document's title. The base title is all text up to the first "-",
  * excluding trailing whitespace. Subsequent text is the page title.
  */
 function parseTitle(title) {
-    const parsed = (/(.*?)(?:\s*-\s*([^-]*))?$/).exec(title)
+    const parsed = (/(.*?)(?:\s*-\s*(.*))?$/).exec(title)
     return {
         base: parsed[1],
         page: parsed[2] || null,
@@ -139,7 +139,6 @@ class PageTransformer {
     }
 
     static forDocument(document) {
-        const baseTitle = parseTitle(document.title).base
         const root = document.body
         const contentElem = document.querySelector('[data-region-id="primary-content"]')
         const navElem = document.querySelector('[data-region-id="page-header"]')
@@ -147,6 +146,9 @@ class PageTransformer {
         if (!(root && contentElem && navElem)) {
             return null
         }
+
+        const { base: baseTitle, page: pageTitle } = parseTitle(document.title)
+        debug('initial mount, base title %s, page title %s', baseTitle, pageTitle)
 
         return new PageTransformer({ baseTitle, root, contentElem, navElem })
     }
