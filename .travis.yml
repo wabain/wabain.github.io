@@ -6,6 +6,7 @@ addons:
   apt:
     packages:
       - tree
+  firefox: latest
 branches:
   except:
     # Master is the actually deployed code

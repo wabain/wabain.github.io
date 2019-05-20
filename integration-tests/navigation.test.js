@@ -211,6 +211,12 @@ class SiteWindow {
     async load({ page }) {
         const driver = await this.resolveDriver()
         await driver.get(page.getQualifiedUrl({ window: this }))
+
+        // Verify that the dynamic navigation code ran successfully
+        await driver.wait(async () => (
+            await driver.executeScript('return !!window.__nav')
+        ), 1000)
+
         await this.installSentinel()
     }
 
