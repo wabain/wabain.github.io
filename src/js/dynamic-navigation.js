@@ -1,249 +1,247 @@
-import debugFactory from 'debug';
-import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href';
+import debugFactory from 'debug'
+import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href'
+import { transitionContent } from './layout-transition'
 
-var debug = debugFactory('dynamic-navigation');
+const debug = debugFactory('dynamic-navigation')
 
 /**
  * Parse the document's title. The base title is all text up to the final "-",
  * excluding trailing whitespace. Subsequent text is the page title.
  */
 function parseTitle(title) {
-  var parsed = (/(.*?)(?:\s*-\s*([^-]*))?$/).exec(title);
-  return {
-    base: parsed[1],
-    page: parsed[2] || null,
-  };
+    const parsed = (/(.*?)(?:\s*-\s*([^-]*))?$/).exec(title)
+    return {
+        base: parsed[1],
+        page: parsed[2] || null,
+    }
 }
 
-(function ($) {
-  'use strict';
-  var baseTitle, $contentElem, cache, loadingIndicator, initialPageData;
+export class DynamicNavDispatcher {
+    constructor() {
+        this._handleClick = this._handleClick.bind(this)
+        this._handlePopState = this._handlePopState.bind(this)
 
-  // Only initialize dynamic navigation if HTML5 history APIs are available
-  if (!window.history || !window.history.pushState) {
-    debug('bailing on initialization, no support for history api');
-    return;
-  }
+        this.cache = {}
+        this._fetchIdx = 0
 
-  $contentElem = getContentElem();
-
-  if (!$contentElem) {
-    debug('bailing, failed to find content element (url %s)', location.href);
-    return;
-  }
-
-  cache = {};
-  initializeNavigation();
-
-  function initializeNavigation() {
-    var currentHref = getDomainRelativeUrl(location.href);
-    var parsedTitle = parseTitle(document.title);
-
-    baseTitle = parsedTitle.base;
-    initialPageData = {
-      href: currentHref,
-      state: {
-        title: parsedTitle.page,
-      },
-    };
-
-    cache[currentHref] = $contentElem.html();
-    history.replaceState(
-      initialPageData.state,
-      initialPageData.state.title,
-      currentHref);
-
-    debug('initialize at %s, state %o', currentHref, initialPageData.state);
-
-    // Bind local links in the header
-    $('[data-region-id="page-header"] a[href]').filter(function () {
-      return isRelativeHref($(this).attr('href'));
-    }).on('click', doDynamicNavigation);
-
-    window.addEventListener('popstate', handlePopState, false);
-  }
-
-  function doDynamicNavigation(e) {
-    var $elem = $(e.currentTarget),
-        href = getDomainRelativeUrl($elem.attr('href')),
-        navLink,
-        state,
-        specificTitle;
-
-    debug('dynamic navigation triggered (href normalized %s, raw %s)',
-      href,
-      $elem.attr('href'));
-
-    // If the current href is the same as the one which was clicked, return
-    // and let the page reload. The rationale is that if the user is continuing
-    // to click, then the page probably hasn't been responding as desired.
-    if (isCurrentLocation(href)) {
-      debug('dynamic navigation for current location, allowing default');
-      return;
-    }
-
-    // If the href is null (perhaps because it was absolute) then return
-    // and let the default occur.
-    if (!href)
-      return;
-
-    // Stop the page from reloading
-    e.preventDefault();
-
-    navLink = getNavLink(href);
-    if (navLink.length === 0)
-      navLink = $elem;
-
-    specificTitle = navLink.attr('data-pagetitle') || navLink.text();
-
-    state = { title: specificTitle };
-    window.history.pushState(state, specificTitle, href);
-
-    loadPageContent(href, state, navLink);
-  }
-
-  /**
-   * Look up the section partial in the cache, making a request for it
-   * if it is not already there.
-   *
-   * @param {String} href The href to load, which should be a normalized
-   * domain-relative URL
-   */
-  function loadSectionPartial(href) {
-    if (cache.hasOwnProperty(href)) {
-      return $.when(cache[href]);
-    }
-
-    var cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href);
-
-    debug('load %s: requesting partial %s', href, cacheUrl);
-    return $.get(cacheUrl).then(function (newContent) {
-      debug('load %s: writing entry to cache', href);
-      cache[href] = newContent;
-      return newContent;
-    });
-  }
-
-  function noop(){}
-
-  /**
-   * Load the content of the href, setting the page state to state and the
-   * current link to navLink.
-   */
-  function loadPageContent(href, state, navLink) {
-    var debugLoad = !debug.enabled ? noop : function (format) {
-      var args = ['load %s: ' + format, href];
-      var passedArgCount = arguments.length;
-      for (var i=1; i < passedArgCount; i++) {
-        args.push(arguments[i]);
-      }
-      debug.apply(null, args);
-    };
-
-    debugLoad('set up navigation, state %o', state);
-    setGlobalPageState(state);
-
-    // Fade out the content
-    $contentElem.addClass('fading faded-out');
-
-    // Update the links in the navbar
-    $('[data-region-id="page-header"] .active-link').not(navLink).removeClass('active-link');
-    navLink.addClass('active-link');
-
-    var loadNewContent = loadSectionPartial(href).fail(function () {
-      debugLoad('failed to resolve partial, doing hard load', href);
-      window.location = href;
-    });
-
-    // Wait for at least 500ms and for the new content to load
-    var displayedNewContent = $.when(loadNewContent, waitFor(500));
-
-    // If loading takes at least 750ms then show a loading indicator
-    waitFor(750).then(function () {
-      if (loadingIndicator || displayedNewContent.state() !== 'pending')
-        return;
-
-      debugLoad('load timeout exceeded, show loading indicator');
-      $contentElem.addClass('hidden');
-
-      loadingIndicator = $('<img src="home-assets/img/ajax-loading.gif" class="loading-indicator">');
-      $('body').append(loadingIndicator);
-    });
-
-    displayedNewContent.done(function (newContent) {
-      if (!isCurrentLocation(href)) {
-        debugLoad('current location has changed; bailing from image load');
-        return;
-      }
-
-      debugLoad('set content and fade in');
-      $contentElem.html(newContent);
-
-      // Remove the loading indicator if one was there
-      if (loadingIndicator) {
-        loadingIndicator.remove();
-        loadingIndicator = null;
-      }
-
-      // Fade in the content element
-      $contentElem.removeClass('faded-out hidden');
-
-      waitFor(500).then(function () {
-        if (!isCurrentLocation(href)) {
-          debugLoad('current location has changed; bailing from fade-in');
-          return;
+        // Only initialize dynamic navigation if HTML5 history APIs are available
+        if (!window.history || !window.history.pushState) {
+            debug('bailing on initialization, no support for history api')
+            return
         }
 
-        debugLoad('fade-in complete');
-        $contentElem.removeClass('fading');
-      });
-    });
-  }
+        this.pageTrans = PageTransformer.forDocument(document)
+        if (!this.pageTrans) {
+            debug('bailing, failed to find expected page areas (url %s)', location.href)
+            return
+        }
 
-  function getNavLink(href) {
-    return $('[data-region-id="page-header"] a[href="'+href+'"]');
-  }
+        this.cache[getDomainRelativeUrl(location.href)] =
+            Promise.resolve({ content: this.pageTrans.currentContent })
 
-  function handlePopState(e) {
-    var href = getDomainRelativeUrl(location.href);
-    var newState;
-
-    if (e.state != null) {
-      newState = e.state;
-    } else if (href === initialPageData.href) {
-      /*
-       * On PhantomJS (and maybe other Webkit permutations - who knows)
-       * a popstate event is triggered sometime on initial navigation
-       * with null state, even though replaceState is called before
-       * the listener is added
-       */
-      newState = initialPageData.state;
-    } else {
-      location.reload();
-      return;
+        this.pageTrans.root.addEventListener('click', this._handleClick, false)
+        window.addEventListener('popstate', this._handlePopState, false)
     }
 
-    loadPageContent(href, newState, getNavLink(href));
-  }
+    _handleClick(evt) {
+        const anchor = findAnchor(evt.target, evt.currentTarget)
+        if (!anchor)
+            return
 
-  function setGlobalPageState(state) {
-    if (state.title) {
-      document.title = baseTitle + ' - ' + state.title;
-    } else {
-      document.title = baseTitle;
+        if (isCurrentLocation(anchor.href) || !isRelativeHref(anchor.href))
+            return
+
+        evt.preventDefault()
+        history.pushState({ handler: 'DynamicNavDispatcher/click' }, '', anchor.href)
+        this._handleNavigation(anchor.href, { hasManagedScroll: false })
     }
-  }
 
-  function getContentElem() {
-    var $contentElem = $('[data-region-id="primary-content"]');
-    if ($contentElem.length === 0) return null;
-    if ($contentElem.length > 1) return $contentElem.first();
-    return $contentElem;
-  }
+    _handlePopState() {
+        this._handleNavigation(location.href, { hasManagedScroll: true })
+    }
 
-  function waitFor(ms) {
-    var q = new $.Deferred();
-    setTimeout(function () {q.resolve();}, ms);
-    return q;
-  }
-})(jQuery);
+    _handleNavigation(href, options) {
+        const relative = getDomainRelativeUrl(href)
+        if (!relative)
+            throw new Error('unexpected navigation to ' + href)
+
+        debug('dynamic navigation triggered (href %s)', relative)
+        this._loadContent(relative, options)
+    }
+
+    _loadContent(href, options) {
+        this.pageTrans.setContentPending(true)
+        const { idx, promise } = this._getOrFetch(href)
+
+        promise.then(({ content }) => {
+            if (this._fetchIdx !== idx) {
+                debug('load %s: old fetch; bailing from load', href)
+                return
+            }
+
+            debug('load %s: updating content', href)
+            this.pageTrans.receivedContent(href, content, options)
+        }).catch((err) => {
+            debug('load %s: fatal: %s', href, err)
+            location.reload()
+        })
+    }
+
+    _getOrFetch(href) {
+        const idx = ++this._fetchIdx
+
+        if (this.cache.hasOwnProperty(href)) {
+            debug('load %s: using cached promise', href)
+        } else {
+            const cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href)
+            debug('load %s: requesting partial %s', href, cacheUrl)
+
+            this.cache[href] = fetch(cacheUrl).then((res) => {
+                if (!res.ok)
+                    throw new Error('network error: ' + res.status + ' ' + res.statusText)
+
+                return res.text()
+            }).then((text) => {
+                return { content: text }
+            })
+        }
+
+        return { idx, promise: this.cache[href] }
+    }
+}
+
+class TimedCallback {
+    constructor(fn, duration, key = '') {
+        this.complete = this.cancelled = false
+        this._id = setTimeout(() => {
+            this.complete = true
+            debug('Timer expired, %ss %s', duration, key)
+            fn()
+        }, duration)
+    }
+
+    cancel() {
+        this.complete = this.cancelled = true
+        clearTimeout(this._id)
+    }
+}
+
+class PageTransformer {
+    constructor({ baseTitle, root, navElem, contentElem }) {
+        this.baseTitle = baseTitle
+        this.root = root
+        this.navElem = navElem
+        this.contentElem = contentElem
+
+        this.contentPending = false
+
+        this._slow = this._fadeOut = this._fadeIn = null
+    }
+
+    static forDocument(document) {
+        const baseTitle = parseTitle(document.title).base
+        const root = document.body
+        const contentElem = document.querySelector('[data-region-id="primary-content"]')
+        const navElem = document.querySelector('[data-region-id="page-header"]')
+
+        if (!(root && contentElem && navElem)) {
+            return null
+        }
+
+        return new PageTransformer({ baseTitle, root, contentElem, navElem })
+    }
+
+    get currentContent() {
+        return this.contentElem.innerHTML
+    }
+
+    setContentPending(value) {
+        if (value === this.contentPending)
+            return
+
+        this.contentPending = value
+
+        if (value) {
+            this._slow = new TimedCallback(() => {
+                this._contentPendingSlow()
+            }, 750)
+        } else {
+            if (this._slow) {
+                this._slow.cancel()
+                this._slow = null
+            }
+        }
+    }
+
+    _contentPendingSlow() {
+        // XXX: Fill this in
+        debug('content load is slow, should show a spinner')
+    }
+
+    receivedContent(href, content, options) {
+        this.setContentPending(false)
+
+        const temp = document.createElement('div')
+        temp.innerHTML = content
+
+        const frag = document.createDocumentFragment()
+        while (temp.firstChild !== null) {
+            frag.appendChild(temp.firstChild)
+        }
+
+        const newAttrs = getContentAttributes(frag)
+
+        this._setDocTitle(newAttrs.title)
+        this._updateNavLinks({ active: href })
+
+        transitionContent(this.contentElem, frag, options).catch((err) => {
+            debug('load %s: transition: fatal: %s', href, err)
+            location.reload()
+        })
+    }
+
+    _updateNavLinks({ active }) {
+        const collection = this.navElem.getElementsByTagName('a')
+        const len = collection.length
+
+        for (let i = 0; i < len; i++) {
+            const elem = collection[i]
+            if (getDomainRelativeUrl(elem.href) === active) {
+                elem.classList.add('active-link')
+            } else {
+                elem.classList.remove('active-link')
+            }
+        }
+    }
+
+    _setDocTitle(title) {
+        if (title) {
+            document.title = this.baseTitle + ' - ' + title
+        } else {
+            document.title = this.baseTitle
+        }
+    }
+}
+
+function getContentAttributes(root) {
+    if (!root.children) {
+        return { title: null }
+    }
+
+    const e = root.children[0]
+
+    return {
+        title: e.getAttribute('data-page-meta'),
+    }
+}
+
+function findAnchor(elem, guard) {
+    while (elem && elem !== guard) {
+        if (elem.nodeName === 'A')
+            return elem
+
+        elem = elem.parentElement
+    }
+
+    return null
+}

@@ -37,27 +37,8 @@ module.exports = {
                 "es6": false
             },
             "globals": {
-                "jQuery": false
+                "Promise": false,
             },
-        },
-        {
-            // FIXME: Legacy rules, with varying degrees of weirdness
-            "files": ["src/js/dynamic-navigation.js"],
-            "rules": {
-                "linebreak-style": [
-                    "error",
-                    "windows"
-                ],
-                "indent": [
-                    "error",
-                    2,
-                    { "VariableDeclarator": 2 }
-                ],
-                "semi": [
-                    "error",
-                    "always"
-                ],
-            }
         },
         // Test files
         {

@@ -261,34 +261,43 @@ class NavigablePage {
         // should have requested URL
         await driver.wait(until.urlIs(this.getQualifiedUrl({ window })), 1000)
 
-        // should have expected title
-        const expectedTitle = new RegExp('^(\\[dev\\] )?William Bain - ' + this.params.title + '$')
-
-        await driver.wait(until.titleMatches(expectedTitle), 1000)
-            .catch(async () => {
-                throw new Error(`Page title is "${await driver.getTitle()}", expected "${this.params.title}"`)
-            })
-
         try {
-            // should have new content
-            const contentSection = await driver.findElement(By.css('[data-region-id="primary-content"]'), 1000)
-            const transitionClass = /\bfaded\b/  // could use a nicer way to do this
+            // should have expected title
+            const expectedTitle = new RegExp('^(\\[dev\\] )?William Bain - ' + this.params.title + '$')
 
-            while (transitionClass.test(await contentSection.getAttribute('className'))) {
-                await sleep(50)
-            }
+            await driver.wait(until.titleMatches(expectedTitle), 1000)
         } catch (e) {
-            if ((e instanceof StaleElementReferenceError) && await window.hasReloaded()) {
-                throw new Error('Unexpected window reload during test')
-            }
-
-            throw e
+            throw new Error(
+                `Page title is "${await driver.getTitle()}", expected ` +
+                `"${this.params.title}"`,
+            )
         }
 
-        const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
-        const pageIdentifier = (await pageMeta.getAttribute('data-page-meta')) || ''
+        try {
+            await driver.wait(async () => this._hasExpectedPageIdentifier(driver), 1000)
+        } catch (e) {
+            throw new Error(
+                `Loaded page content is for "${await this._getPageIdentifier(driver)}", ` +
+                `expected "${this.params.title}"`,
+            )
+        }
+    }
 
-        expect(pageIdentifier).toBe(this.params.title, 'Unexpected page identifier')
+    async _hasExpectedPageIdentifier(driver) {
+        const identifier = await this._getPageIdentifier(driver)
+        return identifier == this.params.title
+    }
+
+    async _getPageIdentifier(driver) {
+        try {
+            const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
+            return (await pageMeta.getAttribute('data-page-meta')) || ''
+        } catch (e) {
+            if ((e instanceof StaleElementReferenceError)) {
+                return null
+            }
+            throw e
+        }
     }
 
     async findNavLinkToPage({ domainRelativeUrl, window }) {
@@ -309,12 +318,6 @@ class NavigablePage {
         }
         return elem
     }
-}
-
-function sleep(ms) {
-    return new Promise(resolve => {
-        setTimeout(() => resolve(), ms)
-    })
 }
 
 function asSlug(string = '') {
