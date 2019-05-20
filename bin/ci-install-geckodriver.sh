@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-json=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest)
+json=$(curl -H "Authorization: token $GH_TOKEN" -s https://api.github.com/repos/mozilla/geckodriver/releases/latest)
 echo "Latest geckodriver release..."
 
 echo
