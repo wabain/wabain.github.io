@@ -30,17 +30,27 @@ export function transitionContent(
 
     const tl = anim.timeline()
 
-    if (oldAttrs.isLongform !== newAttrs.isLongform) {
-        let bodyOffset = getLongformBodyOffset()
+    const changingLongform = oldAttrs.isLongform !== newAttrs.isLongform
+    if (changingLongform) {
+        const bodyOffset = getLongformBodyOffset()
+
         if (!newAttrs.isLongform) {
-            bodyOffset = -bodyOffset
+            body.classList.remove('content-longform')
+            anim.set(body, { translateX: bodyOffset })
         }
 
         tl.add({
             targets: body,
-            translateX: bodyOffset,
+            translateX: newAttrs.isLongform ? bodyOffset : 0,
             duration: 400,
             easing: 'easeInExpo',
+
+            complete() {
+                if (newAttrs.isLongform) {
+                    body.classList.add('content-longform')
+                }
+                body.style.transform = null
+            },
         })
     }
 
@@ -49,7 +59,7 @@ export function transitionContent(
         duration: 400,
         opacity: 0,
         easing: 'easeOutSine',
-    }, tl.offset === 0 ? '0' : '-=200')
+    }, changingLongform ? '-=200' : '0')
 
     tl.add({
         targets: contentElem,
@@ -58,13 +68,8 @@ export function transitionContent(
         easing: 'easeInSine',
 
         begin() {
-            body.style.transform = null
-            contentElem.style.transform = null
-
             if (newAttrs.isLongform) {
                 body.classList.add('content-longform')
-            } else {
-                body.classList.remove('content-longform')
             }
 
             contentElem.innerHTML = ''
