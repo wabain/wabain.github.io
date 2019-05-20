@@ -255,11 +255,3 @@ function findAnchor(elem, guard) {
 
     return null
 }
-
-function waitFor(ms) {
-    return new Promise((res) => {
-        setTimeout(function () {
-            res()
-        })
-    })
-}

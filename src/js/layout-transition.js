@@ -1,7 +1,4 @@
-import debugFactory from 'debug'
 import anim from 'animejs'
-
-const debug = debugFactory('layout-transition')
 
 export function transitionContent(
     contentElem,
@@ -12,20 +9,8 @@ export function transitionContent(
 ) {
     const body = document.body
 
-
     if (!hasManagedScroll) {
-        const hasSmoothScroll = ('scrollBehavior' in document.documentElement.style)
-
-        if (hasSmoothScroll) {
-            document.documentElement.scroll({
-                top: 0,
-                left: 0,
-                behavior: 'smooth',
-            })
-        } else {
-            // FIXME: still doesn't seem to work in Safari
-            document.documentElement.scroll(0, 0)
-        }
+        scrollWindowSmooth({ left: 0, top: 0 })
     }
 
     const tl = anim.timeline()
@@ -105,4 +90,18 @@ function getLongformBodyOffset() {
 
     body.removeChild(bpCheck)
     return offset
+}
+
+function scrollWindowSmooth({ left, top }) {
+    const hasSmoothScroll = ('scrollBehavior' in document.documentElement.style)
+
+    if (hasSmoothScroll) {
+        window.scroll({
+            left,
+            top,
+            behavior: 'smooth',
+        })
+    } else {
+        window.scroll(left, top)
+    }
 }
