@@ -40,7 +40,7 @@ module.exports = function ({ origin, browser, siteMeta }) {
  * Test navigation from the given page
  */
 function testPageNavigation({ ctx, pageParameters, siteMeta }) {
-    it('should reload when current page link is clicked', async () => {
+    it('should reload when current page link is clicked', async function() {
         const window = ctx.siteWindow
         const page = new NavigablePage(pageParameters)
 
@@ -51,6 +51,12 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
             domainRelativeUrl: page.params.url,
             window,
         })
+
+        if (!element) {
+            this.skip()
+            return
+        }
+
         await element.click()
 
         const hasReloaded = await window.hasReloaded()
@@ -82,7 +88,15 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await firstPage.verifyBasicProperties({ window })
 
         await navigateToPage(window, firstPage, secondPage)
-        await navigateToPage(window, secondPage, firstPage)
+
+        try {
+            await navigateToPage(window, secondPage, firstPage)
+        } catch (e) {
+            // If there's no back-link, disregard the error
+            if (e.message != `no usable link to ${firstPage.params.url}`) {
+                throw e
+            }
+        }
     })
 
     it('should handle history navigation without reload', async function() {
@@ -151,6 +165,11 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
             domainRelativeUrl: targetPage.params.url,
             window
         })
+        if (!element) {
+            // If changing the message, check if any code relies on it
+            throw new Error(`no usable link to ${targetPage.params.url}`)
+        }
+
         await element.click()
 
         await targetPage.verifyBasicProperties({ window })
@@ -176,7 +195,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
 
     function getTargetPageParams({ currentPageParams }) {
         const params = siteMeta.pages.find(
-            params => params !== currentPageParams
+            params => params !== currentPageParams && params['in_nav']
         )
         if (params) {
             return params
@@ -314,8 +333,7 @@ class NavigablePage {
         const links = await window.getLinksOnPage(await this.getHeaderElement({ window }))
         const entry = links.find(({ href }) => href === window.origin + domainRelativeUrl)
         if (!entry) {
-            const hrefs = links.map(({ href }) => href)
-            throw new Error(`no usable link to ${domainRelativeUrl}; found ${JSON.stringify(hrefs)}`)
+            return null
         }
         return entry.elem
     }
