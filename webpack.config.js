@@ -69,13 +69,6 @@ const commonPlugins = [
             from: '**/*',
             to: DIST_PATH
         },
-
-        // Section partials
-        {
-            context: local('content'),
-            from: '*.html',
-            to: local('content/section-partial/')
-        },
     ]),
     extractSass
 ]
