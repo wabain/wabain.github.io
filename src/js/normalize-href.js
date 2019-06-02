@@ -4,12 +4,17 @@ var normalizeElem = document.createElement('a')
  * Get a URL relative to the root of this domain for the URL referred to by
  * href. If href is from a a different origin, return null.
  */
-export function getDomainRelativeUrl(href) {
+export function getDomainRelativeUrl(href, { hash = false } = {}) {
     if (!setAndValidateHref(href)) {
         return null
     }
 
-    return normalizeElem.pathname + normalizeElem.search + normalizeElem.hash
+    let url = normalizeElem.pathname + normalizeElem.search
+
+    if (hash)
+        url += normalizeElem.hash
+
+    return url
 }
 
 /**

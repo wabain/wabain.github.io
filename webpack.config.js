@@ -76,14 +76,6 @@ const commonPlugins = [
             from: '*.html',
             to: local('content/section-partial/')
         },
-
-        // Vendored assets
-        // TODO: Should be able to import these directly from source files?
-        {
-            context: local('node_modules/jquery/dist'),
-            from: '**/*',
-            to: local(DIST_PATH, 'vendor/jquery'),
-        },
     ]),
     extractSass
 ]

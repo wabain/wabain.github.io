@@ -2,6 +2,8 @@
 
 const { Builder, By, until } = require('selenium-webdriver')
 const { StaleElementReferenceError } = require('selenium-webdriver/lib/error')
+const { Options: FirefoxOptions } = require('selenium-webdriver/firefox')
+const { Options: ChromeOptions } = require('selenium-webdriver/chrome')
 const expect = require('expect')
 
 module.exports = function ({ origin, browser, siteMeta }) {
@@ -12,6 +14,8 @@ module.exports = function ({ origin, browser, siteMeta }) {
         before(async () => {
             ctx.webdriver = new Builder()
                 .forBrowser(browser)
+                .setFirefoxOptions((new FirefoxOptions()).headless())
+                .setChromeOptions((new ChromeOptions()).headless())
                 .build()
 
             ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
@@ -207,6 +211,16 @@ class SiteWindow {
     async load({ page }) {
         const driver = await this.resolveDriver()
         await driver.get(page.getQualifiedUrl({ window: this }))
+
+        try {
+            // Verify that the dynamic navigation code ran successfully
+            await driver.wait(async () => (
+                await driver.executeScript('return !!window.__nav')
+            ), 1000)
+        } catch (e) {
+            throw new Error('did not see dynamic navigation initialized on page load')
+        }
+
         await this.installSentinel()
     }
 
@@ -257,34 +271,43 @@ class NavigablePage {
         // should have requested URL
         await driver.wait(until.urlIs(this.getQualifiedUrl({ window })), 1000)
 
-        // should have expected title
-        const expectedTitle = new RegExp('^(\\[dev\\] )?William Bain - ' + this.params.title + '$')
-
-        await driver.wait(until.titleMatches(expectedTitle), 1000)
-            .catch(async () => {
-                throw new Error(`Page title is "${await driver.getTitle()}", expected "${this.params.title}"`)
-            })
-
         try {
-            // should have new content
-            const contentSection = await driver.findElement(By.css('[data-region-id="primary-content"]'), 1000)
-            const transitionClass = /\bfaded\b/  // could use a nicer way to do this
+            // should have expected title
+            const expectedTitle = new RegExp('^(\\[dev\\] )?William Bain - ' + this.params.title + '$')
 
-            while (transitionClass.test(await contentSection.getAttribute('className'))) {
-                await sleep(50)
-            }
+            await driver.wait(until.titleMatches(expectedTitle), 1000)
         } catch (e) {
-            if ((e instanceof StaleElementReferenceError) && await window.hasReloaded()) {
-                throw new Error('Unexpected window reload during test')
-            }
-
-            throw e
+            throw new Error(
+                `Page title is "${await driver.getTitle()}", expected ` +
+                `"${this.params.title}"`,
+            )
         }
 
-        const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
-        const pageIdentifier = (await pageMeta.getAttribute('data-page-meta')) || ''
+        try {
+            await driver.wait(async () => this._hasExpectedPageIdentifier(driver), 1000)
+        } catch (e) {
+            throw new Error(
+                `Loaded page content is for "${await this._getPageIdentifier(driver)}", ` +
+                `expected "${this.params.title}"`,
+            )
+        }
+    }
 
-        expect(pageIdentifier).toBe(this.params.title, 'Unexpected page identifier')
+    async _hasExpectedPageIdentifier(driver) {
+        const identifier = await this._getPageIdentifier(driver)
+        return identifier == this.params.title
+    }
+
+    async _getPageIdentifier(driver) {
+        try {
+            const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
+            return (await pageMeta.getAttribute('data-page-meta')) || ''
+        } catch (e) {
+            if ((e instanceof StaleElementReferenceError)) {
+                return null
+            }
+            throw e
+        }
     }
 
     async findNavLinkToPage({ domainRelativeUrl, window }) {
@@ -305,12 +328,6 @@ class NavigablePage {
         }
         return elem
     }
-}
-
-function sleep(ms) {
-    return new Promise(resolve => {
-        setTimeout(() => resolve(), ms)
-    })
 }
 
 function asSlug(string = '') {

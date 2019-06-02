@@ -1,9 +1,7 @@
 $header-v-padding: 0.67rem;
 
 // Display inline if there is space, or collapse into multiple lines
-.header-block {
-  @extend %grid-base;
-
+.grid-header {
   grid-template-areas:
     ". header header header"
     ". nav nav nav";
@@ -36,7 +34,7 @@ $header-v-padding: 0.67rem;
   }
 }
 
-.navbar {
+.grid-header-navbar {
   grid-area: nav;
   align-self: end;
   justify-self: end;
@@ -60,15 +58,15 @@ $header-v-padding: 0.67rem;
 }
 
 @media (min-width: $screen-md-min) {
-  .header-block h1 {
+  .grid-header h1 {
     margin-right: 7px;
   }
 
-  .navbar {
+  .grid-header-navbar {
     justify-self: normal;
   }
 
-  .navbar > ul {
+  .grid-header-navbar > ul {
     // Hack: bottom margin is supposed to keep the navbar and title
     // aligned; probably need something more principled instead
     margin-bottom: 1.15rem;

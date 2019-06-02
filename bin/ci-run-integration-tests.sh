@@ -26,7 +26,7 @@ cleanup() {
 trap 'cleanup' EXIT
 
 : ${JEKYLL_ENV=production}
-: ${TEST_BROWSER=phantomjs}
+: ${TEST_BROWSER=firefox}
 export JEKYLL_ENV TEST_BROWSER
 
 echo "Starting Jekyll server..."
