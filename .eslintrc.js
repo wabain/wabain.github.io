@@ -38,7 +38,6 @@ module.exports = {
             },
             "globals": {
                 "Promise": false,
-                "jQuery": false
             },
         },
         // Test files
