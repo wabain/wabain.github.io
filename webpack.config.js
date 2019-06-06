@@ -1,9 +1,7 @@
 const path = require('path')
 
-const StyleLintPlugin = require('stylelint-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
@@ -12,12 +10,24 @@ const commonEntryPoints = {
     'cs-homepage': local('src/js/index.js')
 }
 
-const extractSass = new ExtractTextPlugin({
-    filename: '[name].min.css',
-    disable: !IS_PROD,
-})
+let extractCssRule, extractCssPlugin
+if (IS_PROD) {
+    extractCssRule = [
+        { loader: MiniCssExtractPlugin.loader },
+    ]
+    extractCssPlugin = [
+        new MiniCssExtractPlugin({
+            filename: '[name].min.css',
+        }),
+    ]
+} else {
+    extractCssRule = [
+        { loader: 'style-loader' },
+    ]
+    extractCssPlugin = []
+}
 
-const commonRules = [
+const rules = [
     {
         enforce: 'pre',
         test: /\.js$/,
@@ -27,25 +37,17 @@ const commonRules = [
 
     {
         test: /\.scss$/,
-        use: extractSass.extract({
-            use: [
-                {
-                    loader: 'css-loader',
-                    options: {
-                        minimize: IS_PROD,
-                    }
-                },
-                'postcss-loader',
-                {
-                    loader: 'sass-loader',
-                    options: {
-                        outputStyle: IS_PROD ? 'compressed' : 'expanded'
-                    }
+        use: [
+            ...extractCssRule,
+            { loader: 'css-loader', options: { importLoaders: 1 } },
+            { loader: 'postcss-loader', options: { sourceMap: true } },
+            {
+                loader: 'sass-loader',
+                options: {
+                    outputStyle: IS_PROD ? 'compressed' : 'expanded'
                 }
-            ],
-            // use style-loader in development
-            fallback: 'style-loader'
-        })
+            }
+        ]
     },
 
     {
@@ -55,12 +57,7 @@ const commonRules = [
     },
 ]
 
-const commonPlugins = [
-    // Webpack can't see through SCSS dependencies, so lint all SCSS files via
-    // glob
-    new StyleLintPlugin({
-        context: local('src')
-    }),
+const plugins = [
     new CopyWebpackPlugin([
         // Image assets, etc.
         // TODO: Might be good to run these through image-optimization passes
@@ -70,10 +67,11 @@ const commonPlugins = [
             to: DIST_PATH
         },
     ]),
-    extractSass
+    ...extractCssPlugin,
 ]
 
 const devConfig = {
+    mode: 'development',
     output: {
         path: DIST_PATH,
         filename: '[name].js',
@@ -81,16 +79,13 @@ const devConfig = {
     entry: commonEntryPoints,
     devtool: 'inline-source-map',
     module: {
-        rules: [
-            ...commonRules,
-        ]
+        rules,
     },
-    plugins: [
-        ...commonPlugins,
-    ]
+    plugins,
 }
 
 const prodConfig = {
+    mode: 'production',
     output: {
         path: DIST_PATH,
         filename: '[name].min.js',
@@ -99,14 +94,9 @@ const prodConfig = {
     entry: commonEntryPoints,
     devtool: 'source-map',
     module: {
-        rules: [
-            ...commonRules,
-        ]
+        rules,
     },
-    plugins: [
-        ...commonPlugins,
-        new UglifyJSPlugin({ sourceMap: true })
-    ]
+    plugins,
 }
 
 module.exports = IS_PROD ? prodConfig : devConfig
