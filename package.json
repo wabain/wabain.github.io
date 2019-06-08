@@ -12,7 +12,7 @@
     "cssnano": "^4.1.10",
     "eslint": "^4.11.0",
     "eslint-loader": "^2.1.2",
-    "expect": "^21.2.1",
+    "expect": "^24.8.0",
     "glob": "^7.1.2",
     "mini-css-extract-plugin": "^0.7.0",
     "mocha": "^4.0.1",
