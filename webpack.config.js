@@ -6,8 +6,15 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
 
-const commonEntryPoints = {
-    'cs-homepage': local('src/js/index.js')
+const prodOutput = {
+    path: DIST_PATH,
+    filename: '[name].min.js',
+    sourceMapFilename: '[file].map',
+}
+
+const devOutput = {
+    path: DIST_PATH,
+    filename: '[name].js',
 }
 
 let extractCssRule, extractCssPlugin
@@ -27,79 +34,57 @@ if (IS_PROD) {
     extractCssPlugin = []
 }
 
-const rules = [
-    {
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: ['eslint-loader'],
+module.exports = {
+    mode: IS_PROD ? 'development' : 'production',
+    output: IS_PROD ? prodOutput : devOutput,
+    entry: {
+        'cs-homepage': local('src/js/index.js')
     },
-
-    {
-        test: /\.scss$/,
-        use: [
-            ...extractCssRule,
-            { loader: 'css-loader', options: { importLoaders: 1 } },
-            { loader: 'postcss-loader', options: { sourceMap: true } },
+    devtool: IS_PROD ? 'source-map' : 'inline-source-map',
+    module: {
+        rules: [
             {
-                loader: 'sass-loader',
-                options: {
-                    outputStyle: IS_PROD ? 'compressed' : 'expanded'
-                }
-            }
-        ]
-    },
+                enforce: 'pre',
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: ['eslint-loader'],
+            },
 
-    {
-        test: /\.svg$/,
-        include: [local('src/buildtime-assets')],
-        use: ['url-loader'],
-    },
-]
+            {
+                test: /\.scss$/,
+                use: [
+                    ...extractCssRule,
+                    { loader: 'css-loader', options: { importLoaders: 1 } },
+                    { loader: 'postcss-loader', options: { sourceMap: true } },
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            outputStyle: IS_PROD ? 'compressed' : 'expanded'
+                        }
+                    }
+                ]
+            },
 
-const plugins = [
-    new CopyWebpackPlugin([
-        // Image assets, etc.
-        // TODO: Might be good to run these through image-optimization passes
-        {
-            context: local('src/assets'),
-            from: '**/*',
-            to: DIST_PATH
-        },
-    ]),
-    ...extractCssPlugin,
-]
-
-const devConfig = {
-    mode: 'development',
-    output: {
-        path: DIST_PATH,
-        filename: '[name].js',
+            {
+                test: /\.svg$/,
+                include: [local('src/buildtime-assets')],
+                use: ['url-loader'],
+            },
+        ],
     },
-    entry: commonEntryPoints,
-    devtool: 'inline-source-map',
-    module: {
-        rules,
-    },
-    plugins,
+    plugins: [
+        new CopyWebpackPlugin([
+            // Image assets, etc.
+            // TODO: Might be good to run these through image-optimization passes
+            {
+                context: local('src/assets'),
+                from: '**/*',
+                to: DIST_PATH
+            },
+        ]),
+        ...extractCssPlugin,
+    ],
 }
-
-const prodConfig = {
-    mode: 'production',
-    output: {
-        path: DIST_PATH,
-        filename: '[name].min.js',
-        sourceMapFilename: '[file].map',
-    },
-    entry: commonEntryPoints,
-    devtool: 'source-map',
-    module: {
-        rules,
-    },
-    plugins,
-}
-
-module.exports = IS_PROD ? prodConfig : devConfig
 
 function local(...components) {
     return path.resolve(__dirname, ...components)
