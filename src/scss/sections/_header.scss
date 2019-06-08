@@ -3,34 +3,34 @@ $header-v-padding: 0.67rem;
 // Display inline if there is space, or collapse into multiple lines
 .grid-header {
   grid-template-areas:
-    ". header header header"
+    ". title title title"
     ". nav nav nav";
   margin-bottom: $eight-grid-size;
 
   @media (min-width: $screen-md-min) {
     grid-template-areas: ". header nav nav";
   }
+}
 
-  h1 {
-    grid-area: header;
-    margin: $header-v-padding 0;
-    font-family: "Josefin Sans", Helvetica, Arial, sans-serif;
-    justify-self: end;
-    align-self: end;
+.grid-header-title {
+  grid-area: title;
+  margin: $header-v-padding 0;
+  font-family: "Josefin Sans", Helvetica, Arial, sans-serif;
+  justify-self: end;
+  align-self: end;
 
-    a,
-    a:hover {
-      text-decoration: none;
-      color: inherit;
-    }
+  a,
+  a:hover {
+    text-decoration: none;
+    color: inherit;
+  }
 
-    a:hover {
-      border-bottom: 1px solid $off-black;
-    }
+  a:hover {
+    border-bottom: 1px solid $off-black;
+  }
 
-    a.active-link {
-      border-bottom: 1px solid $link-active-color;
-    }
+  a.active-link {
+    border-bottom: 1px solid $link-active-color;
   }
 }
 
@@ -51,14 +51,16 @@ $header-v-padding: 0.67rem;
     }
   }
 
+  /* stylelint-disable no-descending-specificity */
   a {
     text-transform: lowercase;
     text-decoration: none;
   }
+  /* stylelint-enable */
 }
 
 @media (min-width: $screen-md-min) {
-  .grid-header h1 {
+  .grid-header-title {
     margin-right: 7px;
   }
 
