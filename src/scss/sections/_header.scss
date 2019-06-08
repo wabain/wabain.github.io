@@ -8,7 +8,7 @@ $header-v-padding: 0.67rem;
   margin-bottom: $eight-grid-size;
 
   @media (min-width: $screen-md-min) {
-    grid-template-areas: ". header nav nav";
+    grid-template-areas: ". title nav nav";
   }
 }
 
