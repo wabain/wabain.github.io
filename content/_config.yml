@@ -11,8 +11,4 @@ defaults:
     values:
       assets_dir: "/home-assets"
       layout: "page"
-  -
-    scope:
-      path: "section-partial"
-    values:
-      layout: "section-partial"
+      partial_layout: "section-partial"
