@@ -1,115 +1,90 @@
 const path = require('path')
 
-const StyleLintPlugin = require('stylelint-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
 
-const commonEntryPoints = {
-    'cs-homepage': local('src/js/index.js')
+const prodOutput = {
+    path: DIST_PATH,
+    filename: '[name].min.js',
+    sourceMapFilename: '[file].map',
 }
 
-const extractSass = new ExtractTextPlugin({
-    filename: '[name].min.css',
-    disable: !IS_PROD,
-})
+const devOutput = {
+    path: DIST_PATH,
+    filename: '[name].js',
+}
 
-const commonRules = [
-    {
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: ['eslint-loader'],
+let extractCssRule, extractCssPlugin
+if (IS_PROD) {
+    extractCssRule = [
+        { loader: MiniCssExtractPlugin.loader },
+    ]
+    extractCssPlugin = [
+        new MiniCssExtractPlugin({
+            filename: '[name].min.css',
+        }),
+    ]
+} else {
+    extractCssRule = [
+        { loader: 'style-loader' },
+    ]
+    extractCssPlugin = []
+}
+
+module.exports = {
+    mode: IS_PROD ? 'development' : 'production',
+    output: IS_PROD ? prodOutput : devOutput,
+    entry: {
+        'cs-homepage': local('src/js/index.js')
     },
-
-    {
-        test: /\.scss$/,
-        use: extractSass.extract({
-            use: [
-                {
-                    loader: 'css-loader',
-                    options: {
-                        minimize: IS_PROD,
-                    }
-                },
-                'postcss-loader',
-                {
-                    loader: 'sass-loader',
-                    options: {
-                        outputStyle: IS_PROD ? 'compressed' : 'expanded'
-                    }
-                }
-            ],
-            // use style-loader in development
-            fallback: 'style-loader'
-        })
-    },
-
-    {
-        test: /\.svg$/,
-        include: [local('src/buildtime-assets')],
-        use: ['url-loader'],
-    },
-]
-
-const commonPlugins = [
-    // Webpack can't see through SCSS dependencies, so lint all SCSS files via
-    // glob
-    new StyleLintPlugin({
-        context: local('src')
-    }),
-    new CopyWebpackPlugin([
-        // Image assets, etc.
-        // TODO: Might be good to run these through image-optimization passes
-        {
-            context: local('src/assets'),
-            from: '**/*',
-            to: DIST_PATH
-        },
-    ]),
-    extractSass
-]
-
-const devConfig = {
-    output: {
-        path: DIST_PATH,
-        filename: '[name].js',
-    },
-    entry: commonEntryPoints,
-    devtool: 'inline-source-map',
+    devtool: IS_PROD ? 'source-map' : 'inline-source-map',
     module: {
         rules: [
-            ...commonRules,
-        ]
+            {
+                enforce: 'pre',
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: ['eslint-loader'],
+            },
+
+            {
+                test: /\.scss$/,
+                use: [
+                    ...extractCssRule,
+                    { loader: 'css-loader', options: { importLoaders: 1 } },
+                    { loader: 'postcss-loader', options: { sourceMap: true } },
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            outputStyle: IS_PROD ? 'compressed' : 'expanded'
+                        }
+                    }
+                ]
+            },
+
+            {
+                test: /\.svg$/,
+                include: [local('src/buildtime-assets')],
+                use: ['url-loader'],
+            },
+        ],
     },
     plugins: [
-        ...commonPlugins,
-    ]
+        new CopyWebpackPlugin([
+            // Image assets, etc.
+            // TODO: Might be good to run these through image-optimization passes
+            {
+                context: local('src/assets'),
+                from: '**/*',
+                to: DIST_PATH
+            },
+        ]),
+        ...extractCssPlugin,
+    ],
 }
-
-const prodConfig = {
-    output: {
-        path: DIST_PATH,
-        filename: '[name].min.js',
-        sourceMapFilename: '[file].map',
-    },
-    entry: commonEntryPoints,
-    devtool: 'source-map',
-    module: {
-        rules: [
-            ...commonRules,
-        ]
-    },
-    plugins: [
-        ...commonPlugins,
-        new UglifyJSPlugin({ sourceMap: true })
-    ]
-}
-
-module.exports = IS_PROD ? prodConfig : devConfig
 
 function local(...components) {
     return path.resolve(__dirname, ...components)
