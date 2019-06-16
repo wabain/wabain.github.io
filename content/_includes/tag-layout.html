@@ -1,0 +1,8 @@
+<section data-page-meta="{{ page.title }}">
+    <div class="grid-base grid-blog">
+        <div class="grid-blog-listing">
+            <h2>Posts tagged #{{ page.title }}</h2>
+            {% include post-list.html posts=page.posts %}
+        </div>
+    </div>
+</section>

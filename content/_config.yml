@@ -1,6 +1,7 @@
 url: "https://wabain.github.io"
 plugins:
   - jekyll-redirect-from
+  - jekyll-archives
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
@@ -27,3 +28,12 @@ defaults:
       layout: "post"
       partial_layout: "post-partial"
       longform: true
+  - scope:
+      path: "tag"
+    values:
+      partial_layout: "tag-partial"
+jekyll-archives:
+  enabled: [tags]
+  layout: tag
+  permalinks:
+    tag: '/tag/:name/'
