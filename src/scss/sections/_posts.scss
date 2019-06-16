@@ -1,0 +1,53 @@
+.grid-post {
+  grid-template-areas:
+    ". header header"
+    ". meta meta"
+    ". separator ."
+    ". content content";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas:
+      ". . header header"
+      ". separator separator ."
+      ". meta content content";
+  }
+}
+
+.grid-post-header {
+  grid-area: header;
+  margin-left: 15px;
+}
+
+.grid-post-separator {
+  grid-area: separator;
+  transform: translateX(-$sixteenth-grid-size);
+  margin-top: 10px;
+  margin-bottom: 20px;
+  background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
+  height: 4px;
+
+  @media (min-width: $screen-md-min) {
+    transform: translateX($quart-grid-size);
+    margin-top: 0;
+    margin-right: auto;
+    margin-left: auto;
+    width: $grid-size;
+  }
+}
+
+.grid-post-meta {
+  grid-area: meta;
+  margin-left: 20px;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+
+  @media (min-width: $screen-md-min) {
+    margin-right: 15px;
+    text-align: right;
+  }
+}
+
+.grid-post-content {
+  grid-area: content;
+  margin-left: 15px;
+}

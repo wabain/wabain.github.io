@@ -191,12 +191,13 @@ class PageTransformer {
             frag.appendChild(temp.firstChild)
         }
 
+        const oldAttrs = getContentAttributes(this.contentElem)
         const newAttrs = getContentAttributes(frag)
 
         this._setDocTitle(newAttrs.title)
         this._updateNavLinks({ active: href })
 
-        transitionContent(this.contentElem, frag, options).catch((err) => {
+        transitionContent(this.contentElem, oldAttrs, newAttrs, frag, options).catch((err) => {
             debug('load %s: transition: fatal: %s', href, err)
             location.reload()
         })
@@ -227,13 +228,14 @@ class PageTransformer {
 
 function getContentAttributes(root) {
     if (!root.children) {
-        return { title: null }
+        return { title: null, isLongform: false }
     }
 
     const e = root.children[0]
 
     return {
         title: e.getAttribute('data-page-meta'),
+        isLongform: e.hasAttribute('data-content-longform'),
     }
 }
 

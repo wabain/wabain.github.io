@@ -165,5 +165,6 @@ module.exports = {
         'string-quotes': 'double',
         'order/properties-order': [concentricOrder, { unspecified: 'bottom' }],
         'at-rule-no-unknown': [true, { ignoreAtRules: ['extend'] }],
-    }
+    },
+    ignoreFiles: ['src/scss/vendor/**/*'],
 }

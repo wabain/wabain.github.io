@@ -1,0 +1,17 @@
+// Utility to expose CSS-defined values for easy access from JS.
+.layout-breakpoints {
+  background-size: $grid-size auto;
+  content: "xs";
+
+  @media (min-width: $screen-sm-min) {
+    content: "sm";
+  }
+
+  @media (min-width: $screen-md-min) {
+    content: "md";
+  }
+
+  @media (min-width: $screen-lg-min) {
+    content: "lg";
+  }
+}

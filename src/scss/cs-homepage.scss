@@ -22,13 +22,17 @@ $screen-sm-min: $grid-size * 2 + $sixteenth-grid-size;
 
 // Base imports
 @import url("~normalize.css");
+@import url("./vendor/base16.solarized.css");
 @import "text-formatting";
 @import "utils";
 @import "layout-scaffolding";
+@import "layout-transition";
 // Sections
 @import "sections/header";
 @import "sections/about";
 @import "sections/projects";
 @import "sections/legacy-page";
+@import "sections/blog";
+@import "sections/posts";
 // Utilities
 @import "loading-effects";
