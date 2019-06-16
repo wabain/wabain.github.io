@@ -7,10 +7,16 @@
             "nav_priority": null
         },
         {
+            "url": "/blog.html",
+            "title": "Blog",
+            "in_nav": false,
+            "nav_priority": 2
+        },
+        {
             "url": "/contact.html",
             "title": "Contact",
             "in_nav": true,
-            "nav_priority": 2
+            "nav_priority": 3
         },
         {
             "url": "/projects.html",
