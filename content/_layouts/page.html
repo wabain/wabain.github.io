@@ -20,7 +20,7 @@
   {% if jekyll.environment == 'production' %}
   <link type="text/css" rel="stylesheet" href="{{ page.assets_dir }}/cs-homepage.min.css">
   {% endif -%}
-  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,700|Josefin+Sans:400,700|Playfair+Display:400i">
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,700|Josefin+Sans:400,700|Playfair+Display:400,400i">
 
   <title>
     {%- if jekyll.environment != 'production' %}[dev] {% endif -%}
@@ -31,7 +31,7 @@
 <body class="{% if page.longform %}content-longform{% endif %}">
   <div class="container">
     {% include navbar.html %}
-    <section data-region-id="primary-content">
+    <section data-region-id="primary-content" data-page-meta="{{ page.title }}" {% if page.longform %}data-content-longform{% endif %}>
       {{ content }}
     </section>
   </div>

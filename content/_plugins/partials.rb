@@ -8,22 +8,29 @@ module Partials
       partials.metadata["output"] = true
 
       site.pages.each do |page|
+        # # Hack: jekyll-archives doesn't look up YAML frontmatter
+        # if page.is_a?(Jekyll::Archives::Archive) && page.data.default_proc.nil?
+        #   page.data.default_proc = proc do |_, key|
+        #     site.frontmatter_defaults.find(page.relative_path, page.type, key)
+        #   end
+        # end
+
         fpath = File.join(partials.directory, page.dir, page.name)
 
-        Jekyll.logger.debug "Generating partial:", fpath
+        Jekyll.logger.debug "Partials:", "Generating from page #{page.relative_path}"
         partials.docs << PartialDocument.new(page, fpath, {
           :site => partials.site,
           :collection => partials
         })
       end
 
-      site.collections.each do |name, collection|
+      site.collections.each do |collection_name, collection|
         collection.docs.each do |doc|
           # For posts, this can give paths like _section-partial/_posts/... or
           # _section-partial/_drafts/..., but that doesn't seem to cause any harm
           fpath = File.join(partials.directory, doc.relative_path)
 
-          Jekyll.logger.debug "Generating partial:", fpath
+          Jekyll.logger.debug "Partials:", "Generating from #{collection_name} #{doc.relative_path}"
           partials.docs << PartialDocument.new(doc, fpath, {
             :site => partials.site,
             :collection => partials
