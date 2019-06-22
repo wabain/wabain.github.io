@@ -1,5 +1,6 @@
 plugins:
   - jekyll-redirect-from
+  - jekyll-archives
 # builds are fast enough that there's no need for the occasional
 # soundness issues that incremental builds create
 incremental: false
@@ -20,3 +21,13 @@ defaults:
       layout: "post"
       partial_layout: "post-partial"
       longform: true
+  - scope:
+      path: "tag"
+    values:
+      partial_layout: "tag-partial"
+      longform: true
+jekyll-archives:
+  enabled: [tags]
+  layout: tag
+  permalinks:
+    tag: '/tag/:name/'
