@@ -47,6 +47,6 @@ git fetch origin master
 git reset origin/master
 
 git add -A .
-git commit -F ../deploy-commit-msg
+git commit --allow-empty -F ../deploy-commit-msg
 
 git push origin master > /dev/null 2>&1
