@@ -9,7 +9,7 @@
         {
             "url": "/blog.html",
             "title": "Blog",
-            "in_nav": false,
+            "in_nav": true,
             "nav_priority": 2
         },
         {
