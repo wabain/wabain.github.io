@@ -59,6 +59,14 @@ a {
   }
 }
 
+// Inspired by GitHub's rules
+p code {
+  border-radius: 3px;
+  background-color: $light-gray;
+  padding: 0.2rem 0.4rem;
+  font-size: 85%;
+}
+
 // pre with syntax highlighting
 pre.highlight {
   border-top: 1px solid $light-gray;
