@@ -57,7 +57,8 @@ export class DynamicNavDispatcher {
 
         if (isCurrentLocation(anchor.href) ||
                 isHashChange(anchor.href) ||
-                !isRelativeHref(anchor.href))
+                !isRelativeHref(anchor.href) ||
+                hasModifierKey(evt))
             return
 
         evt.preventDefault()
@@ -126,6 +127,10 @@ export class DynamicNavDispatcher {
 
         return { idx, promise: this.cache[href] }
     }
+}
+
+function hasModifierKey(evt) {
+    return (evt.ctrlKey || evt.metaKey || evt.shiftKey)
 }
 
 class TimedCallback {
