@@ -18,6 +18,25 @@ export function getDomainRelativeUrl(href, { hash = false } = {}) {
 }
 
 /**
+ * Return true if the URL represents a hash change from the current
+ * location.
+ */
+export function isHashChange(href) {
+    if (!setAndValidateHref(href)) {
+        return false
+    }
+
+    const loc = location
+
+    // origin must already match for setAndValidateHref to succeed
+    return (
+        normalizeElem.pathname === loc.pathname &&
+        normalizeElem.search == loc.search &&
+        normalizeElem.hash !== loc.hash
+    )
+}
+
+/**
  * Return true if the argument is a string which can be parsed as a URL in
  * the same origin as this document.
  */
