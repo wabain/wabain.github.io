@@ -39,8 +39,8 @@
   color: $color-primary-light;
 }
 
-.blog-post-excerpt {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.blog-post-meta {
+  margin-bottom: 0.8rem;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
 }
