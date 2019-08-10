@@ -1,5 +1,10 @@
 import debugFactory from 'debug'
-import { getDomainRelativeUrl, isRelativeHref, isCurrentLocation } from './normalize-href'
+import {
+    getDomainRelativeUrl,
+    isHashChange,
+    isRelativeHref,
+    isCurrentLocation,
+} from './normalize-href'
 import { transitionContent } from './layout-transition'
 
 const debug = debugFactory('dynamic-navigation')
@@ -23,6 +28,8 @@ export class DynamicNavDispatcher {
 
         this.cache = {}
         this._fetchIdx = 0
+
+        this._lastHref = location.href
 
         // Only initialize dynamic navigation if HTML5 history APIs are available
         if (!window.history || !window.history.pushState) {
@@ -48,15 +55,26 @@ export class DynamicNavDispatcher {
         if (!anchor)
             return
 
-        if (isCurrentLocation(anchor.href) || !isRelativeHref(anchor.href))
+        if (isCurrentLocation(anchor.href) ||
+                isHashChange(anchor.href) ||
+                !isRelativeHref(anchor.href))
             return
 
         evt.preventDefault()
         history.pushState({ handler: 'DynamicNavDispatcher/click' }, '', anchor.href)
+
+        this._lastHref = anchor.href
         this._handleNavigation(anchor.href, { hasManagedScroll: false })
     }
 
     _handlePopState() {
+        const hashChange = isHashChange(this._lastHref)
+
+        this._lastHref = location.href
+
+        if (hashChange)
+            return
+
         this._handleNavigation(location.href, { hasManagedScroll: true })
     }
 
