@@ -1,0 +1,7 @@
+{% for post in include.posts %}
+<a href="{{ post.url }}" class="blog-post-link">
+    <h3>{{ post.title }}</h3>
+    <div class="blog-post-meta">{{ post.date | date: "%B %-d, %Y" }}</div>
+    <div class="blog-post-excerpt">{{ post.excerpt | strip_html }}</div>
+</a>
+{% endfor %}

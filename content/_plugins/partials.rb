@@ -8,13 +8,6 @@ module Partials
       partials.metadata["output"] = true
 
       site.pages.each do |page|
-        # # Hack: jekyll-archives doesn't look up YAML frontmatter
-        # if page.is_a?(Jekyll::Archives::Archive) && page.data.default_proc.nil?
-        #   page.data.default_proc = proc do |_, key|
-        #     site.frontmatter_defaults.find(page.relative_path, page.type, key)
-        #   end
-        # end
-
         fpath = File.join(partials.directory, page.dir, page.name)
 
         Jekyll.logger.debug "Partials:", "Generating from page #{page.relative_path}"
@@ -54,6 +47,13 @@ module Partials
         self.content = target.content
       else
         raise ArgumentError, "unexpected partial target #{target}"
+      end
+
+      # Greedily copy across template-defined attributes
+      if defined? target.class::ATTRIBUTES_FOR_LIQUID
+        target.class::ATTRIBUTES_FOR_LIQUID.each do |attrib|
+          @data[attrib] = target.send(attrib)
+        end
       end
 
       @url = "/section-partial" + target.url

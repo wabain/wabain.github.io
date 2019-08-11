@@ -25,7 +25,7 @@ defaults:
       path: "tag"
     values:
       partial_layout: "tag-partial"
-      longform: true
+      longform: false
 jekyll-archives:
   enabled: [tags]
   layout: tag

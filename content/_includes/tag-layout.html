@@ -1,18 +1,9 @@
-<pre>{{ page | inspect }}</pre>
-
-<section data-page-meta="#{{ page.title }}" data-content-longform>
+{% capture tag_name %}#{{ page.title }}{% endcapture %}
+<section data-page-meta="{{ tag_name }}">
     <div class="grid-base grid-blog">
-        <div class="grid-blog-header">
-            <h2>#{{ page.title }}</h2>
-        </div>
         <div class="grid-blog-listing">
-            {% for post in page.posts %}
-            <a href="{{ post.url }}" class="blog-post-link">
-                <h3>{{ post.title }}</h3>
-                <div>{{ post.date | date: "%B %-d, %Y" }}</div>
-                <div class="blog-post-excerpt">{{ post.excerpt | strip_html }}</div>
-            </a>
-            {% endfor %}
+            <h2>{{ tag_name }}</h2>
+            {% include post-list.html posts=page.posts %}
         </div>
     </div>
 </section>

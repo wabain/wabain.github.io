@@ -217,9 +217,9 @@ class PageTransformer {
         const oldAttrs = getContentAttributes(this.contentElem)
         const newAttrs = getContentAttributes(frag)
 
-        console.log(oldAttrs, newAttrs)
+        // console.log(oldAttrs, newAttrs) // eslint-disable-line
 
-        debug('load %s: transition: start, longform %s -> %s', href, oldAttrs.isLongform, newAttrs.isLongform)
+        // debug('load %s: transition: start, longform %s -> %s', href, oldAttrs.isLongform, newAttrs.isLongform)
 
         this._setDocTitle(newAttrs.title)
         this._updateNavLinks({ active: href })
