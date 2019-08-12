@@ -56,6 +56,9 @@ module Partials
         raise ArgumentError, "no 'partial_layout' key provided for #{path}"
       end
       self.data["layout"] = partial_layout
+
+      # Hardcode the sitemap value
+      self.data["sitemap"] = false
     end
   end
 end

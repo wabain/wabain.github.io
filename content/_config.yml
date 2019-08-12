@@ -1,10 +1,17 @@
+url: "https://wabain.github.io"
 plugins:
   - jekyll-redirect-from
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
 # builds are fast enough that there's no need for the occasional
 # soundness issues that incremental builds create
 incremental: false
 include:
   - .site-meta.json
+author:
+  name: William Bain
+  email: bain.william.a@gmail.com
 defaults:
   - scope:
       path: ""

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
+  {% feed_meta %}
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-51279886-1"></script>
   <script>
@@ -27,6 +28,8 @@
     William Bain
     {%- if page.title %} - {{ page.title }}{% endif -%}
   </title>
+
+  {% seo %}
 </head>
 <body class="{% if page.longform %}content-longform{% endif %}">
   <div class="container">
