@@ -38,6 +38,7 @@
     "lint-build-infra": "eslint --ignore-pattern src .",
     "jekyll-build": "bundle exec jekyll build --source content",
     "jekyll-serve": "bundle exec jekyll serve --source content -H 0.0.0.0 -P 8080",
+    "jekyll-lint": "bundle exec ruby build/jekyll-lint.rb",
     "integration-tests": "mocha --delay integration-tests/main.js"
   },
   "dependencies": {

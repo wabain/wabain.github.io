@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem 'html-proofer', '= 3.11.1'
+
 # See https://pages.github.com/versions
 gem 'jekyll', '= 3.7.4'
 gem 'jekyll-feed', '= 0.11.0'
