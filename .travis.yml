@@ -36,5 +36,6 @@ script:
   - yarn run lint-build-infra
   - JEKYLL_ENV=production yarn run pre-jekyll
   - JEKYLL_ENV=production yarn run jekyll-build
+  - JEKYLL_ENV=production yarn run jekyll-lint
   - ./bin/ci-run-integration-tests.sh
   - ./bin/ci-deploy.sh
