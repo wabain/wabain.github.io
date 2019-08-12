@@ -1,6 +1,7 @@
 plugins:
   - jekyll-redirect-from
   - jekyll-feed
+  - jekyll-seo-tag
 # builds are fast enough that there's no need for the occasional
 # soundness issues that incremental builds create
 incremental: false
