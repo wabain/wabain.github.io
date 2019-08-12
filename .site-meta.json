@@ -23,6 +23,30 @@
             "title": "Projects",
             "in_nav": true,
             "nav_priority": 1
+        },
+        {
+            "url": "/tag/c/",
+            "title": "c",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
+            "url": "/tag/go/",
+            "title": "go",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
+            "url": "/tag/language-design/",
+            "title": "language-design",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
+            "url": "/tag/rust/",
+            "title": "rust",
+            "in_nav": false,
+            "nav_priority": null
         }
     ]
 }
