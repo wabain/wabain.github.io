@@ -136,30 +136,6 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await jumpHistory({ window, targetPage: firstPage })
     })
 
-    describe('external links', function() {
-        let page
-        let window
-
-        before(async () => {
-            window = ctx.siteWindow
-            page = new NavigablePage(pageParameters)
-            await window.load({ page })
-            await page.verifyBasicProperties({ window })
-        })
-
-        it('should always have target=_blank', async () => {
-            const externalLinks = (await window.getLinksOnPage()).filter(
-                ({ href }) => !href.startsWith(window.origin)
-            )
-
-            for (const link of externalLinks) {
-                expect(await link.elem.getAttribute('target')).toBe(
-                    '_blank',
-                    `Target of link to ${link.href}`)
-            }
-        })
-    })
-
     async function navigateToPage(window, currentPage, targetPage) {
         const element = await currentPage.findNavLinkToPage({
             domainRelativeUrl: targetPage.params.url,
