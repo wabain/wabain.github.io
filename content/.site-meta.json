@@ -8,6 +8,8 @@ sitemap: false
     where_exp:'page', 'page.layout != "section-partial"' |
     where_exp:'page', 'page.sitemap != false' |
     where_exp:'page', 'page.url != "/redirects.json"' |
+    where_exp:'page', 'page.url != "/robots.txt"' |
+    where_exp:'page', 'page.url != "/sitemap.xml"' |
     sort:'url' -%}
 {% assign pageIdx = 0 -%}
 {% assign lastPageIdx = interestingPages | size | minus: 1 -%}
