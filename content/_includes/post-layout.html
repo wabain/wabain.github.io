@@ -9,7 +9,7 @@
         </div>
         <div>
             {% for tag in page.tags %}
-            #{{ tag }}
+            <a href='/tag/{{ tag | slugify: "pretty" }}'>#{{ tag }}</a>
             {% endfor %}
         </div>
     </div>

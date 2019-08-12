@@ -10,20 +10,20 @@ module Partials
       site.pages.each do |page|
         fpath = File.join(partials.directory, page.dir, page.name)
 
-        Jekyll.logger.debug "Generating partial:", fpath
+        Jekyll.logger.debug "Partials:", "Generating from page #{page.relative_path}"
         partials.docs << PartialDocument.new(page, fpath, {
           :site => partials.site,
           :collection => partials
         })
       end
 
-      site.collections.each do |name, collection|
+      site.collections.each do |collection_name, collection|
         collection.docs.each do |doc|
           # For posts, this can give paths like _section-partial/_posts/... or
           # _section-partial/_drafts/..., but that doesn't seem to cause any harm
           fpath = File.join(partials.directory, doc.relative_path)
 
-          Jekyll.logger.debug "Generating partial:", fpath
+          Jekyll.logger.debug "Partials:", "Generating from #{collection_name} #{doc.relative_path}"
           partials.docs << PartialDocument.new(doc, fpath, {
             :site => partials.site,
             :collection => partials
@@ -47,6 +47,13 @@ module Partials
         self.content = target.content
       else
         raise ArgumentError, "unexpected partial target #{target}"
+      end
+
+      # Greedily copy across template-defined attributes
+      if defined? target.class::ATTRIBUTES_FOR_LIQUID
+        target.class::ATTRIBUTES_FOR_LIQUID.each do |attrib|
+          @data[attrib] = target.send(attrib)
+        end
       end
 
       @url = "/section-partial" + target.url
