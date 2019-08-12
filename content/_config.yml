@@ -1,10 +1,14 @@
 plugins:
   - jekyll-redirect-from
+  - jekyll-feed
 # builds are fast enough that there's no need for the occasional
 # soundness issues that incremental builds create
 incremental: false
 include:
   - .site-meta.json
+author:
+  name: William Bain
+  email: bain.william.a@gmail.com
 defaults:
   - scope:
       path: ""
