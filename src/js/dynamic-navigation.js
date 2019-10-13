@@ -22,7 +22,8 @@ function parseTitle(title) {
 }
 
 export class DynamicNavDispatcher {
-    constructor() {
+    constructor({ analytics }) {
+        this.analytics = analytics
         this._handleClick = this._handleClick.bind(this)
         this._handlePopState = this._handlePopState.bind(this)
 
@@ -34,12 +35,14 @@ export class DynamicNavDispatcher {
         // Only initialize dynamic navigation if HTML5 history APIs are available
         if (!window.history || !window.history.pushState) {
             debug('bailing on initialization, no support for history api')
+            analytics.onError({ error: 'DynamicNav: no support for history api' })
             return
         }
 
-        this.pageTrans = PageTransformer.forDocument(document)
+        this.pageTrans = PageTransformer.forDocument(document, { analytics })
         if (!this.pageTrans) {
             debug('bailing, failed to find expected page areas (url %s)', location.href)
+            analytics.onError({ error: 'DynamicNav: failed to find expected page areas' })
             return
         }
 
@@ -48,6 +51,11 @@ export class DynamicNavDispatcher {
 
         this.pageTrans.root.addEventListener('click', this._handleClick, false)
         window.addEventListener('popstate', this._handlePopState, false)
+
+        analytics.onTimingEvent({
+            name: 'dynamic_nav_ready',
+            category: 'dynamic nav',
+        })
     }
 
     _handleClick(evt) {
@@ -102,7 +110,12 @@ export class DynamicNavDispatcher {
             this.pageTrans.receivedContent(href, content, options)
         }).catch((err) => {
             debug('load %s: fatal: %s', href, err)
-            location.reload()
+
+            this.analytics.onFatalError({
+                error: `failed to load ${href}: ${err}`
+            }).then(() => {
+                location.reload()
+            })
         })
     }
 
@@ -150,18 +163,19 @@ class TimedCallback {
 }
 
 class PageTransformer {
-    constructor({ baseTitle, root, navElem, contentElem }) {
+    constructor({ baseTitle, root, navElem, contentElem, analytics }) {
         this.baseTitle = baseTitle
         this.root = root
         this.navElem = navElem
         this.contentElem = contentElem
+        this.analytics = analytics
 
         this.contentPending = false
 
         this._slow = this._fadeOut = this._fadeIn = null
     }
 
-    static forDocument(document) {
+    static forDocument(document, { analytics }) {
         const root = document.body
         const contentElem = document.querySelector('[data-region-id="primary-content"]')
         const navElem = document.querySelector('[data-region-id="page-header"]')
@@ -173,7 +187,7 @@ class PageTransformer {
         const { base: baseTitle, page: pageTitle } = parseTitle(document.title)
         debug('initial mount, base title %s, page title %s', baseTitle, pageTitle)
 
-        return new PageTransformer({ baseTitle, root, contentElem, navElem })
+        return new PageTransformer({ baseTitle, root, contentElem, navElem, analytics })
     }
 
     get currentContent() {
@@ -220,9 +234,19 @@ class PageTransformer {
         this._setDocTitle(newAttrs.title)
         this._updateNavLinks({ active: href })
 
+        this.analytics.onPageChange({
+            title: newAttrs.title,
+            path: href,
+        })
+
         transitionContent(this.contentElem, oldAttrs, newAttrs, frag, options).catch((err) => {
             debug('load %s: transition: fatal: %s', href, err)
-            location.reload()
+
+            this.analytics.onFatalError({
+                error: `transition to ${href}: ${err}`,
+            }).then(() => {
+                location.reload()
+            })
         })
     }
 
