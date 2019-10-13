@@ -160,6 +160,7 @@ The key to the updated approach is that instead of rotating from the top left an
 
 This neatly takes care of the core problem of positioning the headings, although we'll still hit some awkwardness related to having transformed elements in the CSS layout. The example below demonstrates the technique:
 
+{% demoembed %}
 ```html
 <style>
   .scrollable {
@@ -226,12 +227,7 @@ This neatly takes care of the core problem of positioning the headings, although
   </table>
 </figure>
 ```
-
-<script>
-  var preElems = document.getElementsByTagName('pre')
-  var pre = preElems[preElems.length - 1]
-  document.write(pre.textContent)
-</script>
+{% enddemoembed %}
 
 There are a few points worth noting:
 
