@@ -10,6 +10,7 @@ GEM
       public_suffix (>= 2.0.2, < 4.0)
     colorator (1.1.0)
     concurrent-ruby (1.0.5)
+    crass (1.0.4)
     em-websocket (0.5.1)
       eventmachine (>= 0.12.9)
       http_parser.rb (~> 0.6.0)
@@ -95,6 +96,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  crass (~> 1.0.4)
   html-proofer (= 3.11.1)
   jekyll (= 3.7.4)
   jekyll-archives (= 2.2.1)
@@ -102,6 +104,7 @@ DEPENDENCIES
   jekyll-redirect-from (= 0.14.0)
   jekyll-seo-tag
   jekyll-sitemap
+  nokogiri (~> 1.10.4)
 
 BUNDLED WITH
    1.15.4
