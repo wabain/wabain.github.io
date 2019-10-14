@@ -25,8 +25,20 @@
             "nav_priority": 1
         },
         {
+            "url": "/tag/best-practices/",
+            "title": "best-practices",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
             "url": "/tag/c/",
             "title": "c",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
+            "url": "/tag/css/",
+            "title": "css",
             "in_nav": false,
             "nav_priority": null
         },
@@ -45,6 +57,12 @@
         {
             "url": "/tag/rust/",
             "title": "rust",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
+            "url": "/tag/trivia/",
+            "title": "trivia",
             "in_nav": false,
             "nav_priority": null
         }

@@ -1,4 +1,321 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator><link href="https://wabain.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wabain.github.io/" rel="alternate" type="text/html" /><updated>2019-08-12T23:08:23+00:00</updated><id>https://wabain.github.io/feed.xml</id><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><entry><title type="html">Fixing C arrays, four decades later</title><link href="https://wabain.github.io/2019/08/10/c-arrays.html" rel="alternate" type="text/html" title="Fixing C arrays, four decades later" /><published>2019-08-10T00:00:00+00:00</published><updated>2019-08-10T00:00:00+00:00</updated><id>https://wabain.github.io/2019/08/10/c-arrays</id><content type="html" xml:base="https://wabain.github.io/2019/08/10/c-arrays.html">&lt;p&gt;One of the greatest challenges in teaching C is the idiosyncratic rules that govern string and array variables. While teachers can delay this hurdle until the second or third week by focusing on programs that use &lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt; with static strings, it can’t be put off much further. &lt;!--more--&gt; Any C program that takes command line arguments needs to grapple with how arrays, pointers, and strings relate. The first Google result for “C main” &lt;a href=&quot;https://wwwx.cs.unc.edu/~sparkst/howto/cpp_main.php&quot; target=&quot;_blank&quot;&gt;introduces&lt;/a&gt; main functions with a signature that highlights the pointer/array duality:&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator><link href="https://wabain.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wabain.github.io/" rel="alternate" type="text/html" /><updated>2019-10-14T21:18:45+00:00</updated><id>https://wabain.github.io/feed.xml</id><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><entry><title type="html">CSS Trivia: Rotated table headers in 2019</title><link href="https://wabain.github.io/2019/10/13/css-rotated-table-header.html" rel="alternate" type="text/html" title="CSS Trivia: Rotated table headers in 2019" /><published>2019-10-13T00:00:00+00:00</published><updated>2019-10-13T00:00:00+00:00</updated><id>https://wabain.github.io/2019/10/13/css-rotated-table-header</id><content type="html" xml:base="https://wabain.github.io/2019/10/13/css-rotated-table-header.html">&lt;p&gt;Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table’s contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn’t find a current guide, I wanted to record what I settled on.&lt;/p&gt;
+
+&lt;p&gt;The top Google result for “css rotate table header 45 degrees” is a 2014 &lt;a href=&quot;https://css-tricks.com/rotated-table-column-headers/&quot; target=&quot;_blank&quot;&gt;CSS Tricks article&lt;/a&gt; which rather breezily describes a variation on an earlier technique from another blog post.&lt;sup id=&quot;fnref:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; The trail of posts traces back to one &lt;a href=&quot;http://itpastorn.blogspot.com/2009/05/rotating-column-headers-using-css-only.html&quot; target=&quot;_blank&quot;&gt;from 2009&lt;/a&gt;, a very different era in web development. At the time, the best technique was to rotate the header with its top left corner staying fixed, and then to apply what the CSS Tricks article calls “some math stuff using &lt;code class=&quot;highlighter-rouge&quot;&gt;tan()&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;cos()&lt;/code&gt;” to figure out what translation needed to be applied in order for the bottom right of the rotated header to meet the top right-hand corner of the cell below.&lt;sup id=&quot;fnref:2&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+
+&lt;p&gt;The key to the updated approach is that instead of rotating from the top left and then correcting the horizontal and vertical positioning, we can keep the &lt;em&gt;bottom&lt;/em&gt; left point of the header fixed by setting &lt;code class=&quot;highlighter-rouge&quot;&gt;transform-origin&lt;/code&gt;. Then we only need to offset the horizontal position of the text by the width of the table column, a constant we’ll already have in our CSS.&lt;/p&gt;
+
+&lt;style&gt;
+    /*
+     * Common
+     */
+    .tablerot {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
+
+    .tablerot figcaption {
+        text-align: center;
+    }
+
+    .tablerot-cell {
+        overflow: visible;
+    }
+
+    .tablerot-cell-outline {
+        fill: white;
+        stroke: #ccc;
+        stroke-dasharray: 80, 60, 20;
+    }
+    .tablerot-cell-head .tablerot-cell-outline {
+        stroke-dasharray: none;
+    }
+
+    .tablerot-cell-placeholder {
+        fill: #aaa;
+        stroke: none;
+    }
+    .tablerot-cell-head .tablerot-cell-placeholder {
+        fill: #555;
+    }
+
+    /*
+     * 2009
+     */
+    .tablerot-old .tablerot-group-head {
+        animation: tablerot-old-group-head 3s ease-in-out infinite;
+    }
+    @keyframes tablerot-old-group-head {
+        0%, 45% { transform: translate(0, 0) }
+        55%, 60% {
+            transform: translate(0, 5.85786437627px);
+            animation-timing-function: ease-in;
+        }
+        70% { transform: translate(50px, 5.85786437627px) }
+        75% { transform: translate(42px, 5.85786437627px) }
+        80% { transform: translate(47px, 5.85786437627px) }
+        85%, 100% { transform: translate(45.8578643763px, 5.85786437627px) }
+    }
+
+    .tablerot-old use[href=&quot;#tablerot-table-head&quot;] {
+        animation: tablerot-old-head 3s ease-in infinite;
+        transform-origin: 20px 30px;  /* here origin is relative to svg */
+    }
+    @keyframes tablerot-old-head {
+        0% { transform: rotate(0) }
+        25%, 100% { transform: rotate(-45deg) }
+    }
+
+    .tablerot-trig {
+        animation: tablerot-trig 3s ease-in infinite;
+        stroke: #E53E3E;
+        stroke-dasharray: 50;
+        stroke-dashoffset: 50;
+        fill: none;
+    }
+    @keyframes tablerot-trig {
+        0%, 25% { stroke-dashoffset: 50; }
+        40% { stroke-dashoffset: 0; opacity: 1; }
+        55%, 100% { opacity: 0; }
+    }
+
+    /*
+     * 2019
+     */
+    .tablerot-new use[href=&quot;#tablerot-table-head&quot;] {
+        animation: tablerot-new-head 3s ease-in-out infinite;
+        transform-origin: 20px 50px;  /* here origin is relative to svg */
+    }
+    @keyframes tablerot-new-head {
+        0% { transform: rotate(0); animation-timing-function: ease-in; }
+        25%, 30% { transform: rotate(-45deg);  animation-timing-function: ease-in; }
+        40% { transform: translateX(65px) rotate(-45deg); }
+        45% { transform: translateX(58px) rotate(-45deg); }
+        50% { transform: translateX(61px) rotate(-45deg); }
+        55%, 100% { transform: translateX(60px) rotate(-45deg); }
+    }
+&lt;/style&gt;
+
+&lt;svg class=&quot;hidden&quot;&gt;
+  &lt;defs&gt;
+    &lt;symbol id=&quot;tablerot-table-head&quot;&gt;
+      &lt;svg class=&quot;tablerot-cell tablerot-cell-head&quot; x=&quot;20&quot; y=&quot;30&quot;&gt;
+        &lt;rect class=&quot;tablerot-cell-outline&quot; width=&quot;60&quot; height=&quot;20&quot; /&gt;
+        &lt;rect class=&quot;tablerot-cell-placeholder&quot; x=&quot;5&quot; y=&quot;6&quot; width=&quot;42&quot; height=&quot;8&quot; /&gt;
+      &lt;/svg&gt;
+    &lt;/symbol&gt;
+    &lt;symbol id=&quot;tablerot-table-body&quot;&gt;
+      &lt;svg class=&quot;tablerot-cell&quot; x=&quot;20&quot; y=&quot;50&quot;&gt;
+        &lt;rect class=&quot;tablerot-cell-outline&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;60&quot; height=&quot;20&quot; /&gt;
+        &lt;rect class=&quot;tablerot-cell-placeholder&quot; x=&quot;15&quot; y=&quot;6&quot; width=&quot;39&quot; height=&quot;8&quot; /&gt;
+      &lt;/svg&gt;
+      &lt;svg class=&quot;tablerot-cell&quot; x=&quot;20&quot; y=&quot;70&quot;&gt;
+        &lt;rect class=&quot;tablerot-cell-outline&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;60&quot; height=&quot;20&quot; /&gt;
+        &lt;rect class=&quot;tablerot-cell-placeholder&quot; x=&quot;12&quot; y=&quot;6&quot; width=&quot;42&quot; height=&quot;8&quot; /&gt;
+      &lt;/svg&gt;
+      &lt;svg class=&quot;tablerot-cell&quot; x=&quot;20&quot; y=&quot;90&quot;&gt;
+        &lt;rect class=&quot;tablerot-cell-outline&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;60&quot; height=&quot;20&quot; /&gt;
+        &lt;rect class=&quot;tablerot-cell-placeholder&quot; x=&quot;18&quot; y=&quot;6&quot; width=&quot;36&quot; height=&quot;8&quot; /&gt;
+      &lt;/svg&gt;
+      &lt;svg class=&quot;tablerot-cell&quot; x=&quot;20&quot; y=&quot;110&quot;&gt;
+        &lt;rect class=&quot;tablerot-cell-outline&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;60&quot; height=&quot;20&quot; /&gt;
+        &lt;rect class=&quot;tablerot-cell-placeholder&quot; x=&quot;16&quot; y=&quot;6&quot; width=&quot;38&quot; height=&quot;8&quot; /&gt;
+      &lt;/svg&gt;
+      &lt;svg class=&quot;tablerot-cell&quot; x=&quot;20&quot; y=&quot;130&quot;&gt;
+        &lt;rect class=&quot;tablerot-cell-outline&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;60&quot; height=&quot;20&quot; /&gt;
+        &lt;rect class=&quot;tablerot-cell-placeholder&quot; x=&quot;12&quot; y=&quot;6&quot; width=&quot;42&quot; height=&quot;8&quot; /&gt;
+      &lt;/svg&gt;
+    &lt;/symbol&gt;
+  &lt;/defs&gt;
+&lt;/svg&gt;
+
+&lt;div class=&quot;tablerot&quot;&gt;
+  &lt;figure class=&quot;tablerot-old&quot;&gt;
+    &lt;svg width=&quot;150&quot; height=&quot;150&quot; viewBox=&quot;-30 -20 160 160&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+      &lt;g class=&quot;tablerot-group-head&quot;&gt;
+        &lt;path class=&quot;tablerot-trig&quot; d=&quot;M 25,30 A 5 5 0 0 1 20 35 L 20,30 v 14.1421356237 h 14.1421356237&quot; /&gt;
+        &lt;use href=&quot;#tablerot-table-head&quot; /&gt;
+      &lt;/g&gt;
+      &lt;use href=&quot;#tablerot-table-body&quot; /&gt;
+    &lt;/svg&gt;
+    &lt;figcaption&gt;2009&lt;/figcaption&gt;
+  &lt;/figure&gt;
+  &lt;figure class=&quot;tablerot-new&quot;&gt;
+    &lt;svg width=&quot;150&quot; height=&quot;150&quot; viewBox=&quot;-30 -20 160 160&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+      &lt;use href=&quot;#tablerot-table-head&quot; /&gt;
+      &lt;use href=&quot;#tablerot-table-body&quot; /&gt;
+    &lt;/svg&gt;
+    &lt;figcaption&gt;2019&lt;/figcaption&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This neatly takes care of the core problem of positioning the headings, although we’ll still hit some awkwardness related to having transformed elements in the CSS layout. The example below demonstrates the technique:&lt;/p&gt;
+
+&lt;div id=&quot;root-demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc&quot;&gt;
+&lt;style&gt;
+  #root-demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc .demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-scrollable {
+    overflow: auto;
+  }
+
+  #root-demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc .demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header th {
+    height: 240px;
+    vertical-align: bottom;
+    text-align: left;
+    line-height: 1;
+  }
+
+  #root-demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc .demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-container {
+    width: 75px;
+  }
+
+  #root-demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc .demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-content {
+    width: 300px;
+    transform-origin: bottom left;
+    transform: translateX(75px) rotate(-45deg);
+  }
+
+  #root-demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc .demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header td:not(:first-child) {
+    text-align: right;
+  }
+&lt;/style&gt;
+
+&lt;figure class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-scrollable&quot;&gt;
+  &lt;table class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th&gt;Year&lt;/th&gt;
+        &lt;th&gt;
+          &lt;div class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-container&quot;&gt;
+            &lt;div class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-content&quot;&gt;Splines reticulated&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/th&gt;
+        &lt;th&gt;
+          &lt;div class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-container&quot;&gt;
+            &lt;div class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-content&quot;&gt;Ipsums loremmed&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/th&gt;
+        &lt;th&gt;
+          &lt;div class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-container&quot;&gt;
+            &lt;div class=&quot;demo-Ojt_Ru7NxYIUQA-cFpLt9n5KrE0qVJfastZuJF5FPZc-rotated-header-content&quot;&gt;
+              Observations on the theory and practice of landscape gardening
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;2016&lt;/td&gt; &lt;td&gt;120&lt;/td&gt; &lt;td&gt;1,900&lt;/td&gt; &lt;td&gt;25&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;2017&lt;/td&gt; &lt;td&gt;3,002&lt;/td&gt; &lt;td&gt;14,000&lt;/td&gt; &lt;td&gt;16&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;2018&lt;/td&gt; &lt;td&gt;20,124&lt;/td&gt; &lt;td&gt;980&lt;/td&gt; &lt;td&gt;48&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nc&quot;&gt;.scrollable&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;overflow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;nc&quot;&gt;.rotated-header&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;th&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;240px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;vertical-align&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bottom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;text-align&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;line-height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;nc&quot;&gt;.rotated-header-container&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;75px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;nc&quot;&gt;.rotated-header-content&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;300px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;transform-origin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bottom&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;transform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;translateX&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;75px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rotate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;-45deg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;nc&quot;&gt;.rotated-header&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;td&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:not&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:first-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;text-align&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;right&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;figure&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;scrollable&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;table&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;thead&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;Year&lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;
+          &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header-container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header-content&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;Splines reticulated&lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+          &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;
+          &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header-container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header-content&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;Ipsums loremmed&lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+          &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;th&amp;gt;&lt;/span&gt;
+          &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header-container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;rotated-header-content&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+              Observations on the theory and practice of landscape gardening
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+          &lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/thead&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;tbody&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;2016&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;120&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;1,900&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;25&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;2017&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;3,002&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;14,000&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;16&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;2018&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;20,124&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;980&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;td&amp;gt;&lt;/span&gt;48&lt;span class=&quot;nt&quot;&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/tbody&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;/table&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/figure&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;There are a few points worth noting:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;In this demo I’m using two &lt;code class=&quot;highlighter-rouge&quot;&gt;divs&lt;/code&gt; inside each &lt;code class=&quot;highlighter-rouge&quot;&gt;th&lt;/code&gt;: a wrapper to set the width of the header cell and an inner div for the rotated text. In theory I think it should be possible to fix the dimensions of the cell by styling the &lt;code class=&quot;highlighter-rouge&quot;&gt;th&lt;/code&gt; itself, but I haven’t dug into the specifics of CSS table layout rules to figure out how to make it work.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;I rely on a &lt;code class=&quot;highlighter-rouge&quot;&gt;vertical-align&lt;/code&gt; rule to push the header text to the bottom of the fixed-size &lt;code class=&quot;highlighter-rouge&quot;&gt;th&lt;/code&gt; elements. Something similar can also be done with flexbox.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;I’ve set the hardcoded height of the header heuristically; in principle one could do “math stuff” to get the minimum height that includes the rotated header but in this demo the height of the rotated header is determined by the height of multiple lines of text; getting the necessary parameters dynamically is probably possible on the client side, but requires knowing exactly how the header text will be laid out. This is tricky, particularly if the font size or leading change responsively based on the window size.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Part of the rotated headers extend outside the area of the table itself. In this demo I’ve wrapped the table in a scrollable container and made it left-aligned. While the scrollable area of the container includes the protruding headers, if the table is centered within the scrollable container it will be centered according to its own size, excluding the headers. This can push the headers outside the area which is visible without scrolling.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;bonus-fallbacks&quot;&gt;Bonus: Fallbacks&lt;/h2&gt;
+
+&lt;p&gt;Support for CSS transforms is pretty robust, but what happens if a user agent lacks it? In my case, the problem child was the Outlook web client, which allows embedded CSS in emails, but strips transform styles for what I imagine are security reasons. Without my making special provisions, this resulted in the unrotated row headers overlapping and becoming unreadable.&lt;/p&gt;
+
+&lt;p&gt;Fortunately, there’s a simple fix: wrap all of the rules related to header rotation in a &lt;code class=&quot;highlighter-rouge&quot;&gt;@supports(transform: ...)&lt;/code&gt; query. Clients not supporting the transform will render an unwieldy but basically readable table. With support for &lt;code class=&quot;highlighter-rouge&quot;&gt;@supports&lt;/code&gt; being &lt;a href=&quot;https://caniuse.com/#feat=css-featurequeries&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;a bit spottier&lt;/a&gt; than support for the CSS transforms themselves, this probably results in some extra user agents rendering the fallback, but for me that’s an acceptable cost for what is basically a progressive enhancement.&lt;/p&gt;
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot;&gt;
+      &lt;p&gt;CSS Tricks is an excellent resource; the post I stumbled on is the result of having a deep back catalog. As I was preparing this post I used posts from the same author to refresh my memory on how to animate SVG. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:2&quot;&gt;
+      &lt;p&gt;The older posts also skew the shape of the header in order to have its horizontal lines stay parallel with the horizontal lines of the body rows. This is less relevant now that tables with external borders are largely out of style. &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><category term="css" /><category term="trivia" /><category term="best-practices" /><summary type="html">Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table’s contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn’t find a current guide, I wanted to record what I settled on.</summary></entry><entry><title type="html">Fixing C arrays, four decades later</title><link href="https://wabain.github.io/2019/08/10/c-arrays.html" rel="alternate" type="text/html" title="Fixing C arrays, four decades later" /><published>2019-08-10T00:00:00+00:00</published><updated>2019-08-10T00:00:00+00:00</updated><id>https://wabain.github.io/2019/08/10/c-arrays</id><content type="html" xml:base="https://wabain.github.io/2019/08/10/c-arrays.html">&lt;p&gt;One of the greatest challenges in teaching C is the idiosyncratic rules that govern string and array variables. While teachers can delay this hurdle until the second or third week by focusing on programs that use &lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt; with static strings, it can’t be put off much further. &lt;!--more--&gt; Any C program that takes command line arguments needs to grapple with how arrays, pointers, and strings relate. The first Google result for “C main” &lt;a href=&quot;https://wwwx.cs.unc.edu/~sparkst/howto/cpp_main.php&quot; target=&quot;_blank&quot;&gt;introduces&lt;/a&gt; main functions with a signature that highlights the pointer/array duality:&lt;/p&gt;
 
 &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
