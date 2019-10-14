@@ -1,8 +1,9 @@
 source 'https://rubygems.org'
 
 gem 'html-proofer', '= 3.11.1'
+gem 'nokogiri', "~> 1.10.4"
+gem 'crass', "~> 1.0.4"
 
-# See https://pages.github.com/versions
 gem 'jekyll', '= 3.7.4'
 gem 'jekyll-archives', '= 2.2.1'
 gem 'jekyll-feed', '= 0.11.0'

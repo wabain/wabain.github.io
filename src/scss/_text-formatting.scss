@@ -42,6 +42,11 @@ h2 {
   p {
     margin: 0 0 1.2rem;
   }
+
+  ol,
+  ul {
+    padding-left: 20px;
+  }
 }
 
 a {
@@ -59,12 +64,26 @@ a {
   }
 }
 
+pre,
+code,
+kbd,
+samp {
+  font-size: 1rem;
+}
+
+@media (max-width: $screen-sm-min - 1) {
+  figure {
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
+
 // Inspired by GitHub's rules
 p code {
   border-radius: 3px;
   background-color: $light-gray;
   padding: 0.2rem 0.4rem;
-  font-size: 85%;
+  font-size: 0.915rem;
 }
 
 // pre with syntax highlighting
