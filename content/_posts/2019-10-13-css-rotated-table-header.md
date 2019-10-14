@@ -3,7 +3,7 @@ title: "CSS Trivia: Rotated table headers in 2019"
 tags: [css, trivia, best-practices]
 ---
 
-Recently I built an HTML report that aggregates some data. The table headings being much longer than the table's contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn't find a current guide, I wanted to record what I settled on.
+Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table's contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn't find a current guide, I wanted to record what I settled on.
 
 The top Google result for "css rotate table header 45 degrees" is a 2014 [CSS Tricks article](https://css-tricks.com/rotated-table-column-headers/){: target="_blank" :} which rather breezily describes a variation on an earlier technique from another blog post.[^1] The trail of posts traces back to one [from 2009](http://itpastorn.blogspot.com/2009/05/rotating-column-headers-using-css-only.html){: target="_blank" :}, a very different era in web development. At the time, the best technique was to rotate the header with its top left corner staying fixed, and then to apply what the CSS Tricks article calls "some math stuff using `tan()` and `cos()`" to figure out what translation needed to be applied in order for the bottom right of the rotated header to meet the top right-hand corner of the cell below.[^2]
 
