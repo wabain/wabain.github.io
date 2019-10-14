@@ -17,44 +17,44 @@ The key to the updated approach is that instead of rotating from the top left an
     /*
      * Common
      */
-    .tablerot-anim {
+    .tablerot {
         display: flex;
         justify-content: space-around;
         flex-wrap: wrap;
     }
 
-    .tablerot-anim figcaption {
+    .tablerot figcaption {
         text-align: center;
     }
 
-    .tablerot-anim-cell {
+    .tablerot-cell {
         overflow: visible;
     }
 
-    .tablerot-anim-cell-outline {
+    .tablerot-cell-outline {
         fill: white;
         stroke: #ccc;
         stroke-dasharray: 80, 60, 20;
     }
-    .tablerot-anim-cell-head .tablerot-anim-cell-outline {
+    .tablerot-cell-head .tablerot-cell-outline {
         stroke-dasharray: none;
     }
 
-    .tablerot-anim-cell-placeholder {
+    .tablerot-cell-placeholder {
         fill: #aaa;
         stroke: none;
     }
-    .tablerot-anim-cell-head .tablerot-anim-cell-placeholder {
+    .tablerot-cell-head .tablerot-cell-placeholder {
         fill: #555;
     }
 
     /*
      * 2009
      */
-    .tablerot-anim-old .tablerot-anim-group-head {
-        animation: tablerot-anim-old-group-head 3s ease-in-out infinite;
+    .tablerot-old .tablerot-group-head {
+        animation: tablerot-old-group-head 3s ease-in-out infinite;
     }
-    @keyframes tablerot-anim-old-group-head {
+    @keyframes tablerot-old-group-head {
         0%, 45% { transform: translate(0, 0) }
         55%, 60% {
             transform: translate(0, 5.85786437627px);
@@ -66,23 +66,23 @@ The key to the updated approach is that instead of rotating from the top left an
         85%, 100% { transform: translate(45.8578643763px, 5.85786437627px) }
     }
 
-    .tablerot-anim-old use[href="#tablerot-anim-table-head"] {
-        animation: tablerot-anim-old-head 3s ease-in infinite;
+    .tablerot-old use[href="#tablerot-table-head"] {
+        animation: tablerot-old-head 3s ease-in infinite;
         transform-origin: 20px 30px;  /* here origin is relative to svg */
     }
-    @keyframes tablerot-anim-old-head {
+    @keyframes tablerot-old-head {
         0% { transform: rotate(0) }
         25%, 100% { transform: rotate(-45deg) }
     }
 
-    .tablerot-anim-trig {
-        animation: tablerot-anim-trig 3s ease-in infinite;
+    .tablerot-trig {
+        animation: tablerot-trig 3s ease-in infinite;
         stroke: #E53E3E;
         stroke-dasharray: 50;
         stroke-dashoffset: 50;
         fill: none;
     }
-    @keyframes tablerot-anim-trig {
+    @keyframes tablerot-trig {
         0%, 25% { stroke-dashoffset: 50; }
         40% { stroke-dashoffset: 0; opacity: 1; }
         55%, 100% { opacity: 0; }
@@ -91,11 +91,11 @@ The key to the updated approach is that instead of rotating from the top left an
     /*
      * 2019
      */
-    .tablerot-anim-new use[href="#tablerot-anim-table-head"] {
-        animation: tablerot-anim-new-head 3s ease-in-out infinite;
+    .tablerot-new use[href="#tablerot-table-head"] {
+        animation: tablerot-new-head 3s ease-in-out infinite;
         transform-origin: 20px 50px;  /* here origin is relative to svg */
     }
-    @keyframes tablerot-anim-new-head {
+    @keyframes tablerot-new-head {
         0% { transform: rotate(0); animation-timing-function: ease-in; }
         25%, 30% { transform: rotate(-45deg);  animation-timing-function: ease-in; }
         40% { transform: translateX(65px) rotate(-45deg); }
@@ -107,52 +107,52 @@ The key to the updated approach is that instead of rotating from the top left an
 
 <svg class="hidden">
   <defs>
-    <symbol id="tablerot-anim-table-head">
-      <svg class="tablerot-anim-cell tablerot-anim-cell-head" x="20" y="30">
-        <rect class="tablerot-anim-cell-outline" width="60" height="20" />
-        <rect class="tablerot-anim-cell-placeholder" x="5" y="6" width="42" height="8" />
+    <symbol id="tablerot-table-head">
+      <svg class="tablerot-cell tablerot-cell-head" x="20" y="30">
+        <rect class="tablerot-cell-outline" width="60" height="20" />
+        <rect class="tablerot-cell-placeholder" x="5" y="6" width="42" height="8" />
       </svg>
     </symbol>
-    <symbol id="tablerot-anim-table-body">
-      <svg class="tablerot-anim-cell" x="20" y="50">
-        <rect class="tablerot-anim-cell-outline" x="0" y="0" width="60" height="20" />
-        <rect class="tablerot-anim-cell-placeholder" x="15" y="6" width="39" height="8" />
+    <symbol id="tablerot-table-body">
+      <svg class="tablerot-cell" x="20" y="50">
+        <rect class="tablerot-cell-outline" x="0" y="0" width="60" height="20" />
+        <rect class="tablerot-cell-placeholder" x="15" y="6" width="39" height="8" />
       </svg>
-      <svg class="tablerot-anim-cell" x="20" y="70">
-        <rect class="tablerot-anim-cell-outline" x="0" y="0" width="60" height="20" />
-        <rect class="tablerot-anim-cell-placeholder" x="12" y="6" width="42" height="8" />
+      <svg class="tablerot-cell" x="20" y="70">
+        <rect class="tablerot-cell-outline" x="0" y="0" width="60" height="20" />
+        <rect class="tablerot-cell-placeholder" x="12" y="6" width="42" height="8" />
       </svg>
-      <svg class="tablerot-anim-cell" x="20" y="90">
-        <rect class="tablerot-anim-cell-outline" x="0" y="0" width="60" height="20" />
-        <rect class="tablerot-anim-cell-placeholder" x="18" y="6" width="36" height="8" />
+      <svg class="tablerot-cell" x="20" y="90">
+        <rect class="tablerot-cell-outline" x="0" y="0" width="60" height="20" />
+        <rect class="tablerot-cell-placeholder" x="18" y="6" width="36" height="8" />
       </svg>
-      <svg class="tablerot-anim-cell" x="20" y="110">
-        <rect class="tablerot-anim-cell-outline" x="0" y="0" width="60" height="20" />
-        <rect class="tablerot-anim-cell-placeholder" x="16" y="6" width="38" height="8" />
+      <svg class="tablerot-cell" x="20" y="110">
+        <rect class="tablerot-cell-outline" x="0" y="0" width="60" height="20" />
+        <rect class="tablerot-cell-placeholder" x="16" y="6" width="38" height="8" />
       </svg>
-      <svg class="tablerot-anim-cell" x="20" y="130">
-        <rect class="tablerot-anim-cell-outline" x="0" y="0" width="60" height="20" />
-        <rect class="tablerot-anim-cell-placeholder" x="12" y="6" width="42" height="8" />
+      <svg class="tablerot-cell" x="20" y="130">
+        <rect class="tablerot-cell-outline" x="0" y="0" width="60" height="20" />
+        <rect class="tablerot-cell-placeholder" x="12" y="6" width="42" height="8" />
       </svg>
     </symbol>
   </defs>
 </svg>
 
-<div class="tablerot-anim">
-  <figure class="tablerot-anim-old">
+<div class="tablerot">
+  <figure class="tablerot-old">
     <svg width="150" height="150" viewBox="-30 -20 160 160" xmlns="http://www.w3.org/2000/svg">
-      <g class="tablerot-anim-group-head">
-        <path class="tablerot-anim-trig" d="M 25,30 A 5 5 0 0 1 20 35 L 20,30 v   14.1421356237 h 14.1421356237" />
-        <use href="#tablerot-anim-table-head" />
+      <g class="tablerot-group-head">
+        <path class="tablerot-trig" d="M 25,30 A 5 5 0 0 1 20 35 L 20,30 v 14.1421356237 h 14.1421356237" />
+        <use href="#tablerot-table-head" />
       </g>
-      <use href="#tablerot-anim-table-body" />
+      <use href="#tablerot-table-body" />
     </svg>
     <figcaption>2009</figcaption>
   </figure>
-  <figure class="tablerot-anim-new">
+  <figure class="tablerot-new">
     <svg width="150" height="150" viewBox="-30 -20 160 160" xmlns="http://www.w3.org/2000/svg">
-      <use href="#tablerot-anim-table-head" />
-      <use href="#tablerot-anim-table-body" />
+      <use href="#tablerot-table-head" />
+      <use href="#tablerot-table-body" />
     </svg>
     <figcaption>2019</figcaption>
   </figure>
