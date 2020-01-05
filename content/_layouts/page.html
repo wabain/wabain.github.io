@@ -19,6 +19,15 @@
     gtag('config', 'UA-51279886-1', { 'transport_type': 'beacon' });
   </script>
 
+  {% comment %}
+    HACK: if the content seems to contain Twitter embeds, pre-emptively load the
+    Twitter widgets script. If Twitter embeds are added dynamically after the
+    initial page load, logic in embeds/twitter.js will load the script.
+  {% endcomment -%}
+  {% if content contains "twitter-tweet" -%}
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  {%- endif %}
+
   {% if jekyll.environment == 'production' %}
   <link type="text/css" rel="stylesheet" href="{{ page.assets_dir }}/cs-homepage.min.css">
   {% endif -%}

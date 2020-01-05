@@ -22,7 +22,7 @@ function parseTitle(title) {
 }
 
 export class DynamicNavDispatcher {
-    constructor({ analytics }) {
+    constructor({ analytics, contentTriggers }) {
         this.analytics = analytics
         this._handleClick = this._handleClick.bind(this)
         this._handlePopState = this._handlePopState.bind(this)
@@ -39,7 +39,10 @@ export class DynamicNavDispatcher {
             return
         }
 
-        this.pageTrans = PageTransformer.forDocument(document, { analytics })
+        this.pageTrans = PageTransformer.forDocument(document, {
+            analytics,
+            contentTriggers,
+        })
         if (!this.pageTrans) {
             debug('bailing, failed to find expected page areas (url %s)', location.href)
             analytics.onError({ error: 'DynamicNav: failed to find expected page areas' })
@@ -163,19 +166,27 @@ class TimedCallback {
 }
 
 class PageTransformer {
-    constructor({ baseTitle, root, navElem, contentElem, analytics }) {
+    constructor({
+        baseTitle,
+        root,
+        navElem,
+        contentElem,
+        analytics,
+        contentTriggers,
+    }) {
         this.baseTitle = baseTitle
         this.root = root
         this.navElem = navElem
         this.contentElem = contentElem
         this.analytics = analytics
+        this.contentTriggers = contentTriggers
 
         this.contentPending = false
 
         this._slow = this._fadeOut = this._fadeIn = null
     }
 
-    static forDocument(document, { analytics }) {
+    static forDocument(document, { analytics, contentTriggers }) {
         const root = document.body
         const contentElem = document.querySelector('[data-region-id="primary-content"]')
         const navElem = document.querySelector('[data-region-id="page-header"]')
@@ -187,7 +198,14 @@ class PageTransformer {
         const { base: baseTitle, page: pageTitle } = parseTitle(document.title)
         debug('initial mount, base title %s, page title %s', baseTitle, pageTitle)
 
-        return new PageTransformer({ baseTitle, root, contentElem, navElem, analytics })
+        return new PageTransformer({
+            baseTitle,
+            root,
+            contentElem,
+            navElem,
+            analytics,
+            contentTriggers,
+        })
     }
 
     get currentContent() {
@@ -217,7 +235,7 @@ class PageTransformer {
         debug('content load is slow, should show a spinner')
     }
 
-    receivedContent(href, content, options) {
+    receivedContent(href, content, navigationOptions) {
         this.setContentPending(false)
 
         const temp = document.createElement('div')
@@ -239,7 +257,16 @@ class PageTransformer {
             path: href,
         })
 
-        transitionContent(this.contentElem, oldAttrs, newAttrs, frag, options).catch((err) => {
+        transitionContent({
+            container: this.contentElem,
+            attributes: {
+                old: oldAttrs,
+                new: newAttrs,
+            },
+            content: frag,
+            navigation: navigationOptions,
+            beforeContentEnter: () => { this._runContentTriggers() },
+        }).catch((err) => {
             debug('load %s: transition: fatal: %s', href, err)
 
             this.analytics.onFatalError({
@@ -269,6 +296,18 @@ class PageTransformer {
             document.title = this.baseTitle + ' - ' + title
         } else {
             document.title = this.baseTitle
+        }
+    }
+
+    _runContentTriggers() {
+        for (const trigger of this.contentTriggers) {
+            try {
+                trigger(this.contentElem)
+            } catch (e) {
+                this.analytics.onError({
+                    error: `DynamicNav: content trigger ${trigger ? trigger.name : 'unknown'}: ${e}`,
+                })
+            }
         }
     }
 }

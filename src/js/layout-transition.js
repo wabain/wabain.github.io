@@ -1,12 +1,15 @@
 import anim from 'animejs'
 
-export function transitionContent(
-    contentElem,
-    oldAttrs,
-    newAttrs,
-    newContentFragment,
-    { hasManagedScroll }
-) {
+export function transitionContent({
+    container: contentElem,
+    attributes: {
+        old: oldAttrs,
+        new: newAttrs,
+    },
+    content: newContentFragment,
+    navigation: { hasManagedScroll },
+    beforeContentEnter,
+}) {
     const body = document.body
 
     if (!hasManagedScroll) {
@@ -59,6 +62,10 @@ export function transitionContent(
 
             contentElem.innerHTML = ''
             contentElem.appendChild(newContentFragment)
+
+            if (beforeContentEnter) {
+                beforeContentEnter()
+            }
         },
     })
 
