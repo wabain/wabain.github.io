@@ -25,6 +25,12 @@
             "nav_priority": 1
         },
         {
+            "url": "/tag/animation/",
+            "title": "animation",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
             "url": "/tag/best-practices/",
             "title": "best-practices",
             "in_nav": false,
@@ -49,6 +55,12 @@
             "nav_priority": null
         },
         {
+            "url": "/tag/javascript/",
+            "title": "javascript",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
             "url": "/tag/language-design/",
             "title": "language-design",
             "in_nav": false,
@@ -63,6 +75,12 @@
         {
             "url": "/tag/trivia/",
             "title": "trivia",
+            "in_nav": false,
+            "nav_priority": null
+        },
+        {
+            "url": "/tag/web-design/",
+            "title": "web-design",
             "in_nav": false,
             "nav_priority": null
         }
