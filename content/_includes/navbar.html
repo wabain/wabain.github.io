@@ -11,7 +11,7 @@
         {%- if nav_page.in_nav and nav_page.layout != "section-partial" %}
           <li><a href="{{ nav_page.url }}" {% if nav_page.url == page.url %} class="active-link" {% endif %}>{{ nav_page.title }}</a></li>
         {%- endif %}
-      {%- endfor -%}
+      {%- endfor %}
       <li><a href="https://github.com/wabain/" target="_blank">GitHub</a></li>
     </ul>
   </nav>
