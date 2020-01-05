@@ -39,7 +39,7 @@
     {%- if page.title %} - {{ page.title }}{% endif -%}
   </title>
 
-  {% seo %}
+  {% seo title=false %}
 </head>
 <body class="{% if page.longform %}content-longform{% endif %}">
   <div class="container">
