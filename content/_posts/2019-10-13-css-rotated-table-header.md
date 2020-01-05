@@ -1,6 +1,6 @@
 ---
 title: "CSS Trivia: Rotated table headers in 2019"
-tags: [css, trivia, best-practices]
+tags: [css, trivia, web-design, best-practices]
 ---
 
 Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table's contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn't find a current guide, I wanted to record what I settled on.
