@@ -10,9 +10,12 @@ plugins:
 incremental: false
 include:
   - .site-meta.json
+
+title: William Bain
 author:
   name: William Bain
   email: bain.william.a@gmail.com
+
 defaults:
   - scope:
       path: ""
@@ -32,6 +35,7 @@ defaults:
       path: "tag"
     values:
       partial_layout: "tag-partial"
+
 jekyll-archives:
   enabled: [tags]
   layout: tag
