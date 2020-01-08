@@ -24,7 +24,7 @@ A *k*-d tree [is a binary tree structure](https://en.wikipedia.org/wiki/K-d_tree
 It was pretty easy to implement some basic logic to render a 2-d tree to an HTML5 canvas; Wikipedia has some working code snippets which build the tree by recursing over the nodes. In my first attempt to animate it I picked two arrays of points, interpolating between them and rendering the *k*-d tree that results from each interpolation:
 
 <figure>
-  <video controls autoplay muted loop>
+  <video controls autoplay muted loop playsinline>
     <source src="{{ page.assets_dir }}/posts/animating-kd-trees/anim-first-try.webm" type="video/webm">
     <source src="{{ page.assets_dir }}/posts/animating-kd-trees/anim-first-try.mp4" type="video/mp4">
     Sorry, your browser doesn't support embedded videos.
@@ -39,7 +39,7 @@ The results are not great, since the lines of the tree are not continuous throug
 My next idea was to interpolate the values in the tree directly. I build *k*-d trees for an initial and final set of points and then render trees which tween the values of the isomorphic nodes. The interpolated trees aren’t proper *k*-d trees, but they’re visually similar and give a nice, continuous animation.
 
 <figure>
-  <video controls autoplay muted loop>
+  <video controls autoplay muted loop playsinline>
     <source src="{{ page.assets_dir }}/posts/animating-kd-trees/anim-second-try.webm" type="video/webm">
     <source src="{{ page.assets_dir }}/posts/animating-kd-trees/anim-second-try.mp4" type="video/mp4">
     Sorry, your browser doesn't support embedded videos.
@@ -52,7 +52,7 @@ My next idea was to interpolate the values in the tree directly. I build *k*-d t
 By the end of what had turned out to be a rather long Friday night of experimentation, I had built a moderately engaging little animation. First I switched to coloring the rectangles formed by the tree rather than the lines. Then I dialed up the number of points used to generate the tree and punched up the timings. Finally I switched from the RGB palette I’d used for testing to something a bit easier on the eyes.
 
 <figure>
-  <video controls autoplay muted loop>
+  <video controls autoplay muted loop playsinline>
     <source src="{{ page.assets_dir }}/posts/animating-kd-trees/anim-third-try.webm" type="video/webm">
     <source src="{{ page.assets_dir }}/posts/animating-kd-trees/anim-third-try.mp4" type="video/mp4">
     Sorry, your browser doesn't support embedded videos.
