@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator><link href="https://wabain.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wabain.github.io/" rel="alternate" type="text/html" /><updated>2020-01-05T23:50:06+00:00</updated><id>https://wabain.github.io/feed.xml</id><title type="html">William Bain</title><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><entry><title type="html">Working notes: Animating k-d trees</title><link href="https://wabain.github.io/2020/01/05/animating-kd-trees.html" rel="alternate" type="text/html" title="Working notes: Animating k-d trees" /><published>2020-01-05T00:00:00+00:00</published><updated>2020-01-05T00:00:00+00:00</updated><id>https://wabain.github.io/2020/01/05/animating-kd-trees</id><content type="html" xml:base="https://wabain.github.io/2020/01/05/animating-kd-trees.html">&lt;p&gt;Amid the post–New Year spate of project roundups, I discovered Luke Pattons’ Canvas Cards project, and &lt;a href=&quot;https://canvas-cards.glitch.me/#boxer-selector&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;through it&lt;/a&gt; some mesmerizing procedural animations by Raven Kwok.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator><link href="https://wabain.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wabain.github.io/" rel="alternate" type="text/html" /><updated>2020-01-08T06:07:17+00:00</updated><id>https://wabain.github.io/feed.xml</id><title type="html">William Bain</title><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><entry><title type="html">Working notes: Animating k-d trees</title><link href="https://wabain.github.io/2020/01/05/animating-kd-trees.html" rel="alternate" type="text/html" title="Working notes: Animating k-d trees" /><published>2020-01-05T00:00:00+00:00</published><updated>2020-01-05T00:00:00+00:00</updated><id>https://wabain.github.io/2020/01/05/animating-kd-trees</id><content type="html" xml:base="https://wabain.github.io/2020/01/05/animating-kd-trees.html">&lt;p&gt;Amid the post–New Year spate of project roundups, I discovered Luke Pattons’ Canvas Cards project, and &lt;a href=&quot;https://canvas-cards.glitch.me/#boxer-selector&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;through it&lt;/a&gt; some mesmerizing procedural animations by Raven Kwok.&lt;/p&gt;
 
 &lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;und&quot; dir=&quot;ltr&quot;&gt;&lt;a href=&quot;https://t.co/jpyc9hBLxD&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;pic.twitter.com/jpyc9hBLxD&lt;/a&gt;&lt;/p&gt;&amp;mdash; Raven Kwok (@RavenKwok) &lt;a href=&quot;https://twitter.com/RavenKwok/status/1117347303105294337?ref_src=twsrc%5Etfw&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;April 14, 2019&lt;/a&gt;&lt;/blockquote&gt;
 
@@ -18,7 +18,7 @@
 &lt;p&gt;It was pretty easy to implement some basic logic to render a 2-d tree to an HTML5 canvas; Wikipedia has some working code snippets which build the tree by recursing over the nodes. In my first attempt to animate it I picked two arrays of points, interpolating between them and rendering the &lt;em&gt;k&lt;/em&gt;-d tree that results from each interpolation:&lt;/p&gt;
 
 &lt;figure&gt;
-  &lt;video controls=&quot;&quot; autoplay=&quot;&quot; muted=&quot;&quot; loop=&quot;&quot;&gt;
+  &lt;video controls=&quot;&quot; autoplay=&quot;&quot; muted=&quot;&quot; loop=&quot;&quot; playsinline=&quot;&quot;&gt;
     &lt;source src=&quot;/home-assets/posts/animating-kd-trees/anim-first-try.webm&quot; type=&quot;video/webm&quot; /&gt;
     &lt;source src=&quot;/home-assets/posts/animating-kd-trees/anim-first-try.mp4&quot; type=&quot;video/mp4&quot; /&gt;
     Sorry, your browser doesn't support embedded videos.
@@ -33,7 +33,7 @@
 &lt;p&gt;My next idea was to interpolate the values in the tree directly. I build &lt;em&gt;k&lt;/em&gt;-d trees for an initial and final set of points and then render trees which tween the values of the isomorphic nodes. The interpolated trees aren’t proper &lt;em&gt;k&lt;/em&gt;-d trees, but they’re visually similar and give a nice, continuous animation.&lt;/p&gt;
 
 &lt;figure&gt;
-  &lt;video controls=&quot;&quot; autoplay=&quot;&quot; muted=&quot;&quot; loop=&quot;&quot;&gt;
+  &lt;video controls=&quot;&quot; autoplay=&quot;&quot; muted=&quot;&quot; loop=&quot;&quot; playsinline=&quot;&quot;&gt;
     &lt;source src=&quot;/home-assets/posts/animating-kd-trees/anim-second-try.webm&quot; type=&quot;video/webm&quot; /&gt;
     &lt;source src=&quot;/home-assets/posts/animating-kd-trees/anim-second-try.mp4&quot; type=&quot;video/mp4&quot; /&gt;
     Sorry, your browser doesn't support embedded videos.
@@ -46,7 +46,7 @@
 &lt;p&gt;By the end of what had turned out to be a rather long Friday night of experimentation, I had built a moderately engaging little animation. First I switched to coloring the rectangles formed by the tree rather than the lines. Then I dialed up the number of points used to generate the tree and punched up the timings. Finally I switched from the RGB palette I’d used for testing to something a bit easier on the eyes.&lt;/p&gt;
 
 &lt;figure&gt;
-  &lt;video controls=&quot;&quot; autoplay=&quot;&quot; muted=&quot;&quot; loop=&quot;&quot;&gt;
+  &lt;video controls=&quot;&quot; autoplay=&quot;&quot; muted=&quot;&quot; loop=&quot;&quot; playsinline=&quot;&quot;&gt;
     &lt;source src=&quot;/home-assets/posts/animating-kd-trees/anim-third-try.webm&quot; type=&quot;video/webm&quot; /&gt;
     &lt;source src=&quot;/home-assets/posts/animating-kd-trees/anim-third-try.mp4&quot; type=&quot;video/mp4&quot; /&gt;
     Sorry, your browser doesn't support embedded videos.
