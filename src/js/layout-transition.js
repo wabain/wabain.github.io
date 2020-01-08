@@ -10,35 +10,37 @@ export function transitionContent({
     navigation: { hasManagedScroll },
     beforeContentEnter,
 }) {
-    const body = document.body
-
     if (!hasManagedScroll) {
         scrollWindowSmooth({ left: 0, top: 0 })
     }
 
+    return transitionOut(contentElem, oldAttrs, newAttrs)
+        .then(() => {
+            contentElem.innerHTML = ''
+            contentElem.appendChild(newContentFragment)
+
+            if (beforeContentEnter) {
+                beforeContentEnter()
+            }
+
+            return transitionIn(contentElem)
+        })
+}
+
+function transitionOut(contentElem, oldAttrs, newAttrs) {
+    const body = document.body
     const tl = anim.timeline()
 
     const changingLongform = oldAttrs.isLongform !== newAttrs.isLongform
+
     if (changingLongform) {
         const bodyOffset = getLongformBodyOffset()
 
-        if (!newAttrs.isLongform) {
-            body.classList.remove('content-longform')
-            anim.set(body, { translateX: bodyOffset })
-        }
-
         tl.add({
             targets: body,
-            translateX: newAttrs.isLongform ? bodyOffset : 0,
+            translateX: newAttrs.isLongform ? bodyOffset : -bodyOffset,
             duration: 400,
             easing: 'easeInExpo',
-
-            complete() {
-                if (newAttrs.isLongform) {
-                    body.classList.add('content-longform')
-                }
-                body.style.transform = null
-            },
         })
     }
 
@@ -49,27 +51,28 @@ export function transitionContent({
         easing: 'easeOutSine',
     }, changingLongform ? '-=200' : '0')
 
-    tl.add({
+    return tl.finished.then(() => {
+        if (!changingLongform) {
+            return
+        }
+
+        if (newAttrs.isLongform) {
+            body.classList.add('content-longform')
+        } else {
+            body.classList.remove('content-longform')
+        }
+
+        body.style.transform = null
+    })
+}
+
+function transitionIn(contentElem) {
+    return anim({
         targets: contentElem,
         duration: 400,
         opacity: 1,
         easing: 'easeInSine',
-
-        begin() {
-            if (newAttrs.isLongform) {
-                body.classList.add('content-longform')
-            }
-
-            contentElem.innerHTML = ''
-            contentElem.appendChild(newContentFragment)
-
-            if (beforeContentEnter) {
-                beforeContentEnter()
-            }
-        },
-    })
-
-    return tl.finished
+    }).finished
 }
 
 /**
