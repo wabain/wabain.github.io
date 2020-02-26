@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'html-proofer', '= 3.11.1'
-gem 'nokogiri', "~> 1.10.4"
+gem 'nokogiri', "~> 1.10.8"
 gem 'crass', "~> 1.0.4"
 
 gem 'jekyll', '= 3.7.4'
