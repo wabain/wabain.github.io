@@ -1,5 +1,6 @@
 const path = require('path')
 
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
@@ -73,6 +74,7 @@ module.exports = {
         ],
     },
     plugins: [
+        new CleanWebpackPlugin(),
         new CopyWebpackPlugin([
             // Image assets, etc.
             // TODO: Might be good to run these through image-optimization passes
