@@ -36,7 +36,7 @@ if (IS_PROD) {
 }
 
 module.exports = {
-    mode: IS_PROD ? 'development' : 'production',
+    mode: IS_PROD ? 'production' : 'development',
     output: IS_PROD ? prodOutput : devOutput,
     entry: {
         'cs-homepage': local('src/js/index.js')
