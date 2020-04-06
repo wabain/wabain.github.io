@@ -27,7 +27,7 @@ export class DynamicNavDispatcher {
         this._handleClick = this._handleClick.bind(this)
         this._handlePopState = this._handlePopState.bind(this)
 
-        this.cache = {}
+        this._cache = Object.create(null)
         this._fetchIdx = 0
 
         this._lastHref = location.href
@@ -49,7 +49,7 @@ export class DynamicNavDispatcher {
             return
         }
 
-        this.cache[getDomainRelativeUrl(location.href)] =
+        this._cache[getDomainRelativeUrl(location.href)] =
             Promise.resolve({ content: this.pageTrans.currentContent })
 
         this.pageTrans.root.addEventListener('click', this._handleClick, false)
@@ -125,13 +125,13 @@ export class DynamicNavDispatcher {
     _getOrFetch(href) {
         const idx = ++this._fetchIdx
 
-        if (this.cache.hasOwnProperty(href)) {
+        if (href in this._cache) {
             debug('load %s: using cached promise', href)
         } else {
             const cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href)
             debug('load %s: requesting partial %s', href, cacheUrl)
 
-            this.cache[href] = fetch(cacheUrl).then((res) => {
+            this._cache[href] = fetch(cacheUrl).then((res) => {
                 if (!res.ok)
                     throw new Error('network error: ' + res.status + ' ' + res.statusText)
 
@@ -141,7 +141,7 @@ export class DynamicNavDispatcher {
             })
         }
 
-        return { idx, promise: this.cache[href] }
+        return { idx, promise: this._cache[href] }
     }
 }
 
