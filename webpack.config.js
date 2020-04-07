@@ -60,7 +60,9 @@ module.exports = {
                     {
                         loader: 'sass-loader',
                         options: {
-                            outputStyle: IS_PROD ? 'compressed' : 'expanded'
+                            sassOptions: {
+                                outputStyle: IS_PROD ? 'compressed' : 'expanded',
+                            },
                         }
                     }
                 ]
