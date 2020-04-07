@@ -23,7 +23,7 @@ module Partials
           # _section-partial/_drafts/..., but that doesn't seem to cause any harm
           fpath = File.join(partials.directory, doc.relative_path)
 
-          Jekyll.logger.debug "Partials:", "Generating from #{collection_name} #{doc.relative_path}"
+          Jekyll.logger.debug "Partials:", "Generating from #{collection_name}, file #{doc.relative_path}"
           partials.docs << PartialDocument.new(doc, fpath, {
             :site => partials.site,
             :collection => partials
