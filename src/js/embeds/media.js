@@ -8,7 +8,6 @@ const debug = debugFactory('embeds:media')
  */
 export default function initializeMediaEmbeds(content) {
     for (const elem of content.querySelectorAll('video[autoplay]')) {
-
         // Without playsinline the video may hijack the screen on iOS. Require
         // playsinline unconditionally instead of trying to detect the OS.
         if (!elem.hasAttribute('playsinline')) {
@@ -16,7 +15,7 @@ export default function initializeMediaEmbeds(content) {
             continue
         }
 
-        elem.play().catch(err => {
+        elem.play().catch((err) => {
             debug('autoplay failed:', err)
         })
     }

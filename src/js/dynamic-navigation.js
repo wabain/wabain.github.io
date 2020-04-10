@@ -14,7 +14,7 @@ const debug = debugFactory('dynamic-navigation')
  * excluding trailing whitespace. Subsequent text is the page title.
  */
 function parseTitle(title) {
-    const parsed = (/(.*?)(?:\s*-\s*(.*))?$/).exec(title)
+    const parsed = /(.*?)(?:\s*-\s*(.*))?$/.exec(title)
     return {
         base: parsed[1],
         page: parsed[2] || null,
@@ -35,7 +35,9 @@ export class DynamicNavDispatcher {
         // Only initialize dynamic navigation if HTML5 history APIs are available
         if (!window.history || !window.history.pushState) {
             debug('bailing on initialization, no support for history api')
-            analytics.onError({ error: 'DynamicNav: no support for history api' })
+            analytics.onError({
+                error: 'DynamicNav: no support for history api',
+            })
             return
         }
 
@@ -44,13 +46,19 @@ export class DynamicNavDispatcher {
             contentTriggers,
         })
         if (!this.pageTrans) {
-            debug('bailing, failed to find expected page areas (url %s)', location.href)
-            analytics.onError({ error: 'DynamicNav: failed to find expected page areas' })
+            debug(
+                'bailing, failed to find expected page areas (url %s)',
+                location.href,
+            )
+            analytics.onError({
+                error: 'DynamicNav: failed to find expected page areas',
+            })
             return
         }
 
-        this._cache[getDomainRelativeUrl(location.href)] =
-            Promise.resolve({ content: this.pageTrans.currentContent })
+        this._cache[getDomainRelativeUrl(location.href)] = Promise.resolve({
+            content: this.pageTrans.currentContent,
+        })
 
         this.pageTrans.root.addEventListener('click', this._handleClick, false)
         window.addEventListener('popstate', this._handlePopState, false)
@@ -63,17 +71,24 @@ export class DynamicNavDispatcher {
 
     _handleClick(evt) {
         const anchor = findAnchor(evt.target, evt.currentTarget)
-        if (!anchor)
+        if (!anchor) {
             return
+        }
 
-        if (isCurrentLocation(anchor.href) ||
-                isHashChange(anchor.href) ||
-                !isRelativeHref(anchor.href) ||
-                hasModifierKey(evt))
+        if (
+            isCurrentLocation(anchor.href) ||
+            isHashChange(anchor.href) ||
+            !isRelativeHref(anchor.href) ||
+            hasModifierKey(evt)
+        )
             return
 
         evt.preventDefault()
-        history.pushState({ handler: 'DynamicNavDispatcher/click' }, '', anchor.href)
+        history.pushState(
+            { handler: 'DynamicNavDispatcher/click' },
+            '',
+            anchor.href,
+        )
 
         this._lastHref = anchor.href
         this._handleNavigation(anchor.href, { hasManagedScroll: false })
@@ -84,16 +99,16 @@ export class DynamicNavDispatcher {
 
         this._lastHref = location.href
 
-        if (hashChange)
+        if (hashChange) {
             return
+        }
 
         this._handleNavigation(location.href, { hasManagedScroll: true })
     }
 
     _handleNavigation(href, options) {
         const relative = getDomainRelativeUrl(href)
-        if (!relative)
-            throw new Error('unexpected navigation to ' + href)
+        if (!relative) throw new Error('unexpected navigation to ' + href)
 
         debug('dynamic navigation triggered (href %s)', relative)
         this._loadContent(relative, options)
@@ -103,23 +118,27 @@ export class DynamicNavDispatcher {
         this.pageTrans.setContentPending(true)
         const { idx, promise } = this._getOrFetch(href)
 
-        promise.then(({ content }) => {
-            if (this._fetchIdx !== idx) {
-                debug('load %s: old fetch; bailing from load', href)
-                return
-            }
+        promise
+            .then(({ content }) => {
+                if (this._fetchIdx !== idx) {
+                    debug('load %s: old fetch; bailing from load', href)
+                    return
+                }
 
-            debug('load %s: updating content', href)
-            this.pageTrans.receivedContent(href, content, options)
-        }).catch((err) => {
-            debug('load %s: fatal: %s', href, err)
-
-            this.analytics.onFatalError({
-                error: `failed to load ${href}: ${err}`
-            }).then(() => {
-                location.reload()
+                debug('load %s: updating content', href)
+                this.pageTrans.receivedContent(href, content, options)
             })
-        })
+            .catch((err) => {
+                debug('load %s: fatal: %s', href, err)
+
+                this.analytics
+                    .onFatalError({
+                        error: `failed to load ${href}: ${err}`,
+                    })
+                    .then(() => {
+                        location.reload()
+                    })
+            })
     }
 
     _getOrFetch(href) {
@@ -128,17 +147,25 @@ export class DynamicNavDispatcher {
         if (href in this._cache) {
             debug('load %s: using cached promise', href)
         } else {
-            const cacheUrl = '/section-partial' + (href === '/' ? '/index.html' : href)
+            const cacheUrl =
+                '/section-partial' + (href === '/' ? '/index.html' : href)
             debug('load %s: requesting partial %s', href, cacheUrl)
 
-            this._cache[href] = fetch(cacheUrl).then((res) => {
-                if (!res.ok)
-                    throw new Error('network error: ' + res.status + ' ' + res.statusText)
+            this._cache[href] = fetch(cacheUrl)
+                .then((res) => {
+                    if (!res.ok)
+                        throw new Error(
+                            'network error: ' +
+                                res.status +
+                                ' ' +
+                                res.statusText,
+                        )
 
-                return res.text()
-            }).then((text) => {
-                return { content: text }
-            })
+                    return res.text()
+                })
+                .then((text) => {
+                    return { content: text }
+                })
         }
 
         return { idx, promise: this._cache[href] }
@@ -146,7 +173,7 @@ export class DynamicNavDispatcher {
 }
 
 function hasModifierKey(evt) {
-    return (evt.ctrlKey || evt.metaKey || evt.shiftKey)
+    return evt.ctrlKey || evt.metaKey || evt.shiftKey
 }
 
 class TimedCallback {
@@ -188,7 +215,9 @@ class PageTransformer {
 
     static forDocument(document, { analytics, contentTriggers }) {
         const root = document.body
-        const contentElem = document.querySelector('[data-region-id="primary-content"]')
+        const contentElem = document.querySelector(
+            '[data-region-id="primary-content"]',
+        )
         const navElem = document.querySelector('[data-region-id="page-header"]')
 
         if (!(root && contentElem && navElem)) {
@@ -196,7 +225,11 @@ class PageTransformer {
         }
 
         const { base: baseTitle, page: pageTitle } = parseTitle(document.title)
-        debug('initial mount, base title %s, page title %s', baseTitle, pageTitle)
+        debug(
+            'initial mount, base title %s, page title %s',
+            baseTitle,
+            pageTitle,
+        )
 
         return new PageTransformer({
             baseTitle,
@@ -213,8 +246,9 @@ class PageTransformer {
     }
 
     setContentPending(value) {
-        if (value === this.contentPending)
+        if (value === this.contentPending) {
             return
+        }
 
         this.contentPending = value
 
@@ -265,15 +299,19 @@ class PageTransformer {
             },
             content: frag,
             navigation: navigationOptions,
-            beforeContentEnter: () => { this._runContentTriggers() },
+            beforeContentEnter: () => {
+                this._runContentTriggers()
+            },
         }).catch((err) => {
             debug('load %s: transition: fatal: %s', href, err)
 
-            this.analytics.onFatalError({
-                error: `transition to ${href}: ${err}`,
-            }).then(() => {
-                location.reload()
-            })
+            this.analytics
+                .onFatalError({
+                    error: `transition to ${href}: ${err}`,
+                })
+                .then(() => {
+                    location.reload()
+                })
         })
     }
 
@@ -305,7 +343,9 @@ class PageTransformer {
                 trigger(this.contentElem)
             } catch (e) {
                 this.analytics.onError({
-                    error: `DynamicNav: content trigger ${trigger ? trigger.name : 'unknown'}: ${e}`,
+                    error: `DynamicNav: content trigger ${
+                        trigger ? trigger.name : 'unknown'
+                    }: ${e}`,
                 })
             }
         }
@@ -327,8 +367,9 @@ function getContentAttributes(root) {
 
 function findAnchor(elem, guard) {
     while (elem && elem !== guard) {
-        if (elem.nodeName === 'A')
+        if (elem.nodeName === 'A') {
             return elem
+        }
 
         elem = elem.parentElement
     }

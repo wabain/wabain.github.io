@@ -1,37 +1,41 @@
-$xs-main-margin-pct:
-  percentage($quart-grid-size / (floor($screen-sm-min / $grid-size) * $grid-size));
+$xs-main-margin-pct: percentage(
+  $quart-grid-size / (floor($screen-sm-min / $grid-size) * $grid-size)
+);
 
 // The container is a top-level element wrapper within the body.
 // The normalize stylesheet ensures there's no body margin.
 .container {
   box-sizing: border-box;
-  background:
-    url("../buildtime-assets/img/grid-bg-line-start.svg") left $xs-main-margin-pct center repeat-y,
-    url("../buildtime-assets/img/grid-bg-line-end.svg") right $xs-main-margin-pct center repeat-y;
+  background: url("../buildtime-assets/img/grid-bg-line-start.svg") left
+      $xs-main-margin-pct center repeat-y,
+    url("../buildtime-assets/img/grid-bg-line-end.svg") right
+      $xs-main-margin-pct center repeat-y;
   padding-top: $eight-grid-size;
   min-height: 100vh;
 
   @media (min-width: $screen-sm-min) {
-    background: url("../buildtime-assets/img/grid-bg-center-2x.svg") center repeat-y;
+    background: url("../buildtime-assets/img/grid-bg-center-2x.svg") center
+      repeat-y;
   }
 
   @media (min-width: $screen-md-min) {
-    background:
-      url("../buildtime-assets/img/grid-bg-hide.svg") center repeat-y,
+    background: url("../buildtime-assets/img/grid-bg-hide.svg") center repeat-y,
       url("../buildtime-assets/img/grid-bg.svg") center repeat;
   }
 
   @media (min-width: $screen-lg-min) {
-    background:
-      url("../buildtime-assets/img/grid-bg-center-hide.svg") center repeat-y,
+    background: url("../buildtime-assets/img/grid-bg-center-hide.svg") center
+        repeat-y,
       url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
   }
 
   .content-longform & {
-    background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left $xs-main-margin-pct center repeat-y;
+    background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left
+      $xs-main-margin-pct center repeat-y;
 
     @media (min-width: $screen-sm-min) {
-      background: url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg") center repeat-y;
+      background: url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg")
+        center repeat-y;
     }
 
     @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {

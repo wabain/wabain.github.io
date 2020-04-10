@@ -8,8 +8,5 @@ window.__nav = new DynamicNavDispatcher({
     analytics: new Analytics({
         backend: GtagBackend,
     }),
-    contentTriggers: [
-        twitterEmbed,
-        mediaEmbed,
-    ],
+    contentTriggers: [twitterEmbed, mediaEmbed],
 })

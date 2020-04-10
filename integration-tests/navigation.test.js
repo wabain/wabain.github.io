@@ -9,13 +9,13 @@ const expect = require('expect')
 module.exports = function ({ origin, browser, siteMeta }) {
     describe('navigation', function () {
         const ctx = this
-        ctx.timeout(10000)  // We're gonna be sloooow
+        ctx.timeout(10000) // We're gonna be sloooow
 
         before(async () => {
             ctx.webdriver = new Builder()
                 .forBrowser(browser)
-                .setFirefoxOptions((new FirefoxOptions()).headless())
-                .setChromeOptions((new ChromeOptions()).headless())
+                .setFirefoxOptions(new FirefoxOptions().headless())
+                .setChromeOptions(new ChromeOptions().headless())
                 .build()
 
             ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
@@ -40,7 +40,7 @@ module.exports = function ({ origin, browser, siteMeta }) {
  * Test navigation from the given page
  */
 function testPageNavigation({ ctx, pageParameters, siteMeta }) {
-    it('should reload when current page link is clicked', async function() {
+    it('should reload when current page link is clicked', async function () {
         const window = ctx.siteWindow
         const page = new NavigablePage(pageParameters)
 
@@ -65,8 +65,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await page.verifyBasicProperties({ window })
     })
 
-    it('should do local navigation without reload', async function() {
-
+    it('should do local navigation without reload', async function () {
         // Occasionally, the Jekyll server seems to fail when a page partial
         // is requested. This results in the dynamic navigation code performing
         // its fallback action, which is to reload. I don't have the time or
@@ -78,7 +77,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
 
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
-            currentPageParams: pageParameters
+            currentPageParams: pageParameters,
         })
 
         const firstPage = new NavigablePage(pageParameters)
@@ -99,14 +98,13 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         }
     })
 
-    it('should handle history navigation without reload', async function() {
-
+    it('should handle history navigation without reload', async function () {
         // See comment on "...should do local navigation without reload"
         this.retries(2)
 
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
-            currentPageParams: pageParameters
+            currentPageParams: pageParameters,
         })
 
         const firstPage = new NavigablePage(pageParameters)
@@ -127,7 +125,10 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         const driver = await window.resolveDriver()
         await driver.navigate().refresh()
 
-        expect(await window.hasReloaded()).toBe(true, 'Page should have reloaded')
+        expect(await window.hasReloaded()).toBe(
+            true,
+            'Page should have reloaded',
+        )
         await window.installSentinel()
 
         await secondPage.verifyBasicProperties({ window })
@@ -139,7 +140,7 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
     async function navigateToPage(window, currentPage, targetPage) {
         const element = await currentPage.findNavLinkToPage({
             domainRelativeUrl: targetPage.params.url,
-            window
+            window,
         })
         if (!element) {
             // If changing the message, check if any code relies on it
@@ -151,7 +152,8 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await targetPage.verifyBasicProperties({ window })
         expect(await window.hasReloaded()).toBe(
             false,
-            'Page should not have reloaded')
+            'Page should not have reloaded',
+        )
     }
 
     async function jumpHistory({ window, goForward = false, targetPage }) {
@@ -166,12 +168,13 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
         await targetPage.verifyBasicProperties({ window })
         expect(await window.hasReloaded()).toBe(
             false,
-            'Page should not have reloaded')
+            'Page should not have reloaded',
+        )
     }
 
     function getTargetPageParams({ currentPageParams }) {
         const params = siteMeta.pages.find(
-            params => params !== currentPageParams && params['in_nav']
+            (params) => params !== currentPageParams && params['in_nav'],
         )
         if (params) {
             return params
@@ -185,7 +188,7 @@ class SiteWindow {
         return new SiteWindow({
             origin,
             driver,
-            handle: await driver.getWindowHandle()
+            handle: await driver.getWindowHandle(),
         })
     }
 
@@ -198,7 +201,9 @@ class SiteWindow {
     async resolveDriver() {
         const currentHandle = await this._driver.getWindowHandle()
         if (this.handle !== currentHandle) {
-            throw new Error(`Expected current window to be ${this.handle} but got ${currentHandle}`)
+            throw new Error(
+                `Expected current window to be ${this.handle} but got ${currentHandle}`,
+            )
         }
         return this._driver
     }
@@ -209,11 +214,14 @@ class SiteWindow {
 
         try {
             // Verify that the dynamic navigation code ran successfully
-            await driver.wait(async () => (
-                await driver.executeScript('return !!window.__nav')
-            ), 1000)
+            await driver.wait(
+                async () => await driver.executeScript('return !!window.__nav'),
+                1000,
+            )
         } catch (e) {
-            throw new Error('did not see dynamic navigation initialized on page load')
+            throw new Error(
+                'did not see dynamic navigation initialized on page load',
+            )
         }
 
         await this.installSentinel()
@@ -226,16 +234,21 @@ class SiteWindow {
 
     async hasReloaded() {
         const driver = await this.resolveDriver()
-        const sentinel = await driver.executeScript('return !!window.__navTestSentinel')
+        const sentinel = await driver.executeScript(
+            'return !!window.__navTestSentinel',
+        )
         return !sentinel
     }
 
     async getLinksOnPage(element = null) {
-        const searchRoot = element || await this.resolveDriver()
+        const searchRoot = element || (await this.resolveDriver())
         const elements = await searchRoot.findElements(By.css('a'))
-        return await Promise.all(elements.map(
-            async el => ({ elem: el, href: await el.getAttribute('href') })
-        ))
+        return await Promise.all(
+            elements.map(async (el) => ({
+                elem: el,
+                href: await el.getAttribute('href'),
+            })),
+        )
     }
 
     async dumpScreenshot(slug) {
@@ -268,22 +281,28 @@ class NavigablePage {
 
         try {
             // should have expected title
-            const expectedTitle = new RegExp('^(\\[dev\\] )?William Bain - ' + this.params.title + '$')
+            const expectedTitle = new RegExp(
+                '^(\\[dev\\] )?William Bain - ' + this.params.title + '$',
+            )
 
             await driver.wait(until.titleMatches(expectedTitle), 1000)
         } catch (e) {
             throw new Error(
                 `Page title is "${await driver.getTitle()}", expected ` +
-                `"${this.params.title}"`,
+                    `"${this.params.title}"`,
             )
         }
 
         try {
-            await driver.wait(async () => this._hasExpectedPageIdentifier(driver), 1000)
+            await driver.wait(
+                async () => this._hasExpectedPageIdentifier(driver),
+                1000,
+            )
         } catch (e) {
             throw new Error(
-                `Loaded page content is for "${await this._getPageIdentifier(driver)}", ` +
-                `expected "${this.params.title}"`,
+                `Loaded page content is for "${await this._getPageIdentifier(
+                    driver,
+                )}", ` + `expected "${this.params.title}"`,
             )
         }
     }
@@ -295,10 +314,13 @@ class NavigablePage {
 
     async _getPageIdentifier(driver) {
         try {
-            const pageMeta = await driver.findElement(By.css('[data-page-meta]'), 1000)
+            const pageMeta = await driver.findElement(
+                By.css('[data-page-meta]'),
+                1000,
+            )
             return (await pageMeta.getAttribute('data-page-meta')) || ''
         } catch (e) {
-            if ((e instanceof StaleElementReferenceError)) {
+            if (e instanceof StaleElementReferenceError) {
                 return null
             }
             throw e
@@ -306,8 +328,12 @@ class NavigablePage {
     }
 
     async findNavLinkToPage({ domainRelativeUrl, window }) {
-        const links = await window.getLinksOnPage(await this.getHeaderElement({ window }))
-        const entry = links.find(({ href }) => href === window.origin + domainRelativeUrl)
+        const links = await window.getLinksOnPage(
+            await this.getHeaderElement({ window }),
+        )
+        const entry = links.find(
+            ({ href }) => href === window.origin + domainRelativeUrl,
+        )
         if (!entry) {
             return null
         }
@@ -316,7 +342,9 @@ class NavigablePage {
 
     async getHeaderElement({ window }) {
         const driver = await window.resolveDriver()
-        const elem = await driver.findElement(By.css('[data-region-id="page-header"]'))
+        const elem = await driver.findElement(
+            By.css('[data-region-id="page-header"]'),
+        )
         if (!elem) {
             throw new Error('Could not find header')
         }
