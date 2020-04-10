@@ -57,8 +57,8 @@
     "integration-tests": "mocha --delay integration-tests/main.js"
   },
   "dependencies": {
-    "animejs": "^3.0.1",
-    "debug": "^3.1.0",
+    "animejs": "^3.2.0",
+    "debug": "^4.1.1",
     "normalize.css": "^8.0.0"
   },
   "engines": {
