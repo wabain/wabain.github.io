@@ -11,8 +11,7 @@ export function getDomainRelativeUrl(href, { hash = false } = {}) {
 
     let url = normalizeElem.pathname + normalizeElem.search
 
-    if (hash)
-        url += normalizeElem.hash
+    if (hash) url += normalizeElem.hash
 
     return url
 }

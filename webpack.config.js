@@ -20,18 +20,14 @@ const devOutput = {
 
 let extractCssRule, extractCssPlugin
 if (IS_PROD) {
-    extractCssRule = [
-        { loader: MiniCssExtractPlugin.loader },
-    ]
+    extractCssRule = [{ loader: MiniCssExtractPlugin.loader }]
     extractCssPlugin = [
         new MiniCssExtractPlugin({
             filename: '[name].min.css',
         }),
     ]
 } else {
-    extractCssRule = [
-        { loader: 'style-loader' },
-    ]
+    extractCssRule = [{ loader: 'style-loader' }]
     extractCssPlugin = []
 }
 
@@ -39,7 +35,7 @@ module.exports = {
     mode: IS_PROD ? 'production' : 'development',
     output: IS_PROD ? prodOutput : devOutput,
     entry: {
-        'cs-homepage': local('src/js/index.js')
+        'cs-homepage': local('src/js/index.js'),
     },
     devtool: IS_PROD ? 'source-map' : 'inline-source-map',
     module: {
@@ -61,11 +57,13 @@ module.exports = {
                         loader: 'sass-loader',
                         options: {
                             sassOptions: {
-                                outputStyle: IS_PROD ? 'compressed' : 'expanded',
+                                outputStyle: IS_PROD
+                                    ? 'compressed'
+                                    : 'expanded',
                             },
-                        }
-                    }
-                ]
+                        },
+                    },
+                ],
             },
 
             {
@@ -83,7 +81,7 @@ module.exports = {
             {
                 context: local('src/assets'),
                 from: '**/*',
-                to: DIST_PATH
+                to: DIST_PATH,
             },
         ]),
         ...extractCssPlugin,

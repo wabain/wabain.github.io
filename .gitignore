@@ -10,7 +10,8 @@
 npm-debug.log*
 yarn-error.log*
 
-# Sublime Text files
+# IDE files
+.vscode/
 *.sublime-*
 
 #### joe made this: http://goel.io/joe

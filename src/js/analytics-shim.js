@@ -60,17 +60,17 @@ function gtag(...args) {
 export const GtagBackend = {
     onPageChange({ title, path }) {
         gtag('config', 'UA-51279886-1', {
-            'page_title': title,
-            'page_path': path,
+            page_title: title,
+            page_path: path,
         })
     },
 
     onTimingEvent({ name, label, category, value }) {
         gtag('event', 'timing_complete', {
-            'name': name,
-            'label': label,
-            'value': value,
-            'event_category': category,
+            name: name,
+            label: label,
+            value: value,
+            event_category: category,
         })
     },
 
@@ -84,10 +84,14 @@ export const GtagBackend = {
     onFatalError({ error }) {
         let resolve
 
-        const callback = new Promise((_res) => { resolve = _res })
+        const callback = new Promise((_res) => {
+            resolve = _res
+        })
 
         const timeout = new Promise((res) => {
-            setTimeout(() => { res() }, 300)
+            setTimeout(() => {
+                res()
+            }, 300)
         })
 
         gtag('event', 'exception', {
