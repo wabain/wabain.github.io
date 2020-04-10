@@ -1,12 +1,24 @@
 import anim from 'animejs'
 
+export type ContentAttributes = {
+    isLongform: boolean
+}
+
+export type ContentTransitionParameters = {
+    container: Element
+    attributes: { old: ContentAttributes; new: ContentAttributes }
+    content: DocumentFragment
+    navigation: { hasManagedScroll: boolean }
+    beforeContentEnter?: () => void
+}
+
 export function transitionContent({
     container: contentElem,
     attributes: { old: oldAttrs, new: newAttrs },
     content: newContentFragment,
     navigation: { hasManagedScroll },
     beforeContentEnter,
-}) {
+}: ContentTransitionParameters): Promise<void> {
     if (!hasManagedScroll) {
         scrollWindowSmooth({ left: 0, top: 0 })
     }
@@ -23,7 +35,11 @@ export function transitionContent({
     })
 }
 
-function transitionOut(contentElem, oldAttrs, newAttrs) {
+function transitionOut(
+    contentElem: Element,
+    oldAttrs: ContentAttributes,
+    newAttrs: ContentAttributes,
+): Promise<void> {
     const body = document.body
     const tl = anim.timeline()
 
@@ -61,11 +77,11 @@ function transitionOut(contentElem, oldAttrs, newAttrs) {
             body.classList.remove('content-longform')
         }
 
-        body.style.transform = null
+        body.style.transform = ''
     })
 }
 
-function transitionIn(contentElem) {
+function transitionIn(contentElem: Element): Promise<void> {
     return anim({
         targets: contentElem,
         duration: 400,
@@ -80,7 +96,7 @@ function transitionIn(contentElem) {
  *
  * See the style definition for a description of .layout-breakpoints.
  */
-function getLongformBodyOffset() {
+function getLongformBodyOffset(): number {
     const body = document.body
     const bpCheck = document.createElement('div')
     bpCheck.className = 'layout-breakpoints'
@@ -105,7 +121,13 @@ function getLongformBodyOffset() {
     return offset
 }
 
-function scrollWindowSmooth({ left, top }) {
+function scrollWindowSmooth({
+    left,
+    top,
+}: {
+    left: number
+    top: number
+}): void {
     const hasSmoothScroll = 'scrollBehavior' in document.documentElement.style
 
     if (hasSmoothScroll) {

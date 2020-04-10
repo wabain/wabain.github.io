@@ -37,6 +37,9 @@ module.exports = {
     entry: {
         'cs-homepage': local('src/js/index.js'),
     },
+    resolve: {
+        extensions: ['.ts', '.js'],
+    },
     devtool: IS_PROD ? 'source-map' : 'inline-source-map',
     module: {
         rules: [
@@ -45,6 +48,12 @@ module.exports = {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: ['eslint-loader'],
+            },
+
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                use: 'ts-loader',
             },
 
             {

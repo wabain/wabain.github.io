@@ -9,6 +9,31 @@ module.exports = {
     overrides: [
         // Source files
         {
+            files: ['src/**/*.ts'],
+            parser: '@typescript-eslint/parser',
+            plugins: ['@typescript-eslint'],
+            extends: [
+                'eslint:recommended',
+                'plugin:@typescript-eslint/eslint-recommended',
+                'plugin:@typescript-eslint/recommended',
+                'prettier/@typescript-eslint',
+            ],
+            parserOptions: {
+                ecmaVersion: 6,
+                sourceType: 'module',
+            },
+            env: {
+                browser: true,
+                node: false,
+            },
+            rules: {
+                '@typescript-eslint/no-use-before-define': [
+                    'error',
+                    { functions: false },
+                ],
+            },
+        },
+        {
             files: ['src/**/*.js'],
             parserOptions: {
                 ecmaVersion: 6,
