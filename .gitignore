@@ -6,7 +6,6 @@
 /content/home-assets/
 
 /node_modules/
-/.sass-cache/
 
 npm-debug.log*
 yarn-error.log*
