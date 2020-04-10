@@ -34,10 +34,6 @@ module.exports = {
             "env": {
                 "browser": true,
                 "node": false,
-                "es6": false
-            },
-            "globals": {
-                "Promise": false,
             },
         },
         // Test files
