@@ -36,7 +36,8 @@
   },
   "scripts": {
     "clean": "rm -rf content/home-assets/ content/section-partial/ _site/",
-    "fmt": "prettier --write .",
+    "fmt": "prettier --write . && stylelint --fix src/scss && eslint --fix .",
+    "lint": "eslint . && stylelint src/scss && prettier --check .",
     "pre-jekyll": "yarn run lint-pre-jekyll && yarn run build-pre-jekyll && yarn run verify-bundled",
     "lint-pre-jekyll": "prettier --check . && stylelint src/scss",
     "build-pre-jekyll": "webpack --verbose",
