@@ -14,7 +14,7 @@
     "cssnano": "^4.1.10",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
-    "eslint-loader": "^2.1.2",
+    "eslint-loader": "^4.0.0",
     "expect": "^24.8.0",
     "glob": "^7.1.2",
     "mini-css-extract-plugin": "^0.9.0",
