@@ -35,7 +35,7 @@ install:
   - bundle install
   - yarn install
 before_script:
-  - git config --global user.email "bain.william.a@gmail.com"
+  - git config --global user.email "bain.william.a+ci@gmail.com"
   - git config --global user.name "Travis CI"
 script:
   - yarn run lint-build-infra
