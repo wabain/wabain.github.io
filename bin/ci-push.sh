@@ -5,7 +5,9 @@
 
 set -euo pipefail
 
+BASE_DIR="$PWD"
 JEKYLL_BUILD_DIR=_site
+DEPLOY_DIR="$BASE_DIR/../deploy"
 
 PUSH_PR_MERGE=false
 PUSH_PAGES_DEPLOY=false
@@ -21,6 +23,9 @@ main() {
 
     echo "Deployment content is:"
     tree -ah "$JEKYLL_BUILD_DIR"
+
+    create_deploy_tree
+    git -c color.ui=always diff origin/master $DEPLOY_TREE
 
     # Fail this step if a previous step failed
     if [ "$TRAVIS_TEST_RESULT" -ne 0 ]; then
@@ -110,8 +115,31 @@ evaluate_pr_merge() {
     summarize_push "origin/$TRAVIS_BRANCH" "$push_commit" ""
 }
 
+create_deploy_tree() {
+    # Travis won't have pulled in the master branch previously, so we need to
+    # do it now
+    git fetch --quiet origin +refs/heads/master:refs/remotes/origin/master
+
+    # We should be safe checking out master because CI won't run this script
+    # with it as the current branch
+    git worktree add --quiet --no-checkout $DEPLOY_DIR -B master origin/master
+
+    rsync -a "$JEKYLL_BUILD_DIR/" $DEPLOY_DIR
+    touch $DEPLOY_DIR/.nojekyll
+
+    git_deploy_tree add -A .
+    DEPLOY_TREE=$(git_deploy_tree write-tree)
+}
+
+git_deploy_tree() {
+    git \
+        --git-dir=$DEPLOY_DIR/.git \
+        --work-tree=$DEPLOY_DIR \
+        -c core.excludesfile=$BASE_DIR/.deploy-gitignore \
+        "$@"
+}
+
 evaluate_pages_deploy() {
-    local base_dir
     local deploy_src
     local deploy_number
     local deploy_description
@@ -123,11 +151,6 @@ evaluate_pages_deploy() {
         return
     fi
 
-    # Travis won't have pulled in the master branch previously, so we need to
-    # do it now
-    git fetch --quiet origin +refs/heads/master:refs/remotes/origin/master
-
-    base_dir="$PWD"
     deploy_src="$(git rev-parse HEAD)"
 
     # If we are handling a previously pushed commit, bail if we are rebuilding
@@ -156,23 +179,10 @@ evaluate_pages_deploy() {
 
     deploy_description="$(describe_deploy "$deploy_number")"
 
-    # We should be safe checking out master because CI won't run this script
-    # with it as the current branch
-    git worktree add --quiet --no-checkout ../deploy -B master origin/master
-
-    rsync -a "$JEKYLL_BUILD_DIR/" ../deploy
-
-    cd ../deploy
-
-    touch .nojekyll
-
-    git -c core.excludesfile="$base_dir/.deploy-gitignore" add -A .
-    git commit --quiet --allow-empty \
+    git_deploy_tree commit --quiet --allow-empty \
         -m "Deploy to GitHub Pages [$deploy_description]" \
         -m "Source commit for this deployment:" \
         -m "$(git show --no-patch --format=fuller "$deploy_src")"
-
-    cd "$base_dir"
 
     deploy_tag="deploy/master/$deploy_number-$deploy_src"
 
@@ -213,11 +223,11 @@ summarize_push() {
 
     # Print the tag first with no commit details
     if [ ! -z "$3" ]; then
-        git show --no-patch --format= "$3"
+        git -c color.ui=always show --no-patch --format= "$3"
         echo
     fi
 
-    git log --decorate --graph --summary --stat "$1..$2"
+    git -c color.ui=always log --decorate --graph --summary --stat "$1..$2"
     echo
 }
 
