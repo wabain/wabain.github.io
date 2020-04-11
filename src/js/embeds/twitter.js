@@ -1,6 +1,6 @@
 import debugFactory from 'debug'
 
-const TWITTER_WIDGET_URL = 'https://platform.twitter.com/widgets.js'
+import initTwitter from './twitter-init'
 
 const debug = debugFactory('embeds:twitter')
 
@@ -8,7 +8,7 @@ let globalLoadPromise = null
 
 /**
  * Handle initialization of Twitter embeds. If the content seems to contain
- * Tweets, we need to ensure the Twitter API is loaded and then have it
+ * tweets, we need to ensure the Twitter API is loaded and then have it
  * re-evaluate the page.
  */
 export default function initializeTwitterEmbeds(content) {
@@ -16,24 +16,17 @@ export default function initializeTwitterEmbeds(content) {
         return
     }
 
-    const twttr = getTwitterApi()
-
-    if (twttr) {
-        twttr.widgets.load().catch((e) => {
-            debug('failed to load twitter widgets: ' + e)
-        })
-        return
-    }
-
     loadTwitterApi()
-        .then((twttr) => twttr.widgets.load())
-        .catch((e) => {
-            debug('failed to load twitter api and widgets: ' + e)
+        .then((twttr) => {
+            debug('requesting load of twitter widgets')
+            return twttr.widgets.load()
         })
-}
-
-function getTwitterApi() {
-    return window.twttr || null
+        .then(() => {
+            debug('twitter widgets load complete')
+        })
+        .catch((e) => {
+            debug('failed to load twitter API and widgets: ' + e)
+        })
 }
 
 function loadTwitterApi() {
@@ -42,24 +35,27 @@ function loadTwitterApi() {
     }
 
     globalLoadPromise = new Promise((resolve, reject) => {
-        const script = document.createElement('script')
+        const twttr = initTwitter()
 
-        script.src = TWITTER_WIDGET_URL
-        script.async = true
+        twttr.ready((api) => {
+            resolve(api)
+        })
 
-        script.onload = () => {
-            try {
-                resolve(getTwitterApi())
-            } catch (e) {
-                reject(e)
-            }
+        const script = document.getElementById('twitter-wjs')
+
+        if (script) {
+            script.addEventListener('error', (err) => {
+                const message = typeof err === 'string' ? err : String(err)
+
+                reject(new Error(message))
+            })
         }
+    })
 
-        script.onerror = ({ message }) => {
-            reject(new Error(message))
-        }
-
-        document.body.appendChild(script)
+    // TODO: Expose error to analytics
+    globalLoadPromise.catch((err) => {
+        debug('twitter load failed: %s', err)
+        globalLoadPromise = null
     })
 
     return globalLoadPromise
