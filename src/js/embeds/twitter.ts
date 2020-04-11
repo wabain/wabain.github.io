@@ -19,7 +19,7 @@ export default function initializeTwitterEmbeds(content: HTMLElement): void {
     loadTwitterApi()
         .then((twttr) => {
             debug('requesting load of twitter widgets')
-            return twttr.widgets.load()
+            return twttr.widgets.load(content)
         })
         .then(() => {
             debug('twitter widgets load complete')
