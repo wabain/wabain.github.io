@@ -10,7 +10,7 @@ addons:
   firefox: latest
 branches:
   except:
-    # Master is the actually deployed code
+    # Master is the deployed static site
     - master
 env:
   global:
@@ -43,4 +43,4 @@ script:
   - JEKYLL_ENV=production yarn run jekyll-build
   - JEKYLL_ENV=production yarn run jekyll-lint
   - ./bin/ci-run-integration-tests.sh
-  - ./bin/ci-deploy.sh
+  - ./bin/ci-push.sh
