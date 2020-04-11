@@ -23,32 +23,39 @@ main() {
         exit 1
     fi
 
-    cat > ./deploy-commit-msg <<EOF
-Deploy to GitHub Pages
+    local base_dir
+    local deploy_src
 
-Source commit for this deployment:
+    # Travis won't have pulled in the master branch previously, so we need to
+    # do it now
+    git fetch --quiet origin +refs/heads/master:refs/remotes/origin/master
 
-EOF
+    base_dir="$PWD"
+    deploy_src="$(git rev-parse HEAD)"
 
-    git log -n1 --format=fuller >> ./deploy-commit-msg
+    # We should be safe checking out master because CI won't run this script
+    # with it as the current branch
+    git worktree add --quiet --no-checkout ../deploy -B master origin/master
 
-    cd "$JEKYLL_BUILD_DIR"
-    git init
-    git config core.excludesfile "$(pwd)/../.deploy-gitignore"
+    rsync -a "$JEKYLL_BUILD_DIR/" ../deploy
+
+    cd ../deploy
 
     touch .nojekyll
 
+    git -c core.excludesfile="$base_dir/.deploy-gitignore" add -A .
+    git commit --quiet --allow-empty \
+        -m "Deploy to GitHub Pages" \
+        -m "Source commit for this deployment:" \
+        -m "$(git show --no-patch --format=fuller "$deploy_src")"
+
+    cd "$base_dir"
+
     # Redirect output to /dev/null to hide any sensitive credential data that
     # might otherwise be exposed.
-    git remote add origin "https://${GH_TOKEN}@${GH_REF}" > /dev/null 2>&1
+    git remote set-url --push origin "https://${GH_TOKEN}@${GH_REF}" &> /dev/null
 
-    git fetch origin master
-    git reset origin/master
-
-    git add -A .
-    git commit --allow-empty -F ../deploy-commit-msg
-
-    git push origin master > /dev/null 2>&1
+    git push origin master:master
 }
 
 main
