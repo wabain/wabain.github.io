@@ -5,24 +5,77 @@ import {
     isRelativeHref,
     isCurrentLocation,
 } from './normalize-href'
-import { transitionContent } from './layout-transition'
+import {
+    LayoutTransitionNavigationParameters as LayoutTransitionNavigation,
+    transitionContent,
+} from './layout-transition'
+
+import Analytics from './analytics'
+import { ContentAttributes, ContentTrigger } from './content-types'
 
 const debug = debugFactory('dynamic-navigation')
+
+export type DynamicNavParameters = {
+    analytics: Analytics
+    contentTriggers: ContentTrigger[]
+}
+
+type ResolutionCache = Record<string, Promise<{ content: string }>> &
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    Record<keyof Object, never>
+
+export function initializeDynamicNavigation(
+    params: DynamicNavParameters,
+): DynamicNavDispatcher | null {
+    const { analytics } = params
+
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return new DynamicNavDispatcher(params)
+    } catch (exc) {
+        debug(
+            'bailing from dynamic nav initialization: %s (url %s)',
+            exc,
+            location.href,
+        )
+        analytics.onError({ error: String(exc) })
+        return null
+    }
+}
 
 /**
  * Parse the document's title. The base title is all text up to the first "-",
  * excluding trailing whitespace. Subsequent text is the page title.
  */
-function parseTitle(title) {
+function parseTitle(title: string): { base: string; page: string | null } {
     const parsed = /(.*?)(?:\s*-\s*(.*))?$/.exec(title)
+
+    if (!parsed) {
+        return { base: title, page: null }
+    }
+
     return {
         base: parsed[1],
         page: parsed[2] || null,
     }
 }
 
+export class DynamicNavError extends Error {
+    constructor(message: string) {
+        super(message)
+    }
+}
+
 export class DynamicNavDispatcher {
-    constructor({ analytics, contentTriggers }) {
+    // XXX underscore?
+    private analytics: Analytics
+    private pageTrans: PageTransformer
+
+    private _cache: ResolutionCache
+    private _fetchIdx: number
+    private _lastHref: string
+
+    constructor({ analytics, contentTriggers }: DynamicNavParameters) {
         this.analytics = analytics
         this._handleClick = this._handleClick.bind(this)
         this._handlePopState = this._handlePopState.bind(this)
@@ -34,29 +87,28 @@ export class DynamicNavDispatcher {
 
         // Only initialize dynamic navigation if HTML5 history APIs are available
         if (!window.history || !window.history.pushState) {
-            debug('bailing on initialization, no support for history api')
-            analytics.onError({
-                error: 'DynamicNav: no support for history api',
-            })
-            return
+            throw new DynamicNavError('no support for History API')
         }
 
-        this.pageTrans = PageTransformer.forDocument(document, {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        const pageTrans = PageTransformer.forDocument(document, {
             analytics,
             contentTriggers,
         })
-        if (!this.pageTrans) {
-            debug(
-                'bailing, failed to find expected page areas (url %s)',
-                location.href,
-            )
-            analytics.onError({
-                error: 'DynamicNav: failed to find expected page areas',
-            })
-            return
+        if (!pageTrans) {
+            throw new DynamicNavError('failed to find expected page areas')
         }
 
-        this._cache[getDomainRelativeUrl(location.href)] = Promise.resolve({
+        this.pageTrans = pageTrans
+
+        const relativeHref = getDomainRelativeUrl(location.href)
+        if (!relativeHref) {
+            throw new DynamicNavError(
+                `initialized on unexpected domain: ${location.href}`,
+            )
+        }
+
+        this._cache[relativeHref] = Promise.resolve({
             content: this.pageTrans.currentContent,
         })
 
@@ -69,8 +121,12 @@ export class DynamicNavDispatcher {
         })
     }
 
-    _handleClick(evt) {
-        const anchor = findAnchor(evt.target, evt.currentTarget)
+    private _handleClick(evt: MouseEvent): void {
+        const target = evt.target instanceof HTMLElement ? evt.target : null
+        const currentTarget =
+            evt.currentTarget instanceof HTMLElement ? evt.currentTarget : null
+
+        const anchor = findAnchor(target, currentTarget)
         if (!anchor) {
             return
         }
@@ -94,7 +150,7 @@ export class DynamicNavDispatcher {
         this._handleNavigation(anchor.href, { hasManagedScroll: false })
     }
 
-    _handlePopState() {
+    private _handlePopState(): void {
         const hashChange = isHashChange(this._lastHref)
 
         this._lastHref = location.href
@@ -106,15 +162,23 @@ export class DynamicNavDispatcher {
         this._handleNavigation(location.href, { hasManagedScroll: true })
     }
 
-    _handleNavigation(href, options) {
+    private _handleNavigation(
+        href: string,
+        options: LayoutTransitionNavigation,
+    ): void {
         const relative = getDomainRelativeUrl(href)
-        if (!relative) throw new Error('unexpected navigation to ' + href)
+        if (!relative) {
+            throw new Error('unexpected navigation to ' + href)
+        }
 
         debug('dynamic navigation triggered (href %s)', relative)
         this._loadContent(relative, options)
     }
 
-    _loadContent(href, options) {
+    private _loadContent(
+        href: string,
+        options: LayoutTransitionNavigation,
+    ): void {
         this.pageTrans.setContentPending(true)
         const { idx, promise } = this._getOrFetch(href)
 
@@ -141,7 +205,9 @@ export class DynamicNavDispatcher {
             })
     }
 
-    _getOrFetch(href) {
+    private _getOrFetch(
+        href: string,
+    ): { idx: number; promise: Promise<{ content: string }> } {
         const idx = ++this._fetchIdx
 
         if (href in this._cache) {
@@ -172,12 +238,17 @@ export class DynamicNavDispatcher {
     }
 }
 
-function hasModifierKey(evt) {
+function hasModifierKey(evt: MouseEvent): boolean {
     return evt.ctrlKey || evt.metaKey || evt.shiftKey
 }
 
 class TimedCallback {
-    constructor(fn, duration, key = '') {
+    complete: boolean
+    cancelled: boolean
+
+    _id: number
+
+    constructor(fn: () => void, duration: number, key = '') {
         this.complete = this.cancelled = false
         this._id = setTimeout(() => {
             this.complete = true
@@ -186,13 +257,32 @@ class TimedCallback {
         }, duration)
     }
 
-    cancel() {
+    cancel(): void {
         this.complete = this.cancelled = true
         clearTimeout(this._id)
     }
 }
 
+type PageTransformerParams = {
+    baseTitle: string
+    root: HTMLElement
+    navElem: HTMLElement
+    contentElem: HTMLElement
+    analytics: Analytics
+    contentTriggers: ContentTrigger[]
+}
+
 class PageTransformer {
+    private baseTitle: string
+    root: HTMLElement
+    private navElem: HTMLElement
+    private contentElem: HTMLElement
+    private analytics: Analytics
+    private contentTriggers: ContentTrigger[]
+    private contentPending: boolean
+
+    private _slow: TimedCallback | null
+
     constructor({
         baseTitle,
         root,
@@ -200,7 +290,7 @@ class PageTransformer {
         contentElem,
         analytics,
         contentTriggers,
-    }) {
+    }: PageTransformerParams) {
         this.baseTitle = baseTitle
         this.root = root
         this.navElem = navElem
@@ -210,17 +300,29 @@ class PageTransformer {
 
         this.contentPending = false
 
-        this._slow = this._fadeOut = this._fadeIn = null
+        this._slow = null
     }
 
-    static forDocument(document, { analytics, contentTriggers }) {
+    static forDocument(
+        document: Document,
+        {
+            analytics,
+            contentTriggers,
+        }: { analytics: Analytics; contentTriggers: ContentTrigger[] },
+    ): PageTransformer | null {
         const root = document.body
         const contentElem = document.querySelector(
             '[data-region-id="primary-content"]',
         )
         const navElem = document.querySelector('[data-region-id="page-header"]')
 
-        if (!(root && contentElem && navElem)) {
+        if (
+            !(
+                root &&
+                contentElem instanceof HTMLElement &&
+                navElem instanceof HTMLElement
+            )
+        ) {
             return null
         }
 
@@ -241,11 +343,11 @@ class PageTransformer {
         })
     }
 
-    get currentContent() {
+    get currentContent(): string {
         return this.contentElem.innerHTML
     }
 
-    setContentPending(value) {
+    setContentPending(value: boolean): void {
         if (value === this.contentPending) {
             return
         }
@@ -264,12 +366,16 @@ class PageTransformer {
         }
     }
 
-    _contentPendingSlow() {
+    private _contentPendingSlow(): void {
         // XXX: Fill this in
         debug('content load is slow, should show a spinner')
     }
 
-    receivedContent(href, content, navigationOptions) {
+    receivedContent(
+        href: string,
+        content: string,
+        navigationOptions: LayoutTransitionNavigation,
+    ): Promise<void> {
         this.setContentPending(false)
 
         const temp = document.createElement('div')
@@ -291,7 +397,7 @@ class PageTransformer {
             path: href,
         })
 
-        transitionContent({
+        return transitionContent({
             container: this.contentElem,
             attributes: {
                 old: oldAttrs,
@@ -315,7 +421,7 @@ class PageTransformer {
         })
     }
 
-    _updateNavLinks({ active }) {
+    private _updateNavLinks({ active }: { active: string }): void {
         const collection = this.navElem.getElementsByTagName('a')
         const len = collection.length
 
@@ -329,7 +435,7 @@ class PageTransformer {
         }
     }
 
-    _setDocTitle(title) {
+    private _setDocTitle(title: string | null): void {
         if (title) {
             document.title = this.baseTitle + ' - ' + title
         } else {
@@ -337,7 +443,7 @@ class PageTransformer {
         }
     }
 
-    _runContentTriggers() {
+    private _runContentTriggers(): void {
         for (const trigger of this.contentTriggers) {
             try {
                 trigger(this.contentElem)
@@ -352,7 +458,9 @@ class PageTransformer {
     }
 }
 
-function getContentAttributes(root) {
+function getContentAttributes(
+    root: Element | DocumentFragment,
+): ContentAttributes {
     if (!root.children) {
         return { title: null, isLongform: false }
     }
@@ -365,10 +473,13 @@ function getContentAttributes(root) {
     }
 }
 
-function findAnchor(elem, guard) {
+function findAnchor(
+    elem: Element | null,
+    guard: Element | null,
+): HTMLAnchorElement | null {
     while (elem && elem !== guard) {
         if (elem.nodeName === 'A') {
-            return elem
+            return elem as HTMLAnchorElement
         }
 
         elem = elem.parentElement

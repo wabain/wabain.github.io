@@ -4,14 +4,14 @@ import initTwitter from './twitter-init'
 
 const debug = debugFactory('embeds:twitter')
 
-let globalLoadPromise = null
+let globalLoadPromise: Promise<Twitter> | null = null
 
 /**
  * Handle initialization of Twitter embeds. If the content seems to contain
  * tweets, we need to ensure the Twitter API is loaded and then have it
  * re-evaluate the page.
  */
-export default function initializeTwitterEmbeds(content) {
+export default function initializeTwitterEmbeds(content: HTMLElement): void {
     if (!content.querySelector('.twitter-tweet')) {
         return
     }
@@ -29,7 +29,7 @@ export default function initializeTwitterEmbeds(content) {
         })
 }
 
-function loadTwitterApi() {
+function loadTwitterApi(): Promise<Twitter> {
     if (globalLoadPromise) {
         return globalLoadPromise
     }
@@ -44,7 +44,7 @@ function loadTwitterApi() {
         const script = document.getElementById('twitter-wjs')
 
         if (script) {
-            script.addEventListener('error', (err) => {
+            script.addEventListener('error', (err): void => {
                 const message = typeof err === 'string' ? err : String(err)
 
                 reject(new Error(message))

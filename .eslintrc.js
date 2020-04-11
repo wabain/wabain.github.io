@@ -6,6 +6,7 @@ module.exports = {
         node: true,
         es6: true,
     },
+    reportUnusedDisableDirectives: true,
     overrides: [
         // Source files
         {

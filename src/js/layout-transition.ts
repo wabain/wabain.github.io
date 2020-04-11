@@ -1,14 +1,15 @@
 import anim from 'animejs'
+import { ContentAttributes } from './content-types'
 
-export type ContentAttributes = {
-    isLongform: boolean
+export type LayoutTransitionNavigationParameters = {
+    hasManagedScroll: boolean
 }
 
 export type ContentTransitionParameters = {
     container: Element
     attributes: { old: ContentAttributes; new: ContentAttributes }
     content: DocumentFragment
-    navigation: { hasManagedScroll: boolean }
+    navigation: LayoutTransitionNavigationParameters
     beforeContentEnter?: () => void
 }
 

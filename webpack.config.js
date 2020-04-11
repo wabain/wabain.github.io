@@ -35,7 +35,7 @@ module.exports = {
     mode: IS_PROD ? 'production' : 'development',
     output: IS_PROD ? prodOutput : devOutput,
     entry: {
-        'cs-homepage': local('src/js/index.js'),
+        'cs-homepage': local('src/js/index.ts'),
     },
     resolve: {
         extensions: ['.ts', '.js'],
