@@ -13,6 +13,7 @@ branches:
     - master
 env:
   global:
+    - ORIG_PATH: $PATH
     - BUNDLE_PATH: ~/.bundle
     - GH_REF: github.com/wabain/wabain.github.io.git
     - USER_INSTALL_DIR: ~/bin
@@ -25,6 +26,9 @@ cache:
     - $BUNDLE_PATH
 before_install:
   - ./bin/ci-install-geckodriver.sh
+  # When populating the cache, Travis may update the path to include
+  # node_modules/.bin; if present, node-which will break RVM's check for curl
+  - RUBY_VERSION="$(bin/ruby-version.sh)" && ( PATH=$ORIG_PATH rvm install "$RUBY_VERSION" ) && rvm use "$RUBY_VERSION"
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s
 install:
   - bundle install

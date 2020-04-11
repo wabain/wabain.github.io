@@ -96,5 +96,8 @@ DEPENDENCIES
   jekyll-sitemap (= 1.4.0)
   nokogiri (~> 1.10.8)
 
+RUBY VERSION
+   ruby 2.6.5p114
+
 BUNDLED WITH
    1.17.2
