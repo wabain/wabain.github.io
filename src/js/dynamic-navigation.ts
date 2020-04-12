@@ -115,9 +115,10 @@ export class DynamicNavDispatcher {
         this.pageTrans.root.addEventListener('click', this._handleClick, false)
         window.addEventListener('popstate', this._handlePopState, false)
 
-        analytics.onTimingEvent({
-            name: 'dynamic_nav_ready',
+        analytics.onEvent('dynamic_nav_ready', {
+            label: 'Dynamic nav ready',
             category: 'dynamic nav',
+            value: Math.round(performance.now()),
         })
     }
 

@@ -4,11 +4,11 @@ const debug = debugFactory('analytics')
 
 export type PageChangeParams = { title: string | null; path: string }
 
-export type TimingEventParams = {
-    name: string
-    label?: string
-    category: string
-    value?: number | null
+export type EventCategory = 'dynamic nav'
+export type EventParams = {
+    label: string
+    category: EventCategory
+    value?: number
 }
 
 export type ErrorParams = { error: string }
@@ -28,21 +28,9 @@ export default class Analytics {
         this._backend.onPageChange(params)
     }
 
-    onTimingEvent({
-        name,
-        label = name,
-        category,
-        value = null,
-    }: TimingEventParams): void {
-        // By default, take time from page load
-        if (value === null) {
-            value = Math.round(performance.now())
-        }
-
-        const params = { name, label, category, value }
-        debug('TimingEvent: %o', params)
-
-        this._backend.onTimingEvent(params)
+    onEvent(action: string, params: EventParams): void {
+        debug('Event: %s %o', action, params)
+        this._backend.onEvent(action, params)
     }
 
     onError(params: ErrorParams): void {
@@ -58,7 +46,7 @@ export default class Analytics {
 
 export interface AnalyticsBackend {
     onPageChange(params: PageChangeParams): void
-    onTimingEvent(params: TimingEventParams): void
+    onEvent(action: string, params: EventParams): void
     onError(params: ErrorParams): void
     onFatalError(params: ErrorParams): Promise<void>
 }
@@ -67,7 +55,7 @@ export const NoopBackend: AnalyticsBackend = {
     onPageChange() {
         /* stub */
     },
-    onTimingEvent() {
+    onEvent() {
         /* stub */
     },
     onError() {
@@ -107,35 +95,43 @@ const gtag: Gtag.Gtag = function gtag(...args: GtagArgs) {
 export const GtagBackend: AnalyticsBackend = {
     onPageChange({ title, path }) {
         // prettier-ignore
-        gtag('config', 'UA-51279886-1', {
+        const params = {
             'page_title': title,
             'page_path': path,
-        })
+        }
+
+        gtag('config', 'UA-51279886-1', params)
     },
 
-    onTimingEvent({ name, label, category, value }) {
+    onEvent(action, { label, category, value }) {
         // prettier-ignore
-        gtag('event', 'timing_complete', {
-            'name': name,
-            'label': label,
+        const params: Gtag.EventParams = {
             'value': value,
             'event_category': category,
-        })
+            'event_label': label,
+        }
+
+        gtag('event', action, params)
     },
 
     onError({ error }) {
-        gtag('event', 'exception', {
+        const params: Gtag.EventParams = {
             description: String(error),
             fatal: false,
-        })
+        }
+
+        gtag('event', 'exception', params)
     },
 
     onFatalError({ error }) {
-        let resolve
+        let resolve: () => void
 
         const callback = new Promise<void>((_res) => {
             resolve = _res
         })
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        resolve = resolve!
 
         const timeout = new Promise<void>((res) => {
             setTimeout(() => {
@@ -144,11 +140,13 @@ export const GtagBackend: AnalyticsBackend = {
         })
 
         // prettier-ignore
-        gtag('event', 'exception', {
+        const params: Gtag.ControlParams & Gtag.EventParams = {
             'description': String(error),
             'fatal': true,
             'event_callback': resolve,
-        })
+        }
+
+        gtag('event', 'exception', params)
 
         return Promise.race([callback, timeout])
     },
