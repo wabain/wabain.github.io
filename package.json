@@ -57,6 +57,7 @@
     "integration-tests": "mocha --delay integration-tests/main.js"
   },
   "dependencies": {
+    "@sentry/browser": "^5.15.4",
     "animejs": "^3.2.0",
     "debug": "^4.1.1",
     "normalize.css": "^8.0.0"

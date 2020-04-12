@@ -10,6 +10,7 @@
     // dependency which pulls in @types/webpack
     "types": ["gtag.js", "twitter-for-web"],
     "module": "es6",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "target": "es6",

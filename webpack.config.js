@@ -1,5 +1,6 @@
 const path = require('path')
 
+const { DefinePlugin } = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -33,6 +34,9 @@ if (IS_PROD) {
     extractCssPlugin = []
 }
 
+/**
+ * @type import("webpack").Configuration
+ */
 module.exports = {
     mode: IS_PROD ? 'production' : 'development',
     output: IS_PROD ? prodOutput : devOutput,
@@ -99,6 +103,9 @@ module.exports = {
             },
         ],
     },
+    externals: {
+        '@sentry/browser': 'Sentry',
+    },
     plugins: [
         new CleanWebpackPlugin(),
         new CopyWebpackPlugin(
@@ -114,6 +121,20 @@ module.exports = {
             // https: //github.com/webpack-contrib/copy-webpack-plugin/issues/261#issuecomment-552550859
             { copyUnmodified: true },
         ),
+        new DefinePlugin({
+            'process.env': {
+                JEKYLL_ENV: JSON.stringify(
+                    IS_PROD ? 'production' : 'development',
+                ),
+                // TODO(wabain): Generate version in CI
+                RELEASE_VERSION: JSON.stringify(
+                    process.env.RELEASE_VERSION || '',
+                ),
+                SENTRY_SDK_VERSION: JSON.stringify(
+                    require('@sentry/browser/package.json').version,
+                ),
+            },
+        }),
         ...extractCssPlugin,
     ],
 }

@@ -44,7 +44,11 @@ export function initializeDynamicNavigation(
             exc,
             location.href,
         )
-        analytics.onError({ error: String(exc) })
+        analytics.onError({
+            context: 'initialization',
+            category: 'dynamic nav',
+            exception: exc,
+        })
         return null
     }
 }
@@ -264,11 +268,13 @@ class ContentLoader {
 
                 return this.analytics
                     .onFatalError({
-                        error: `failed to load ${href}: ${err}`,
+                        category: 'dynamic nav',
+                        context: `failed to load ${href}`,
+                        exception: err,
                     })
                     .then<never>(() => {
                         location.reload()
-                        throw new DynamicNavError('unreachable (post reload)')
+                        throw new DynamicNavError('reload')
                     })
             },
         )
@@ -438,6 +444,11 @@ class PageTransformer {
     private _contentPendingSlow(): void {
         // XXX: Fill this in
         debug('content load is slow, should show a spinner')
+
+        this.analytics.onEvent('content_load_slow', {
+            label: 'Dynamic nav content load slow',
+            category: 'dynamic nav',
+        })
     }
 
     private _receivedContent(
@@ -500,7 +511,9 @@ class PageTransformer {
 
             return this.analytics
                 .onFatalError({
-                    error: `transition to ${href}: ${err}`,
+                    category: 'dynamic nav',
+                    context: `transition to ${href}`,
+                    exception: err,
                 })
                 .then(() => {
                     location.reload()
@@ -536,9 +549,11 @@ class PageTransformer {
                 trigger(this.contentElem)
             } catch (e) {
                 this.analytics.onError({
-                    error: `DynamicNav: content trigger ${
+                    category: 'dynamic nav',
+                    context: `content trigger ${
                         trigger ? trigger.name : 'unknown'
-                    }: ${e}`,
+                    }`,
+                    exception: e,
                 })
             }
         }
