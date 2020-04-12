@@ -78,7 +78,22 @@ module.exports = {
             {
                 test: /\.svg$/,
                 include: [local('src/buildtime-assets')],
-                use: ['url-loader'],
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            encoding: false,
+                            generator: (content, mimetype, encoding) =>
+                                // “Optimized URL-encoded”
+                                // https://css-tricks.com/probably-dont-base64-svg/#article-header-id-2
+                                //
+                                // TODO(wabain): use single quotes for SVG attributes
+                                `data:${mimetype},${encodeURIComponent(
+                                    content.toString(encoding || undefined),
+                                ).replace(/%20/g, ' ')}`,
+                        },
+                    },
+                ],
             },
         ],
     },

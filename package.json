@@ -38,7 +38,7 @@
     "stylelint-order": "^4.0.0",
     "ts-loader": "^6.2.2",
     "typescript": "~3.7.5",
-    "url-loader": "^4.0.0",
+    "url-loader": "^4.1.0",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   },
