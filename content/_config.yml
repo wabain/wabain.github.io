@@ -9,7 +9,7 @@ plugins:
 # soundness issues that incremental builds create
 incremental: false
 include:
-  - .site-meta.json
+  - .test-meta.json
 
 title: William Bain
 author:
