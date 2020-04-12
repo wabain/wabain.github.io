@@ -4,12 +4,17 @@ sitemap: false
 ---
 {
     "pages": [
+{%- assign firstTagPage = site.pages | where:'layout', 'tag' | sort:'url' | first -%}
+{%- assign firstPost = site.posts | sort:'url' | first -%}
 {%- assign interestingPages = site.pages |
     where_exp:'page', 'page.layout != "section-partial"' |
+    where_exp:'page', 'page.layout != "tag"' |
     where_exp:'page', 'page.sitemap != false' |
     where_exp:'page', 'page.url != "/redirects.json"' |
     where_exp:'page', 'page.url != "/robots.txt"' |
     where_exp:'page', 'page.url != "/sitemap.xml"' |
+    push: firstTagPage |
+    push: firstPost |
     sort:'url' -%}
 {% assign pageIdx = 0 -%}
 {% assign lastPageIdx = interestingPages | size | minus: 1 -%}
