@@ -9,12 +9,14 @@ const DIST_PATH = local('content/home-assets')
 
 const prodOutput = {
     path: DIST_PATH,
+    publicPath: '/home-assets/',
     filename: '[name].min.js',
     sourceMapFilename: '[file].map',
 }
 
 const devOutput = {
     path: DIST_PATH,
+    publicPath: '/home-assets/',
     filename: '[name].js',
 }
 
