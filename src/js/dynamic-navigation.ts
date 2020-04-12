@@ -5,10 +5,7 @@ import {
     isRelativeHref,
     isCurrentLocation,
 } from './normalize-href'
-import {
-    LayoutTransitionNavigationParameters as LayoutTransitionNavigation,
-    transitionContent,
-} from './layout-transition'
+import { transitionContent } from './layout-transition'
 
 import Analytics from './analytics'
 import { ContentAttributes, ContentTrigger } from './content-types'
@@ -19,6 +16,14 @@ export type DynamicNavParameters = {
     analytics: Analytics
     contentTriggers: ContentTrigger[]
 }
+
+type NavigationTrigger =
+    | { type: 'popstate'; event: PopStateEvent }
+    | {
+          type: 'click'
+          event: MouseEvent
+          anchor: HTMLAnchorElement
+      }
 
 type ResolutionCache = Record<string, Promise<{ content: string }>> &
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -67,21 +72,17 @@ export class DynamicNavError extends Error {
 }
 
 export class DynamicNavDispatcher {
-    // XXX underscore?
     private analytics: Analytics
     private pageTrans: PageTransformer
+    private loader: ContentLoader
 
-    private _cache: ResolutionCache
-    private _fetchIdx: number
     private _lastHref: string
 
     constructor({ analytics, contentTriggers }: DynamicNavParameters) {
         this.analytics = analytics
+
         this._handleClick = this._handleClick.bind(this)
         this._handlePopState = this._handlePopState.bind(this)
-
-        this._cache = Object.create(null)
-        this._fetchIdx = 0
 
         this._lastHref = location.href
 
@@ -101,15 +102,10 @@ export class DynamicNavDispatcher {
 
         this.pageTrans = pageTrans
 
-        const relativeHref = getDomainRelativeUrl(location.href)
-        if (!relativeHref) {
-            throw new DynamicNavError(
-                `initialized on unexpected domain: ${location.href}`,
-            )
-        }
-
-        this._cache[relativeHref] = Promise.resolve({
-            content: this.pageTrans.currentContent,
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        this.loader = new ContentLoader({
+            analytics,
+            initialContent: pageTrans.currentContent,
         })
 
         this.pageTrans.root.addEventListener('click', this._handleClick, false)
@@ -148,10 +144,14 @@ export class DynamicNavDispatcher {
         )
 
         this._lastHref = anchor.href
-        this._handleNavigation(anchor.href, { hasManagedScroll: false })
+        this._handleNavigation(anchor.href, {
+            type: 'click',
+            event: evt,
+            anchor,
+        })
     }
 
-    private _handlePopState(): void {
+    private _handlePopState(event: PopStateEvent): void {
         const hashChange = isHashChange(this._lastHref)
 
         this._lastHref = location.href
@@ -160,87 +160,103 @@ export class DynamicNavDispatcher {
             return
         }
 
-        this._handleNavigation(location.href, { hasManagedScroll: true })
+        this._handleNavigation(location.href, { type: 'popstate', event })
     }
 
-    private _handleNavigation(
-        href: string,
-        options: LayoutTransitionNavigation,
-    ): void {
+    private _handleNavigation(href: string, trigger: NavigationTrigger): void {
         const relative = getDomainRelativeUrl(href)
         if (!relative) {
             throw new Error('unexpected navigation to ' + href)
         }
 
-        debug('dynamic navigation triggered (href %s)', relative)
-        this._loadContent(relative, options)
-    }
-
-    private _loadContent(
-        href: string,
-        options: LayoutTransitionNavigation,
-    ): void {
-        this.pageTrans.setContentPending(true)
-        const { idx, promise } = this._getOrFetch(href)
-
-        promise
-            .then(({ content }) => {
-                if (this._fetchIdx !== idx) {
-                    debug('load %s: old fetch; bailing from load', href)
-                    return
-                }
-
-                debug('load %s: updating content', href)
-                this.pageTrans.receivedContent(href, content, options)
-            })
-            .catch((err) => {
-                debug('load %s: fatal: %s', href, err)
-
-                this.analytics
-                    .onFatalError({
-                        error: `failed to load ${href}: ${err}`,
-                    })
-                    .then(() => {
-                        location.reload()
-                    })
-            })
-    }
-
-    private _getOrFetch(
-        href: string,
-    ): { idx: number; promise: Promise<{ content: string }> } {
-        const idx = ++this._fetchIdx
-
-        if (href in this._cache) {
-            debug('load %s: using cached promise', href)
-        } else {
-            const cacheUrl =
-                '/section-partial' + (href === '/' ? '/index.html' : href)
-            debug('load %s: requesting partial %s', href, cacheUrl)
-
-            this._cache[href] = fetch(cacheUrl)
-                .then((res) => {
-                    if (!res.ok)
-                        throw new Error(
-                            'network error: ' +
-                                res.status +
-                                ' ' +
-                                res.statusText,
-                        )
-
-                    return res.text()
-                })
-                .then((text) => {
-                    return { content: text }
-                })
-        }
-
-        return { idx, promise: this._cache[href] }
+        debug(
+            'dynamic navigation triggered (%s, href %s)',
+            trigger.type,
+            relative,
+        )
+        const promise = this.loader.load(relative)
+        this.pageTrans.setContentPending(relative, promise, trigger)
     }
 }
 
 function hasModifierKey(evt: MouseEvent): boolean {
     return evt.ctrlKey || evt.metaKey || evt.shiftKey
+}
+
+class ContentLoader {
+    private analytics: Analytics
+
+    private _cache: ResolutionCache
+
+    constructor({
+        analytics,
+        initialContent,
+    }: {
+        analytics: Analytics
+        initialContent: string
+    }) {
+        this.analytics = analytics
+        this._cache = Object.create(null)
+
+        const relativeHref = getDomainRelativeUrl(location.href)
+        if (!relativeHref) {
+            throw new DynamicNavError(
+                `initialized on unexpected domain: ${location.href}`,
+            )
+        }
+
+        this._cache[relativeHref] = Promise.resolve({ content: initialContent })
+    }
+
+    load(href: string): Promise<{ content: string }> {
+        const cached = this._cache[href]
+
+        if (cached) {
+            debug('load %s: using cached promise', href)
+            return cached
+        }
+
+        return this._fetch(href).then(
+            ({ content }) => {
+                debug('load %s: received parsed content', href)
+                return { content }
+            },
+            (err) => {
+                debug('load %s: fatal: %s', href, err)
+
+                return this.analytics
+                    .onFatalError({
+                        error: `failed to load ${href}: ${err}`,
+                    })
+                    .then<never>(() => {
+                        location.reload()
+                        throw new DynamicNavError('unreachable (post reload)')
+                    })
+            },
+        )
+    }
+
+    private _fetch(href: string): Promise<{ content: string }> {
+        const cacheUrl =
+            '/section-partial' + (href === '/' ? '/index.html' : href)
+
+        debug('load %s: requesting partial %s', href, cacheUrl)
+
+        const promise = (this._cache[href] = fetch(cacheUrl)
+            .then((res) => {
+                if (!res.ok)
+                    throw new Error(
+                        'network error: ' + res.status + ' ' + res.statusText,
+                    )
+
+                return res.text()
+            })
+            .then((text) => {
+                return { content: text }
+            }))
+
+        return promise
+    }
 }
 
 class TimedCallback {
@@ -280,8 +296,8 @@ class PageTransformer {
     private contentElem: HTMLElement
     private analytics: Analytics
     private contentTriggers: ContentTrigger[]
-    private contentPending: boolean
 
+    private _fetchIdx: number
     private _slow: TimedCallback | null
 
     constructor({
@@ -299,8 +315,7 @@ class PageTransformer {
         this.analytics = analytics
         this.contentTriggers = contentTriggers
 
-        this.contentPending = false
-
+        this._fetchIdx = 0
         this._slow = null
     }
 
@@ -348,22 +363,37 @@ class PageTransformer {
         return this.contentElem.innerHTML
     }
 
-    setContentPending(value: boolean): void {
-        if (value === this.contentPending) {
-            return
-        }
+    setContentPending(
+        href: string,
+        promise: Promise<{ content: string }>,
+        trigger: NavigationTrigger,
+    ): void {
+        this._clearIdlePending()
 
-        this.contentPending = value
+        this._slow = new TimedCallback(() => {
+            this._contentPendingSlow()
+        }, 750)
 
-        if (value) {
-            this._slow = new TimedCallback(() => {
-                this._contentPendingSlow()
-            }, 750)
-        } else {
-            if (this._slow) {
-                this._slow.cancel()
-                this._slow = null
+        const idx = ++this._fetchIdx
+
+        promise.then(({ content }) => {
+            if (this._fetchIdx !== idx) {
+                debug('page transform %s: old fetch; bailing from load', href)
+                return
             }
+
+            this._receivedContent(href, content, trigger)
+        })
+    }
+
+    /*
+     * Clear state associated with pending content which is in the process of
+     * being transitioned into view.
+     */
+    private _clearIdlePending(): void {
+        if (this._slow) {
+            this._slow.cancel()
+            this._slow = null
         }
     }
 
@@ -372,12 +402,12 @@ class PageTransformer {
         debug('content load is slow, should show a spinner')
     }
 
-    receivedContent(
+    private _receivedContent(
         href: string,
         content: string,
-        navigationOptions: LayoutTransitionNavigation,
+        trigger: NavigationTrigger,
     ): Promise<void> {
-        this.setContentPending(false)
+        this._clearIdlePending()
 
         const temp = document.createElement('div')
         temp.innerHTML = content
@@ -405,14 +435,16 @@ class PageTransformer {
                 new: newAttrs,
             },
             content: frag,
-            navigation: navigationOptions,
+            navigation: {
+                hasManagedScroll: triggerManagesScroll(trigger.type),
+            },
             beforeContentEnter: () => {
                 this._runContentTriggers()
             },
         }).catch((err) => {
             debug('load %s: transition: fatal: %s', href, err)
 
-            this.analytics
+            return this.analytics
                 .onFatalError({
                     error: `transition to ${href}: ${err}`,
                 })
@@ -474,6 +506,19 @@ function getContentAttributes(
     }
 }
 
+function triggerManagesScroll(triggerType: NavigationTrigger['type']): boolean {
+    switch (triggerType) {
+        case 'click':
+            return false
+
+        case 'popstate':
+            return true
+
+        default:
+            unreachable(triggerType)
+    }
+}
+
 function findAnchor(
     elem: Element | null,
     guard: Element | null,
@@ -487,4 +532,8 @@ function findAnchor(
     }
 
     return null
+}
+
+function unreachable(value: never): never {
+    throw new Error(`unreachable: ${typeof value} ${String(value)}`)
 }

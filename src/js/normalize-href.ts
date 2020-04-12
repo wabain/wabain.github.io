@@ -49,7 +49,7 @@ export function isRelativeHref(href: unknown): boolean {
 }
 
 /**
- * Returns true if the href is the same as the current page
+ * Returns true if the href is the same as the current page.
  */
 export function isCurrentLocation(href: unknown): boolean {
     if (!setAndValidateHref(href)) {
