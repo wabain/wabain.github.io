@@ -23,6 +23,7 @@ type NavigationTrigger =
           type: 'click'
           event: MouseEvent
           anchor: HTMLAnchorElement
+          regionId: string | null
       }
 
 type ResolutionCache = Record<string, Promise<{ content: string }>> &
@@ -111,8 +112,8 @@ export class DynamicNavDispatcher {
         this.pageTrans.root.addEventListener('click', this._handleClick, false)
         window.addEventListener('popstate', this._handlePopState, false)
 
-        analytics.onEvent('dynamic_nav_ready', {
-            label: 'Dynamic nav ready',
+        analytics.onEvent('dynamic_nav_installed', {
+            label: 'Dynamic nav installed',
             category: 'dynamic nav',
             value: Math.round(performance.now()),
         })
@@ -128,13 +129,20 @@ export class DynamicNavDispatcher {
             return
         }
 
-        if (
-            isCurrentLocation(anchor.href) ||
-            isHashChange(anchor.href) ||
-            !isRelativeHref(anchor.href) ||
-            hasModifierKey(evt)
-        )
+        const regionId = findRegionId(anchor, this.pageTrans.root)
+
+        const passCause = anchorClickPassCause(anchor.href, evt)
+        if (passCause !== null) {
+            // Don't wait for the event to be dispatched before proceeding,
+            // even if it might cause a reload; rely on beacons
+            const region = regionId ?? 'unspecified'
+            this.analytics.onEvent(`click_${region}_pass_${passCause}`, {
+                category: 'dynamic nav',
+                label: `Dynamic nav ${region} click passed for ${passCause}`,
+            })
+
             return
+        }
 
         evt.preventDefault()
         history.pushState(
@@ -148,6 +156,7 @@ export class DynamicNavDispatcher {
             type: 'click',
             event: evt,
             anchor,
+            regionId,
         })
     }
 
@@ -179,6 +188,26 @@ export class DynamicNavDispatcher {
     }
 }
 
+function anchorClickPassCause(href: string, evt: MouseEvent): string | null {
+    if (isCurrentLocation(href)) {
+        return 'self'
+    }
+
+    if (isHashChange(href)) {
+        return 'hash_change'
+    }
+
+    if (!isRelativeHref(href)) {
+        return 'external'
+    }
+
+    if (hasModifierKey(evt)) {
+        return 'modkey'
+    }
+
+    return null
+}
+
 function hasModifierKey(evt: MouseEvent): boolean {
     return evt.ctrlKey || evt.metaKey || evt.shiftKey
 }
@@ -208,7 +237,7 @@ class ContentLoader {
         this._cache[relativeHref] = Promise.resolve({ content: initialContent })
     }
 
-    load(href: string): Promise<{ content: string }> {
+    load(href: string): Promise<{ content: string; loadElapsed?: number }> {
         const cached = this._cache[href]
 
         if (cached) {
@@ -216,10 +245,19 @@ class ContentLoader {
             return cached
         }
 
+        const startTime = performance.now()
+
         return this._fetch(href).then(
             ({ content }) => {
-                debug('load %s: received parsed content', href)
-                return { content }
+                const loadElapsed = performance.now() - startTime
+
+                debug(
+                    'load %s: received parsed content (elapsed: %dms)',
+                    href,
+                    loadElapsed,
+                )
+
+                return { content, loadElapsed }
             },
             (err) => {
                 debug('load %s: fatal: %s', href, err)
@@ -365,7 +403,7 @@ class PageTransformer {
 
     setContentPending(
         href: string,
-        promise: Promise<{ content: string }>,
+        promise: Promise<{ content: string; loadElapsed?: number }>,
         trigger: NavigationTrigger,
     ): void {
         this._clearIdlePending()
@@ -376,13 +414,13 @@ class PageTransformer {
 
         const idx = ++this._fetchIdx
 
-        promise.then(({ content }) => {
+        promise.then(({ content, loadElapsed }) => {
             if (this._fetchIdx !== idx) {
                 debug('page transform %s: old fetch; bailing from load', href)
                 return
             }
 
-            this._receivedContent(href, content, trigger)
+            this._receivedContent(href, content, loadElapsed, trigger)
         })
     }
 
@@ -405,6 +443,7 @@ class PageTransformer {
     private _receivedContent(
         href: string,
         content: string,
+        loadElapsed: number | undefined,
         trigger: NavigationTrigger,
     ): Promise<void> {
         this._clearIdlePending()
@@ -426,6 +465,21 @@ class PageTransformer {
         this.analytics.onPageChange({
             title: newAttrs.title,
             path: href,
+        })
+
+        if (typeof loadElapsed !== 'undefined') {
+            this.analytics.onEvent('content_load', {
+                category: 'dynamic nav',
+                label: 'Dynamic nav content loaded',
+                value: Math.round(loadElapsed),
+            })
+        }
+
+        const navType = getTriggerNavType(trigger)
+
+        this.analytics.onEvent(`${navType}_content_enter`, {
+            category: 'dynamic nav',
+            label: `Dynamic nav ${navType} content entered`,
         })
 
         return transitionContent({
@@ -506,6 +560,19 @@ function getContentAttributes(
     }
 }
 
+function getTriggerNavType(trigger: NavigationTrigger): string {
+    switch (trigger.type) {
+        case 'click':
+            return `click_${trigger.regionId ?? 'unspecified'}`
+
+        case 'popstate':
+            return 'popstate'
+
+        default:
+            unreachable(trigger)
+    }
+}
+
 function triggerManagesScroll(triggerType: NavigationTrigger['type']): boolean {
     switch (triggerType) {
         case 'click':
@@ -517,6 +584,22 @@ function triggerManagesScroll(triggerType: NavigationTrigger['type']): boolean {
         default:
             unreachable(triggerType)
     }
+}
+
+function findRegionId(
+    elem: Element | null,
+    guard: Element | null,
+): string | null {
+    while (elem && elem !== guard) {
+        const regionId = elem.getAttribute('data-region-id')
+        if (regionId !== null) {
+            return regionId
+        }
+
+        elem = elem.parentElement
+    }
+
+    return null
 }
 
 function findAnchor(

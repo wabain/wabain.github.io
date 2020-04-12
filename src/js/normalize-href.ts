@@ -50,6 +50,8 @@ export function isRelativeHref(href: unknown): boolean {
 
 /**
  * Returns true if the href is the same as the current page.
+ *
+ * TODO(wabain): Ignore no-ops where there's a hash fragment.
  */
 export function isCurrentLocation(href: unknown): boolean {
     if (!setAndValidateHref(href)) {
