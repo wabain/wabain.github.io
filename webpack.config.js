@@ -84,15 +84,19 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new CopyWebpackPlugin([
-            // Image assets, etc.
-            // TODO: Might be good to run these through image-optimization passes
-            {
-                context: local('src/assets'),
-                from: '**/*',
-                to: DIST_PATH,
-            },
-        ]),
+        new CopyWebpackPlugin(
+            [
+                // Image assets, etc.
+                // TODO: Might be good to run these through image-optimization passes
+                {
+                    context: local('src/assets'),
+                    from: '**/*',
+                    to: DIST_PATH,
+                },
+            ],
+            // https: //github.com/webpack-contrib/copy-webpack-plugin/issues/261#issuecomment-552550859
+            { copyUnmodified: true },
+        ),
         ...extractCssPlugin,
     ],
 }
