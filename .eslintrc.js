@@ -1,55 +1,60 @@
 module.exports = {
-    "extends": "eslint:recommended",
-    "root": true,
-    "env": {
-        "node": true,
-        "es6": true
+    extends: ['eslint:recommended', 'eslint-config-prettier'],
+    parser: 'babel-eslint',
+    root: true,
+    env: {
+        node: true,
+        es6: true,
     },
-    "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "never"
-        ]
-    },
-    "overrides": [
+    reportUnusedDisableDirectives: true,
+    overrides: [
         // Source files
         {
-            "files": ["src/**/*.js"],
-            "parserOptions": {
-                "ecmaVersion": 6,
-                "sourceType": "module"
+            files: ['src/**/*.ts'],
+            parser: '@typescript-eslint/parser',
+            plugins: ['@typescript-eslint'],
+            extends: [
+                'eslint:recommended',
+                'plugin:@typescript-eslint/eslint-recommended',
+                'plugin:@typescript-eslint/recommended',
+                'prettier/@typescript-eslint',
+            ],
+            parserOptions: {
+                ecmaVersion: 6,
+                sourceType: 'module',
             },
-            "env": {
-                "browser": true,
-                "node": false,
-                "es6": false
+            env: {
+                browser: true,
+                node: false,
             },
-            "globals": {
-                "Promise": false,
+            rules: {
+                '@typescript-eslint/no-use-before-define': [
+                    'error',
+                    { functions: false },
+                ],
+            },
+        },
+        {
+            files: ['src/**/*.js'],
+            parserOptions: {
+                ecmaVersion: 6,
+                sourceType: 'module',
+            },
+            env: {
+                browser: true,
+                node: false,
             },
         },
         // Test files
         {
-            "files": ["integration-tests/**/*.js"],
-            "parserOptions": {
-                "ecmaVersion": 2017
+            files: ['integration-tests/**/*.js'],
+            parserOptions: {
+                ecmaVersion: 2017,
             },
-            "env": {
-                "es6": true,
-                "mocha": true
+            env: {
+                es6: true,
+                mocha: true,
             },
-        }
-    ]
-};
+        },
+    ],
+}

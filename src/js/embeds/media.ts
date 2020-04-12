@@ -6,9 +6,10 @@ const debug = debugFactory('embeds:media')
  * Video elements only autoplay if present on initial page load; cause videos
  * to autoplay after dynamic navigation as well.
  */
-export default function initializeMediaEmbeds(content) {
-    for (const elem of content.querySelectorAll('video[autoplay]')) {
-
+export default function initializeMediaEmbeds(content: HTMLElement): void {
+    for (const elem of content.querySelectorAll<HTMLVideoElement>(
+        'video[autoplay]',
+    )) {
         // Without playsinline the video may hijack the screen on iOS. Require
         // playsinline unconditionally instead of trying to detect the OS.
         if (!elem.hasAttribute('playsinline')) {
@@ -16,7 +17,7 @@ export default function initializeMediaEmbeds(content) {
             continue
         }
 
-        elem.play().catch(err => {
+        elem.play().catch((err) => {
             debug('autoplay failed:', err)
         })
     }

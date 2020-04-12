@@ -1,33 +1,46 @@
 import anim from 'animejs'
+import { ContentAttributes } from './content-types'
+
+export type LayoutTransitionNavigationParameters = {
+    hasManagedScroll: boolean
+}
+
+export type ContentTransitionParameters = {
+    container: Element
+    attributes: { old: ContentAttributes; new: ContentAttributes }
+    content: DocumentFragment
+    navigation: LayoutTransitionNavigationParameters
+    beforeContentEnter?: () => void
+}
 
 export function transitionContent({
     container: contentElem,
-    attributes: {
-        old: oldAttrs,
-        new: newAttrs,
-    },
+    attributes: { old: oldAttrs, new: newAttrs },
     content: newContentFragment,
     navigation: { hasManagedScroll },
     beforeContentEnter,
-}) {
+}: ContentTransitionParameters): Promise<void> {
     if (!hasManagedScroll) {
         scrollWindowSmooth({ left: 0, top: 0 })
     }
 
-    return transitionOut(contentElem, oldAttrs, newAttrs)
-        .then(() => {
-            contentElem.innerHTML = ''
-            contentElem.appendChild(newContentFragment)
+    return transitionOut(contentElem, oldAttrs, newAttrs).then(() => {
+        contentElem.innerHTML = ''
+        contentElem.appendChild(newContentFragment)
 
-            if (beforeContentEnter) {
-                beforeContentEnter()
-            }
+        if (beforeContentEnter) {
+            beforeContentEnter()
+        }
 
-            return transitionIn(contentElem)
-        })
+        return transitionIn(contentElem)
+    })
 }
 
-function transitionOut(contentElem, oldAttrs, newAttrs) {
+function transitionOut(
+    contentElem: Element,
+    oldAttrs: ContentAttributes,
+    newAttrs: ContentAttributes,
+): Promise<void> {
     const body = document.body
     const tl = anim.timeline()
 
@@ -44,12 +57,15 @@ function transitionOut(contentElem, oldAttrs, newAttrs) {
         })
     }
 
-    tl.add({
-        targets: contentElem,
-        duration: 400,
-        opacity: 0,
-        easing: 'easeOutSine',
-    }, changingLongform ? '-=200' : '0')
+    tl.add(
+        {
+            targets: contentElem,
+            duration: 400,
+            opacity: 0,
+            easing: 'easeOutSine',
+        },
+        changingLongform ? '-=200' : '0',
+    )
 
     return tl.finished.then(() => {
         if (!changingLongform) {
@@ -62,11 +78,11 @@ function transitionOut(contentElem, oldAttrs, newAttrs) {
             body.classList.remove('content-longform')
         }
 
-        body.style.transform = null
+        body.style.transform = ''
     })
 }
 
-function transitionIn(contentElem) {
+function transitionIn(contentElem: Element): Promise<void> {
     return anim({
         targets: contentElem,
         duration: 400,
@@ -81,7 +97,7 @@ function transitionIn(contentElem) {
  *
  * See the style definition for a description of .layout-breakpoints.
  */
-function getLongformBodyOffset() {
+function getLongformBodyOffset(): number {
     const body = document.body
     const bpCheck = document.createElement('div')
     bpCheck.className = 'layout-breakpoints'
@@ -95,7 +111,7 @@ function getLongformBodyOffset() {
             offset = 0
         } else {
             const gridSize = parseFloat(style.backgroundSize)
-            const nonLongformPos = (body.clientWidth / 2) - (gridSize / 2)
+            const nonLongformPos = body.clientWidth / 2 - gridSize / 2
             const longformPos = gridSize
             offset = longformPos - nonLongformPos
         }
@@ -106,8 +122,14 @@ function getLongformBodyOffset() {
     return offset
 }
 
-function scrollWindowSmooth({ left, top }) {
-    const hasSmoothScroll = ('scrollBehavior' in document.documentElement.style)
+function scrollWindowSmooth({
+    left,
+    top,
+}: {
+    left: number
+    top: number
+}): void {
+    const hasSmoothScroll = 'scrollBehavior' in document.documentElement.style
 
     if (hasSmoothScroll) {
         window.scroll({

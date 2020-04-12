@@ -1,12 +1,5 @@
 const concentricOrder = [
-    [
-        'display',
-        'position',
-        'top',
-        'right',
-        'bottom',
-        'left',
-    ],
+    ['display', 'position', 'top', 'right', 'bottom', 'left'],
     [
         'grid',
         'grid-area',
@@ -25,7 +18,7 @@ const concentricOrder = [
         'grid-auto-flow',
         'grid-gap',
         'grid-row-gap',
-        'grid-column-gap'
+        'grid-column-gap',
     ],
     [
         'columns',
@@ -36,25 +29,11 @@ const concentricOrder = [
         'column-count',
         'column-width',
     ],
-    [
-        'float',
-        'clear',
-    ],
-    [
-        'transform',
-        'transition',
-        'visibility',
-        'opacity',
-    ],
+    ['float', 'clear'],
+    ['transform', 'transition', 'visibility', 'opacity'],
     'z-index',
     'box-sizing',
-    [
-        'margin',
-        'margin-top',
-        'margin-right',
-        'margin-bottom',
-        'margin-left',
-    ],
+    ['margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left'],
     [
         'outline',
         'outline-width',
@@ -106,14 +85,7 @@ const concentricOrder = [
         'padding-bottom',
         'padding-left',
     ],
-    [
-        'width',
-        'min-width',
-        'max-width',
-        'height',
-        'min-height',
-        'max-height',
-    ],
+    ['width', 'min-width', 'max-width', 'height', 'min-height', 'max-height'],
     'overflow',
     'resize',
     'list-style',
@@ -146,8 +118,8 @@ const concentricOrder = [
         'font-style',
     ],
     'content',
-    'quotes'
-].map(properties => {
+    'quotes',
+].map((properties) => {
     // Don't think this grouping does anything at the moment, but it might
     // come in handy some day
     if (Array.isArray(properties)) {
@@ -157,10 +129,8 @@ const concentricOrder = [
 })
 
 module.exports = {
-    extends: 'stylelint-config-standard',
-    plugins: [
-        'stylelint-order'
-    ],
+    extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
+    plugins: ['stylelint-order'],
     rules: {
         'string-quotes': 'double',
         'order/properties-order': [concentricOrder, { unspecified: 'bottom' }],

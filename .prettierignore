@@ -1,0 +1,20 @@
+# Source files which should not be formatted
+
+# Vendored
+/src/scss/vendor/
+
+# Too many bugs
+/**/*.md
+
+# Templating support issues
+/content/.site-meta.json
+/content/_layouts/default.json
+/content/**/*.html
+
+# Non-source files
+
+/.vscode/
+/_site/
+/content/home-assets/
+/node_modules/
+/vendor/

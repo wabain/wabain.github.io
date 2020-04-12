@@ -5,11 +5,11 @@
  * through untranspiled.
  */
 module.exports = {
-    "root": true,
-    "parserOptions": {
-        "ecmaVersion": 6
+    root: true,
+    parserOptions: {
+        ecmaVersion: 6,
     },
-    "env": {
-        "browser": true
-    }
+    env: {
+        browser: true,
+    },
 }
