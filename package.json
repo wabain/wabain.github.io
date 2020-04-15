@@ -38,7 +38,7 @@
     "stylelint-order": "^4.0.0",
     "ts-loader": "^6.2.2",
     "typescript": "~3.7.5",
-    "url-loader": "^4.0.0",
+    "url-loader": "^4.1.0",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   },
@@ -57,8 +57,9 @@
     "integration-tests": "mocha --delay integration-tests/main.js"
   },
   "dependencies": {
-    "animejs": "^3.0.1",
-    "debug": "^3.1.0",
+    "@sentry/browser": "^5.15.4",
+    "animejs": "^3.2.0",
+    "debug": "^4.1.1",
     "normalize.css": "^8.0.0"
   },
   "engines": {

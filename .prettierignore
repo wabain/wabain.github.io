@@ -7,7 +7,7 @@
 /**/*.md
 
 # Templating support issues
-/content/.site-meta.json
+/content/.test-meta.json
 /content/_layouts/default.json
 /content/**/*.html
 
