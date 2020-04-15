@@ -1,0 +1,16 @@
+name: Pull request labels updated
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  eval-automerge:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Respond to updated labels
+        env:
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels) }}
+          STATUSES_URL: ${{ github.event.pull_request.statuses_url }}
+          TRAVIS_CI_TOKEN: ${{ secrets.TRAVIS_CI_TOKEN }}
+        run: exec bin/ci-trigger-pr-rerun.sh
