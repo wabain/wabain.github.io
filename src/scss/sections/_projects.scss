@@ -15,7 +15,7 @@
   }
 }
 
-.grid-cisco-lisp {
+.grid-linear {
   grid-template-areas:
     ". header"
     ". text";
@@ -33,37 +33,11 @@
   }
 }
 
-.grid-cisco-lisp-header {
+.grid-linear-header {
   grid-area: header;
 }
 
-.grid-cisco-lisp-text {
-  grid-area: text;
-}
-
-.grid-oss {
-  grid-template-areas:
-    ". header"
-    ". text";
-
-  @media (min-width: $screen-sm-min) {
-    grid-template-areas:
-      ". header header"
-      ". text text";
-  }
-
-  @media (min-width: $screen-md-min) {
-    grid-template-areas:
-      ". . header header"
-      ". . text text";
-  }
-}
-
-.grid-oss-header {
-  grid-area: header;
-}
-
-.grid-oss-text {
+.grid-linear-text {
   grid-area: text;
 }
 
