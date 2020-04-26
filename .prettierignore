@@ -11,6 +11,10 @@
 /content/_layouts/default.json
 /content/**/*.html
 
+# Whitelisted
+!/content/projects.html
+!/content/index.html
+
 # Non-source files
 
 /.vscode/
