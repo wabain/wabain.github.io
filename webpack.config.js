@@ -4,6 +4,7 @@ const { DefinePlugin } = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const svgToDataURI = require('mini-svg-data-uri')
 
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
@@ -89,14 +90,10 @@ module.exports = {
                         loader: 'url-loader',
                         options: {
                             encoding: false,
-                            generator: (content, mimetype, encoding) =>
-                                // “Optimized URL-encoded”
-                                // https://css-tricks.com/probably-dont-base64-svg/#article-header-id-2
-                                //
-                                // TODO(wabain): use single quotes for SVG attributes
-                                `data:${mimetype},${encodeURIComponent(
+                            generator: (content, _mimetype, encoding) =>
+                                svgToDataURI(
                                     content.toString(encoding || undefined),
-                                ).replace(/%20/g, ' ')}`,
+                                ),
                         },
                     },
                 ],
