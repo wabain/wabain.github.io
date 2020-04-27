@@ -30,7 +30,7 @@ It was pretty easy to implement some basic logic to render a 2-d tree to an HTML
     Sorry, your browser doesn't support embedded videos.
   </video>
   <figcaption>
-    My first attempt (the animation is jerky because of some quantization I eventually got rid of)
+    My first attempt
   </figcaption>
 </figure>
 
