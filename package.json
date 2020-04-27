@@ -28,7 +28,6 @@
     "mocha": "^7.1.1",
     "postcss-loader": "^3.0.0",
     "prettier": "^2.0.4",
-    "request": "^2.88.0",
     "sass": "^1.26.3",
     "sass-loader": "^8.0.2",
     "selenium-webdriver": "^3.6.0",
