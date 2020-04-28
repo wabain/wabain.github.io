@@ -2,8 +2,6 @@
 layout: default
 sitemap: false
 ---
-{
-    "pages": [
 {%- assign firstTagPage = site.pages | where:'layout', 'tag' | sort:'url' | first -%}
 {%- assign firstPost = site.posts | sort:'url' | first -%}
 {%- assign interestingPages = site.pages |
@@ -18,7 +16,9 @@ sitemap: false
     sort:'url' -%}
 {% assign pageIdx = 0 -%}
 {% assign lastPageIdx = interestingPages | size | minus: 1 -%}
-{% for page in interestingPages %}
+{
+    "pages": [
+{%- for page in interestingPages %}
         {
             "url": {{ page.url | jsonify }},
             "title": {{ page.title | jsonify }},
