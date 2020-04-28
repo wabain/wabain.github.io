@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["**/*"],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES6"],
+    // Explicitly enable typings because of cross-environment issues from a
+    // dependency which pulls in @types/webpack
+    "types": ["gtag.js", "twitter-for-web"],
+    "module": "es6"
+  }
+}
