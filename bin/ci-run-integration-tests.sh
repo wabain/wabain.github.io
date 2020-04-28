@@ -38,4 +38,4 @@ yarn run jekyll-serve \
     > .jekyll-out \
     2> .jekyll-err
 
-yarn run integration-tests
+yarn test

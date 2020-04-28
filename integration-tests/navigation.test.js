@@ -4,37 +4,42 @@ const { Builder, By, until } = require('selenium-webdriver')
 const { StaleElementReferenceError } = require('selenium-webdriver/lib/error')
 const { Options: FirefoxOptions } = require('selenium-webdriver/firefox')
 const { Options: ChromeOptions } = require('selenium-webdriver/chrome')
-const expect = require('expect')
 
-module.exports = function ({ origin, browser, siteMeta }) {
-    describe('navigation', function () {
-        const ctx = this
-        ctx.timeout(10000) // We're gonna be sloooow
+const { BROWSER, ORIGIN, SITE_META_PATH } = require('./env')
 
-        before(async () => {
-            ctx.webdriver = new Builder()
-                .forBrowser(browser)
-                .setFirefoxOptions(new FirefoxOptions().headless())
-                .setChromeOptions(new ChromeOptions().headless())
-                .build()
+jest.setTimeout(10000) // We're gonna be sloooow
 
-            ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
-                origin,
-                driver: ctx.webdriver,
-            })
+describe('navigation', function () {
+    const ctx = this
+
+    beforeAll(async () => {
+        ctx.webdriver = new Builder()
+            .forBrowser(BROWSER)
+            .setFirefoxOptions(new FirefoxOptions().headless())
+            .setChromeOptions(new ChromeOptions().headless())
+            .build()
+
+        ctx.siteWindow = await SiteWindow.forCurrentDriverWindow({
+            origin: ORIGIN,
+            driver: ctx.webdriver,
         })
-
-        after(() => {
-            ctx.webdriver.quit()
-        })
-
-        for (const pageParameters of siteMeta.pages) {
-            describe(`page ${pageParameters.url}`, () => {
-                testPageNavigation({ ctx, origin, pageParameters, siteMeta })
-            })
-        }
     })
-}
+
+    afterAll(() => ctx.webdriver.quit())
+
+    const siteMeta = require(SITE_META_PATH)
+
+    for (const pageParameters of siteMeta.pages) {
+        describe(`page ${pageParameters.url}`, () => {
+            testPageNavigation({
+                ctx,
+                origin: ORIGIN,
+                pageParameters,
+                siteMeta,
+            })
+        })
+    }
+})
 
 /**
  * Test navigation from the given page
@@ -52,8 +57,14 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
             window,
         })
 
+        const driver = await window.resolveDriver()
+        const selector = element
+            ? await getElementSelector(driver, element)
+            : null
+
+        expect(selector).toMatchSnapshot('self-link selector')
+
         if (!element) {
-            this.skip()
             return
         }
 
@@ -66,15 +77,6 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
     })
 
     it('should do local navigation without reload', async function () {
-        // Occasionally, the Jekyll server seems to fail when a page partial
-        // is requested. This results in the dynamic navigation code performing
-        // its fallback action, which is to reload. I don't have the time or
-        // inclination to track down why this happens, so I'm just adding
-        // a retry for now. Apart from fixing this, or not using jekyll's
-        // embedded server, my best mitigation idea is to stick some tracing
-        // data in localStorage so I can detect the failure cause.
-        this.retries(2)
-
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters,
@@ -99,9 +101,6 @@ function testPageNavigation({ ctx, pageParameters, siteMeta }) {
     })
 
     it('should handle history navigation without reload', async function () {
-        // See comment on "...should do local navigation without reload"
-        this.retries(2)
-
         const window = ctx.siteWindow
         const secondPageParams = getTargetPageParams({
             currentPageParams: pageParameters,
@@ -350,6 +349,67 @@ class NavigablePage {
         }
         return elem
     }
+}
+
+async function getElementSelector(driver, node) {
+    const path = await driver.executeScript(
+        `
+        'use strict'
+
+        let node = arguments[0]
+        let path = ''
+
+        while (node) {
+            const parent = node.parentElement
+
+            let name = node.tagName
+
+            if (!name) {
+                break
+            }
+
+            name = name.toLowerCase()
+
+            if (node.id) {
+                name += '#' + id
+            } else if (!isOnlyChildWithTag(node)) {
+                const index = [...parent.children].findIndex((c) => c === node)
+
+                switch (index) {
+                case -1:
+                    throw new Error('missing child ' + node)
+
+                case 0:
+                    name += ':first-child'
+                    break
+
+                default:
+                    name += ':nth-child(' + (index+1) + ')'
+                    break
+                }
+            }
+
+            path = name + (path ? '>' + path : '')
+            node = parent
+        }
+
+        function isOnlyChildWithTag(node) {
+            const parent = node.parentElement
+
+            if (!parent) {
+                return true
+            }
+
+            const children = [...parent.children]
+            return !children.some((c) => c !== node && c.tagName === node.tagName)
+        }
+
+        return path
+        `,
+        node,
+    )
+
+    return path
 }
 
 function asSlug(string = '') {
