@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`navigation page / should reload when current page link is clicked: self-link selector 1`] = `"html>body>div>header>h1>a"`;
+
+exports[`navigation page /2019/08/10/c-arrays.html should reload when current page link is clicked: self-link selector 1`] = `null`;
+
+exports[`navigation page /blog.html should reload when current page link is clicked: self-link selector 1`] = `"html>body>div>header>nav>ul>li:nth-child(2)>a"`;
+
+exports[`navigation page /contact.html should reload when current page link is clicked: self-link selector 1`] = `"html>body>div>header>nav>ul>li:nth-child(3)>a"`;
+
+exports[`navigation page /projects.html should reload when current page link is clicked: self-link selector 1`] = `"html>body>div>header>nav>ul>li:first-child>a"`;
+
+exports[`navigation page /tag/animation/ should reload when current page link is clicked: self-link selector 1`] = `null`;

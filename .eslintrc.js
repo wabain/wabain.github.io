@@ -47,13 +47,12 @@ module.exports = {
         },
         // Test files
         {
-            files: ['integration-tests/**/*.js'],
+            files: ['**/*.test.js', '**/*.test.ts'],
             parserOptions: {
                 ecmaVersion: 2017,
             },
             env: {
-                es6: true,
-                mocha: true,
+                jest: true,
             },
         },
     ],
