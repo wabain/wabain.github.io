@@ -150,8 +150,8 @@ function testPageNavigation({
         await navigateToPage(window, firstPage, secondPage)
 
         /* Go back/forwards (content should be cached) */
-        await jumpHistory({ window, targetPage: firstPage })
-        await jumpHistory({ window, targetPage: secondPage, goForward: true })
+        await jumpHistory({ window, expectedPage: firstPage })
+        await jumpHistory({ window, expectedPage: secondPage, goForward: true })
 
         /* Refresh and revalidate (necessary to avoid race conditions) */
         driver = await window.resolveDriver()
@@ -163,7 +163,7 @@ function testPageNavigation({
         await secondPage.verifyBasicProperties({ window })
 
         /* Go back (will require a new request) */
-        await jumpHistory({ window, targetPage: firstPage })
+        await jumpHistory({ window, expectedPage: firstPage })
     })
 
     async function navigateToPage(
@@ -189,11 +189,11 @@ function testPageNavigation({
     async function jumpHistory({
         window,
         goForward = false,
-        targetPage,
+        expectedPage,
     }: {
         window: SiteWindow
         goForward?: boolean
-        targetPage: NavigablePage
+        expectedPage: NavigablePage
     }): Promise<void> {
         const driver = await window.resolveDriver()
 
@@ -203,7 +203,7 @@ function testPageNavigation({
             await driver.navigate().back()
         }
 
-        await targetPage.verifyBasicProperties({ window })
+        await expectedPage.verifyBasicProperties({ window })
         expect(await window.hasReloaded()).toBe(false)
     }
 
