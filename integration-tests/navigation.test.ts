@@ -8,6 +8,7 @@ import {
 } from 'selenium-webdriver'
 import { Options as FirefoxOptions } from 'selenium-webdriver/firefox'
 import { Options as ChromeOptions } from 'selenium-webdriver/chrome'
+import debugFactory, { Debugger } from 'debug'
 
 import { BROWSER, ORIGIN, SITE_META_PATH } from './env'
 
@@ -25,6 +26,14 @@ const { StaleElementReferenceError } = SeleniumErrors
 jest.setTimeout(10000) // We're gonna be sloooow
 
 describe('navigation', function () {
+    const debug = debugFactory('navigation')
+
+    {
+        // hardcode enabled
+        const prior = debugFactory.disable()
+        debugFactory.enable(`${prior}${prior && ','}navigation,navigation:*`)
+    }
+
     let webdriver: WebDriver = new Builder()
         .forBrowser(BROWSER)
         .setFirefoxOptions(new FirefoxOptions().headless())
@@ -32,11 +41,16 @@ describe('navigation', function () {
         .build()
 
     beforeAll(async () => {
+        debug('loading web driver...')
+
         // wait for the concrete driver to be resolved before proceeding
         webdriver = await webdriver
     })
 
-    afterAll(() => webdriver.quit())
+    afterAll(() => {
+        debug('unloading web driver...')
+        return webdriver.quit()
+    })
 
     const siteMeta: TestMeta = require(SITE_META_PATH)
 
@@ -47,6 +61,7 @@ describe('navigation', function () {
                 origin: ORIGIN,
                 pageParameters,
                 siteMeta,
+                debug,
             })
         })
     }
@@ -60,12 +75,22 @@ function testPageNavigation({
     origin,
     pageParameters,
     siteMeta,
+    debug: baseDebug,
 }: {
     driver: WebDriver
     origin: string
     pageParameters: PageParameters
     siteMeta: TestMeta
+    debug: Debugger
 }): void {
+    const debug = baseDebug.extend(pageParameters.url)
+
+    const it = <T>(describe: string, callback: () => T): void =>
+        globalThis.it(describe, () => {
+            debug(describe)
+            return callback()
+        })
+
     it('should reload when current page link is clicked', async function () {
         const window = await SiteWindow.forCurrentDriverWindow({
             origin,
