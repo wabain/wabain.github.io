@@ -52,15 +52,20 @@ module.exports = {
         rules: [
             {
                 enforce: 'pre',
-                test: /\.js$/,
+                test: /\.[jt]s$/,
                 exclude: /node_modules/,
-                use: ['eslint-loader'],
+                use: 'eslint-loader',
             },
 
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 exclude: /node_modules/,
-                use: 'ts-loader',
+                loader: 'ts-loader',
+                options: {
+                    compilerOptions: {
+                        noEmit: false,
+                    },
+                },
             },
 
             {

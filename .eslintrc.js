@@ -8,9 +8,9 @@ module.exports = {
     },
     reportUnusedDisableDirectives: true,
     overrides: [
-        // Source files
+        // TypeScript files
         {
-            files: ['src/**/*.ts'],
+            files: ['**/*.ts'],
             parser: '@typescript-eslint/parser',
             plugins: ['@typescript-eslint'],
             extends: [
@@ -23,10 +23,6 @@ module.exports = {
                 ecmaVersion: 6,
                 sourceType: 'module',
             },
-            env: {
-                browser: true,
-                node: false,
-            },
             rules: {
                 '@typescript-eslint/no-use-before-define': [
                     'error',
@@ -34,8 +30,9 @@ module.exports = {
                 ],
             },
         },
+        // Source files
         {
-            files: ['src/**/*.js'],
+            files: ['src/**/*.ts', 'src/**/*.js'],
             parserOptions: {
                 ecmaVersion: 6,
                 sourceType: 'module',
@@ -53,6 +50,13 @@ module.exports = {
             },
             env: {
                 jest: true,
+            },
+            rules: {
+                '@typescript-eslint/no-var-requires': ['off'],
+                '@typescript-eslint/no-use-before-define': [
+                    'error',
+                    { functions: false, classes: false },
+                ],
             },
         },
     ],

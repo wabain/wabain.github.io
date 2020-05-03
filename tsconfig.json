@@ -1,20 +1,15 @@
+/**
+ * Defines base rules for compiling TS source files. (The integration tests use
+ * a separate config file located in the ./integration-tests directory.)
+ */
 {
+  "extends": "./tsconfig.base.json",
   "include": ["src/js/**/*"],
   "compilerOptions": {
-    "outDir": "./dist/",
-    "sourceMap": true,
     "lib": ["DOM", "DOM.Iterable", "ES6"],
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
     // Explicitly enable typings because of cross-environment issues from a
     // dependency which pulls in @types/webpack
     "types": ["gtag.js", "twitter-for-web"],
-    "module": "es6",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "target": "es6",
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true
+    "module": "es6"
   }
 }
