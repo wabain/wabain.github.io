@@ -61,18 +61,12 @@ module.exports = {
                 test: /\.scss$/,
                 use: [
                     ...cssLoadRule,
-                    { loader: 'css-loader', options: { importLoaders: 1 } },
-                    { loader: 'postcss-loader', options: { sourceMap: true } },
                     {
-                        loader: 'sass-loader',
-                        options: {
-                            sassOptions: {
-                                outputStyle: IS_PROD
-                                    ? 'compressed'
-                                    : 'expanded',
-                            },
-                        },
+                        loader: 'css-loader',
+                        options: { importLoaders: 1, sourceMap: true },
                     },
+                    { loader: 'postcss-loader', options: { sourceMap: true } },
+                    { loader: 'sass-loader', options: { sourceMap: true } },
                 ],
             },
 
