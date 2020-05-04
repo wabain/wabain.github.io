@@ -3,7 +3,7 @@ const path = require('path')
 const { DefinePlugin } = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CssExtractPlugin = require('mini-css-extract-plugin')
 const svgToDataURI = require('mini-svg-data-uri')
 
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
@@ -22,18 +22,7 @@ const devOutput = {
     filename: '[name].js',
 }
 
-let extractCssRule, extractCssPlugin
-if (IS_PROD) {
-    extractCssRule = [{ loader: MiniCssExtractPlugin.loader }]
-    extractCssPlugin = [
-        new MiniCssExtractPlugin({
-            filename: '[name].min.css',
-        }),
-    ]
-} else {
-    extractCssRule = [{ loader: 'style-loader' }]
-    extractCssPlugin = []
-}
+const { rule: cssLoadRule, plugin: cssLoadPlugin } = getCssLoadConfig()
 
 /**
  * @type import("webpack").Configuration
@@ -71,7 +60,7 @@ module.exports = {
             {
                 test: /\.scss$/,
                 use: [
-                    ...extractCssRule,
+                    ...cssLoadRule,
                     { loader: 'css-loader', options: { importLoaders: 1 } },
                     { loader: 'postcss-loader', options: { sourceMap: true } },
                     {
@@ -137,8 +126,19 @@ module.exports = {
                 ),
             },
         }),
-        ...extractCssPlugin,
+        ...cssLoadPlugin,
     ],
+}
+
+function getCssLoadConfig() {
+    if (!IS_PROD) {
+        return { rule: [{ loader: 'style-loader' }], plugin: [] }
+    }
+
+    return {
+        rule: [{ loader: CssExtractPlugin.loader }],
+        plugin: [new CssExtractPlugin({ filename: '[name].min.css' })],
+    }
 }
 
 function local(...components) {
