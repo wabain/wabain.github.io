@@ -84,6 +84,10 @@ module.exports = {
                                 ),
                         },
                     },
+                    // postcss-loader has facilities for running SVGO, but it
+                    // runs before these external resources are resolved, so run
+                    // a homegrown loader against them.
+                    { loader: './webpack/svgo-loader' },
                 ],
             },
         ],
