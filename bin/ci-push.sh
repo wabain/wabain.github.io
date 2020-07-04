@@ -204,7 +204,10 @@ evaluate_pages_deploy() {
     # inflight merges, at the cost of risking a more stale deployment if the
     # deployment of a later commit fails.
     if [[ "$PUSH_PR_MERGE" == "false" ]]; then
-        PUSH_ARGS+=("$TRAVIS_BRANCH:$TRAVIS_BRANCH")
+        PUSH_ARGS+=(
+            "$TRAVIS_BRANCH:$TRAVIS_BRANCH"
+            "--force-with-lease=$TRAVIS_BRANCH:$TRAVIS_BRANCH"
+        )
     fi
 }
 
