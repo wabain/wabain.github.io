@@ -43,4 +43,5 @@ script:
   - JEKYLL_ENV=production yarn run jekyll-build
   - JEKYLL_ENV=production yarn run jekyll-lint
   - ./bin/ci-run-integration-tests.sh
+  - ./ci/pull-request/test/tests.sh
   - ./bin/ci-push.sh
