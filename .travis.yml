@@ -33,6 +33,7 @@ before_install:
 install:
   - bundle install --jobs=3 --retry=3 --deployment
   - yarn install --frozen-lockfile
+  - bin/ci-install-jq.sh
 before_script:
   - git config --global user.email "bain.william.a+ci@gmail.com"
   - git config --global user.name "Travis CI"
