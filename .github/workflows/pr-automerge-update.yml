@@ -1,0 +1,24 @@
+name: Pull request updated
+on:
+  pull_request:
+    types: [labeled]
+
+  pull_request_review: {}
+
+jobs:
+  eval-automerge:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Evaluate if pull request automerge required
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          STATUSES_URL: ${{ github.event.pull_request.statuses_url }}
+          TRAVIS_CI_TOKEN: ${{ secrets.TRAVIS_CI_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export USER_INSTALL_DIR=~/bin && \
+          mkdir -p $USER_INSTALL_DIR && \
+          export PATH="$USER_INSTALL_DIR:$PATH" && \
+          bin/ci-install-jq.sh && \
+          bin/ci-trigger-pr-rerun.sh
