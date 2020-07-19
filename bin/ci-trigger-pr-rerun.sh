@@ -7,8 +7,25 @@
 
 set -euo pipefail
 
-if [ -z "$(echo "$PR_LABELS" | jq -r '.[].name | select(. == "automerge")')" ]; then
-    echo "Automerge label is not present; not triggering rerun"
+curl -s \
+    -H "Authorization: token $GH_TOKEN" \
+    -H 'Accept: application/vnd.github.v3+json' \
+    "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+    > /tmp/pr.json
+
+curl -s \
+    -H "Authorization: token $GH_TOKEN" \
+    -H 'Accept: application/vnd.github.v3+json' \
+    "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
+    > /tmp/pr-reviews.json
+
+pr="$(jq --slurp -f ci/pull-request/pull-request.jq /tmp/pr.json /tmp/pr-reviews.json)"
+
+echo "PR attributes:"
+echo "$pr" | jq -C
+
+if [[ "$(echo "$pr" | jq '.pr_is_eligible')" != "true" ]]; then
+    echo "PR is currently ineligible for automerge; not triggering rerun"
     exit
 fi
 

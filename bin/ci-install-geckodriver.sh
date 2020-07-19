@@ -11,7 +11,7 @@ url=$(echo "$json" | jq -r '.assets[].browser_download_url | select(contains("li
 echo
 
 echo "Downloading from URL $url"
-curl -s -L "$url" | tar -xz
+curl -s -L --retry 3 "$url" | tar -xz
 chmod +x geckodriver
 mv geckodriver "$USER_INSTALL_DIR"
 echo "Installed geckodriver binary in $USER_INSTALL_DIR"

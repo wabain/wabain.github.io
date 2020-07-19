@@ -15,6 +15,9 @@
 !/content/projects.html
 !/content/index.html
 
+# Externally generated test resources
+/ci/**/test/*.json
+
 # Non-source files
 
 /.vscode/

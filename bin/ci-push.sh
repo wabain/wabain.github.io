@@ -58,8 +58,7 @@ main() {
 
 # Deploy pull requests only after filtering for eligibility
 evaluate_pr_merge() {
-    local pr_eligibility
-    local is_pr_eligible
+    local pr
     local head_ref
     local head_commit
     local merge_commit
@@ -72,26 +71,29 @@ evaluate_pr_merge() {
 
     curl -s \
         -H "Authorization: token $GH_TOKEN" \
+        -H 'Accept: application/vnd.github.v3+json' \
         "https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST" \
         > /tmp/pr.json
 
-    pr_eligibility="$(jq -r '{
-        automerge_label_present: ([.labels[].name] | index("automerge") != null),
-        author_is_owner: (.author_association == "OWNER"),
-        mergeable,
-        non_draft: (.draft | not)
-    }' /tmp/pr.json)"
+    curl -s \
+        -H "Authorization: token $GH_TOKEN" \
+        -H 'Accept: application/vnd.github.v3+json' \
+        "https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST/reviews" \
+        > /tmp/pr-reviews.json
 
-    is_pr_eligible="$(jq -r '([select(.[])] | length) == (. | length)' <(echo "$pr_eligibility"))"
+    pr="$(jq --slurp -f ci/pull-request/pull-request.jq /tmp/pr.json /tmp/pr-reviews.json)"
 
-    if [[ "$is_pr_eligible" != "true" ]]; then
-        echo "Not auto-merging ineligible pull request: $pr_eligibility"
+    echo "PR attributes:"
+    echo "$pr" | jq -C
+
+    if [[ "$(echo "$pr" | jq '.pr_is_eligible')" != "true" ]]; then
+        echo "Not auto-merging ineligible pull request"
         return
     fi
 
-    head_ref="$(jq -r '.head.ref' /tmp/pr.json)"
-    head_commit="$(jq -r '.head.sha' /tmp/pr.json)"
-    merge_commit="$(jq -r '.merge_commit_sha' /tmp/pr.json)"
+    head_ref="$(echo "$pr" | jq -r '.head_ref')"
+    head_commit="$(echo "$pr" | jq -r '.head_commit')"
+    merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
 
     ci_commit="$(git rev-parse HEAD)"
 
