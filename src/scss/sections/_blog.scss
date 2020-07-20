@@ -17,7 +17,7 @@
   grid-area: header;
 
   @media (min-width: sizing.$screen-md-min) {
-    margin-right: 7px;
+    margin-right: sizing.$margin-xs;
     justify-self: end;
   }
 }

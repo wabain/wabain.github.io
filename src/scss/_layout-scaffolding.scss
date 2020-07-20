@@ -1,6 +1,6 @@
 @use "base/sizing";
 
-$xs-main-margin: 15px;
+$xs-main-margin: sizing.$margin-sm;
 
 @mixin content-longform {
   .content-longform &:not(.content-longform-override--false),

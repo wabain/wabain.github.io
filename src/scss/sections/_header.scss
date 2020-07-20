@@ -64,7 +64,7 @@ $header-v-padding: 0.67rem;
       display: inline;
 
       + li {
-        margin-left: 15px;
+        margin-left: sizing.$margin-sm;
       }
     }
   }
@@ -79,7 +79,7 @@ $header-v-padding: 0.67rem;
 
 @media (min-width: sizing.$screen-md-min) {
   .grid-header-title {
-    margin-right: 7px;
+    margin-right: sizing.$margin-xs;
   }
 
   .grid-header-navbar {
@@ -90,6 +90,6 @@ $header-v-padding: 0.67rem;
     // Hack: bottom margin is supposed to keep the navbar and title
     // aligned; probably need something more principled instead
     margin-bottom: 1.15rem;
-    margin-left: 7px;
+    margin-left: sizing.$margin-xs;
   }
 }

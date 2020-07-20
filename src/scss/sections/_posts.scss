@@ -18,14 +18,14 @@
 
 .grid-post-header {
   grid-area: header;
-  margin-left: 15px;
+  margin-left: sizing.$margin-sm;
 }
 
 .grid-post-separator {
   grid-area: separator;
   transform: translateX(-(sizing.$grid / 32));
-  margin-top: 15px;
-  margin-bottom: 20px;
+  margin-top: sizing.$margin-sm;
+  margin-bottom: sizing.$margin-md;
   background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
   height: 4px;
 
@@ -42,19 +42,19 @@
 
 .grid-post-meta {
   grid-area: meta;
-  margin-left: 20px;
+  margin-left: sizing.$margin-md;
   font-family: "Playfair Display", serif;
   font-style: italic;
 
   @media (min-width: sizing.$screen-md-min) {
-    margin-right: 15px;
+    margin-right: sizing.$margin-sm;
     text-align: right;
   }
 }
 
 .grid-post-content {
   grid-area: content;
-  margin: 0 15px;
+  margin: 0 sizing.$margin-sm;
 }
 
 // From Markdown
