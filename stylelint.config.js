@@ -130,11 +130,55 @@ const concentricOrder = [
 
 module.exports = {
     extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
-    plugins: ['stylelint-order'],
+    plugins: ['stylelint-order', 'stylelint-scss'],
     rules: {
         'string-quotes': 'double',
         'order/properties-order': [concentricOrder, { unspecified: 'bottom' }],
-        'at-rule-no-unknown': [true, { ignoreAtRules: ['extend'] }],
+        'at-rule-no-unknown': [
+            true,
+            { ignoreAtRules: ['extend', 'use', 'mixin', 'include'] },
+        ],
+        ...stylelintConfigSassRules(),
     },
     ignoreFiles: ['src/scss/vendor/**/*'],
+}
+
+// A subset of rules from:
+// https://github.com/bjankord/stylelint-config-sass-guidelines/blob/a710e5b80586a86284bb417b469d7a9dd098e86d/src/.stylelintrc.json
+function stylelintConfigSassRules() {
+    return {
+        'order/order': [
+            [
+                'custom-properties',
+                'dollar-variables',
+                {
+                    type: 'at-rule',
+                    name: 'extend',
+                },
+                {
+                    type: 'at-rule',
+                    name: 'include',
+                    hasBlock: false,
+                },
+                'declarations',
+                {
+                    type: 'at-rule',
+                    name: 'include',
+                    hasBlock: true,
+                },
+                'rules',
+            ],
+        ],
+        'scss/at-extend-no-missing-placeholder': true,
+        'scss/at-function-pattern': '^[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
+        'scss/at-import-no-partial-leading-underscore': true,
+        'scss/at-import-partial-extension-blacklist': ['scss'],
+        'scss/at-mixin-pattern': '^[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
+        'scss/at-rule-no-unknown': true,
+        'scss/dollar-variable-colon-space-after': 'always',
+        'scss/dollar-variable-colon-space-before': 'never',
+        'scss/dollar-variable-pattern': '^[_]?[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
+        'scss/percent-placeholder-pattern': '^[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
+        'scss/selector-no-redundant-nesting-selector': true,
+    }
 }
