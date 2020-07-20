@@ -24,7 +24,7 @@
 .grid-post-separator {
   grid-area: separator;
   transform: translateX(-(sizing.$grid / 32));
-  margin-top: 10px;
+  margin-top: 15px;
   margin-bottom: 20px;
   background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
   height: 4px;
