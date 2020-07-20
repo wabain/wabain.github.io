@@ -1,7 +1,9 @@
+@use "base/sizing";
+
 .grid-legacy-page {
   grid-template-areas: ". content content";
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: sizing.$screen-md-min) {
     grid-template-areas: ". . content content";
   }
 }

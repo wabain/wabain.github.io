@@ -1,9 +1,12 @@
+@use "base/colors";
+@use "base/sizing";
+
 .grid-blog {
   grid-template-areas:
     "header header header"
     ". listing listing";
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: sizing.$screen-md-min) {
     grid-template-areas:
       ". header . ."
       ". . listing listing";
@@ -13,7 +16,7 @@
 .grid-blog-header {
   grid-area: header;
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: sizing.$screen-md-min) {
     margin-right: 7px;
     justify-self: end;
   }
@@ -36,7 +39,7 @@
 }
 
 .blog-post-link:hover h3 {
-  color: $color-primary-light;
+  color: colors.$primary-light;
 }
 
 .blog-post-meta {

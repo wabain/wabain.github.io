@@ -1,38 +1,14 @@
-$grid-size: 352px;
-$half-grid-size: 176px;
-$quart-grid-size: 88px;
-$eight-grid-size: 44px;
-$sixteenth-grid-size: 22px;
-
-$color-primary: #5076be;
-$color-primary-light: #85afff;
-$color-primary-dark: #243f71;
-$color-complement: #f2b632;
-
-$off-black: #222;
-$light-gray: #f0f0f0;
-
-$link-color: $color-primary;
-$link-hover-color: $color-primary-light;
-$link-active-color: $color-complement;
-
-$screen-lg-min: $grid-size * 4 + $quart-grid-size;
-$screen-md-min: $grid-size * 3 + $quart-grid-size;
-$screen-sm-min: $grid-size * 2 + $quart-grid-size;
-
 // Base imports
-@import url("~normalize.css");
-@import url("./vendor/base16.solarized.css");
-@import "text-formatting";
-@import "utils";
-@import "layout-scaffolding";
-@import "layout-transition";
+@use "vendor";
+@use "text-formatting";
+@use "utils";
+@use "layout-scaffolding";
 // Sections
-@import "sections/header";
-@import "sections/about";
-@import "sections/projects";
-@import "sections/legacy-page";
-@import "sections/blog";
-@import "sections/posts";
+@use "sections/header";
+@use "sections/about";
+@use "sections/projects";
+@use "sections/legacy-page";
+@use "sections/blog";
+@use "sections/posts";
 // Utilities
-@import "loading-effects";
+@use "loading-effects";
