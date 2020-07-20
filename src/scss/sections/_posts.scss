@@ -8,7 +8,7 @@
   @media (min-width: $screen-md-min) {
     grid-template-areas:
       ". . header header"
-      ". separator separator ."
+      ". . separator ."
       ". meta content content";
   }
 }
@@ -20,17 +20,19 @@
 
 .grid-post-separator {
   grid-area: separator;
-  transform: translateX(-$sixteenth-grid-size);
+  transform: translateX(-($grid-size / 32));
   margin-top: 10px;
   margin-bottom: 20px;
   background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
   height: 4px;
 
+  @media (min-width: $screen-sm-min) {
+    transform: translateX(-$sixteenth-grid-size);
+  }
+
   @media (min-width: $screen-md-min) {
-    transform: translateX($quart-grid-size);
+    transform: translateX(-100px + $sixteenth-grid-size);
     margin-top: 0;
-    margin-right: auto;
-    margin-left: auto;
     width: $grid-size;
   }
 }
@@ -49,7 +51,7 @@
 
 .grid-post-content {
   grid-area: content;
-  margin-left: 15px;
+  margin: 0 15px;
 }
 
 // From Markdown

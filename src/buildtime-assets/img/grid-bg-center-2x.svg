@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="5" viewBox="0 0 640 5">
+<!-- sizing.$grid * 2 = 704 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="704" height="5" viewBox="0 0 704 5">
   <path fill="none" stroke="#E5E5E5" stroke-linecap="square" d="M0,0 L0,5"/>
-  <path fill="none" stroke="#E5E5E5" stroke-linecap="square" d="M640,0 L640,5"/>
+  <path fill="none" stroke="#E5E5E5" stroke-linecap="square" d="M704,0 L704,5"/>
 </svg>

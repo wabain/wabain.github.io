@@ -71,10 +71,18 @@ samp {
   font-size: 1rem;
 }
 
-@media (max-width: $screen-sm-min - 1) {
-  figure {
+figure {
+  @media (max-width: $screen-sm-min - 1) {
     margin-right: 0;
     margin-left: 0;
+  }
+
+  .longform & {
+    video,
+    img {
+      width: 100%;
+      object-fit: scale-down;
+    }
   }
 }
 

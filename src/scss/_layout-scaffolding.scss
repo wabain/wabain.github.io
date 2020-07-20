@@ -1,15 +1,20 @@
-$xs-main-margin-pct: percentage(
-  $quart-grid-size / (floor($screen-sm-min / $grid-size) * $grid-size)
-);
+$xs-main-margin: 15px;
+
+@mixin content-longform {
+  .content-longform &:not(.content-longform-override--false),
+  &.content-longform-override--true {
+    @content;
+  }
+}
 
 // The container is a top-level element wrapper within the body.
 // The normalize stylesheet ensures there's no body margin.
 .container {
   box-sizing: border-box;
   background: url("../buildtime-assets/img/grid-bg-line-start.svg") left
-      $xs-main-margin-pct center repeat-y,
-    url("../buildtime-assets/img/grid-bg-line-end.svg") right
-      $xs-main-margin-pct center repeat-y;
+      $xs-main-margin center repeat-y,
+    url("../buildtime-assets/img/grid-bg-line-end.svg") right $xs-main-margin
+      center repeat-y;
   padding-top: $eight-grid-size;
   min-height: 100vh;
 
@@ -29,39 +34,33 @@ $xs-main-margin-pct: percentage(
       url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
   }
 
-  .content-longform & {
+  @include content-longform {
     background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left
-      $xs-main-margin-pct center repeat-y;
+      $xs-main-margin center repeat-y;
 
     @media (min-width: $screen-sm-min) {
       background: url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg")
         center repeat-y;
-    }
-
-    @media (min-width: $screen-md-min) and (max-width: $screen-lg-min - 1) {
-      background-position: $grid-size;
     }
   }
 }
 
 // Base definition for the layout grid
 //
-// On very small screens, all space is allocated to a single column, with
-// percentage-based margins excepted. A zero-sized grid cell is left so
-// that the grid definition matches the shape on small screens, where two
-// fixed-sized columns are available.
+// In the `xs` layout all space is allocated to a single column, with margins
+// excepted. A zero-sized grid cell is left so that the grid definition
+// matches the `sm` layout, where two fixed-sized columns are available.
 //
-// On larger screens, three or four columns are allocated for the primary
-// content (although there may be more space available).
+// On larger screens, three or four centred columns are allocated for the
+// primary content (although there may be more space available). This includes
+// the column which contains the site branding.
 //
-// Given longform content, the same rules apply except that the right margin
-// on small screens is fixed to allow a little more space, and instead of
-// space being evenly distributed to the right and left on medium-sized screens,
-// where there are between 3 and 4 columns available, all the space is allocated
-// to the right to keep the content closer to center.
+// Given longform content, in the `md` layout, where there are between 3 and 4
+// columns available, the rightmost two complete columns, which contain the
+// longform content, are centred.
 .grid-base {
   display: grid;
-  grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $xs-main-margin-pct;
+  grid-template-columns: $xs-main-margin minmax(150px, auto) 0 $xs-main-margin;
 
   @media (min-width: $screen-sm-min) {
     grid-template-columns: 1fr $grid-size $grid-size 1fr;
@@ -69,33 +68,26 @@ $xs-main-margin-pct: percentage(
 
   @media (min-width: $screen-md-min) {
     grid-template-columns: 1fr repeat(3, $grid-size) 1fr;
+
+    @include content-longform {
+      grid-template-columns: 0 1fr $grid-size $grid-size 1fr;
+    }
   }
 
   @media (min-width: $screen-lg-min) {
     grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
   }
-
-  .content-longform & {
-    grid-template-columns: $xs-main-margin-pct minmax(150px, auto) 0 $sixteenth-grid-size;
-
-    @media (min-width: $screen-sm-min) {
-      grid-template-columns: 1fr $grid-size $grid-size 1fr;
-    }
-
-    @media (min-width: $screen-md-min) {
-      grid-template-columns: 0 repeat(3, $grid-size) minmax(0, auto);
-    }
-
-    @media (min-width: $screen-lg-min) {
-      grid-template-columns: 1fr repeat(4, $grid-size) 1fr;
-    }
-  }
 }
 
-.content-longform figure {
-  video,
-  img {
-    width: 100%;
-    object-fit: scale-down;
+// Base
+.grid-base.grid-layout-meta {
+  grid-template-areas: "left a b right";
+
+  @media (min-width: $screen-md-min) {
+    grid-template-areas: "left left a b right";
+  }
+
+  @media (min-width: $screen-lg-min) {
+    grid-template-areas: "left left a b c right";
   }
 }
