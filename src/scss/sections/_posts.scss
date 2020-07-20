@@ -23,10 +23,14 @@
 
 .grid-post-separator {
   grid-area: separator;
+
   transform: translateX(-(sizing.$grid / 32));
+
   margin-top: sizing.$margin-sm;
   margin-bottom: sizing.$margin-md;
+
   background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
+
   height: 4px;
 
   @media (min-width: sizing.$screen-sm-min) {

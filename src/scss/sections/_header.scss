@@ -20,11 +20,14 @@ $header-v-padding: 0.67rem;
 // and other fallback scenarios
 .grid-header-title {
   grid-area: title;
+
   margin: $header-v-padding 0;
+
   color: transparent;
   // Josefin Sans is not loaded as a webfont, but keep the declaration to help
   // with development
   font-family: "Josefin Sans", Helvetica, Arial, sans-serif;
+
   justify-self: end;
   align-self: end;
 
@@ -44,10 +47,14 @@ $header-v-padding: 0.67rem;
 
   a .header-title-text {
     display: inline-block;
+
     background: url("../buildtime-assets/img/header.svg") no-repeat;
+
     width: 185px; // matched to SVG dimensions
     height: 36.8px; // manually tweaked to match the text baseline positioning
+
     overflow: hidden;
+
     vertical-align: text-bottom;
   }
 }
