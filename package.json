@@ -16,7 +16,7 @@
     "@types/node": "^13.13.4",
     "@types/selenium-webdriver": "^4.0.9",
     "@types/twitter-for-web": "^0.0.1",
-    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.27.0",
     "autoprefixer": "^9.7.6",
     "babel-eslint": "^10.1.0",
