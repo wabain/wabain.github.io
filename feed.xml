@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://wabain.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wabain.github.io/" rel="alternate" type="text/html" /><updated>2020-07-21T02:10:24+00:00</updated><id>https://wabain.github.io/feed.xml</id><title type="html">William Bain</title><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><entry><title type="html">Working notes: Animating k-d trees</title><link href="https://wabain.github.io/2020/01/05/animating-kd-trees.html" rel="alternate" type="text/html" title="Working notes: Animating k-d trees" /><published>2020-01-05T00:00:00+00:00</published><updated>2020-01-05T00:00:00+00:00</updated><id>https://wabain.github.io/2020/01/05/animating-kd-trees</id><content type="html" xml:base="https://wabain.github.io/2020/01/05/animating-kd-trees.html">&lt;p&gt;Amid the post–New Year spate of project roundups, I discovered Luke Pattons’ Canvas Cards project, and &lt;a href=&quot;https://canvas-cards.glitch.me/#boxer-selector&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;through it&lt;/a&gt; some mesmerizing procedural animations by Raven Kwok.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://wabain.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wabain.github.io/" rel="alternate" type="text/html" /><updated>2020-07-26T20:00:06+00:00</updated><id>https://wabain.github.io/feed.xml</id><title type="html">William Bain</title><author><name>William Bain</name><email>bain.william.a@gmail.com</email></author><entry><title type="html">Working notes: Animating k-d trees</title><link href="https://wabain.github.io/2020/01/05/animating-kd-trees.html" rel="alternate" type="text/html" title="Working notes: Animating k-d trees" /><published>2020-01-05T00:00:00+00:00</published><updated>2020-01-05T00:00:00+00:00</updated><id>https://wabain.github.io/2020/01/05/animating-kd-trees</id><content type="html" xml:base="https://wabain.github.io/2020/01/05/animating-kd-trees.html">&lt;p&gt;Amid the post–New Year spate of project roundups, I discovered Luke Pattons’ Canvas Cards project, and &lt;a href=&quot;https://canvas-cards.glitch.me/#boxer-selector&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;through it&lt;/a&gt; some mesmerizing procedural animations by Raven Kwok.&lt;/p&gt;
 
 &lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;und&quot; dir=&quot;ltr&quot;&gt;&lt;a href=&quot;https://t.co/jpyc9hBLxD&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;pic.twitter.com/jpyc9hBLxD&lt;/a&gt;&lt;/p&gt;&amp;mdash; Raven Kwok (@RavenKwok) &lt;a href=&quot;https://twitter.com/RavenKwok/status/1117347303105294337?ref_src=twsrc%5Etfw&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;April 14, 2019&lt;/a&gt;&lt;/blockquote&gt;
 
@@ -105,14 +105,18 @@
     }
     @keyframes tablerot-old-group-head {
         0%, 45% { transform: translate(0, 0) }
-        55%, 60% {
+        /*
+         * Start the rotation 2% after tablerot-new so that they don't appear
+         * to be overly synchronized
+         */
+        55%, 62% {
             transform: translate(0, 5.85786437627px);
             animation-timing-function: ease-in;
         }
-        70% { transform: translate(50px, 5.85786437627px) }
-        75% { transform: translate(42px, 5.85786437627px) }
-        80% { transform: translate(47px, 5.85786437627px) }
-        85%, 100% { transform: translate(45.8578643763px, 5.85786437627px) }
+        72% { transform: translate(50px, 5.85786437627px) }
+        77% { transform: translate(42px, 5.85786437627px) }
+        82% { transform: translate(47px, 5.85786437627px) }
+        87%, 100% { transform: translate(45.8578643763px, 5.85786437627px) }
     }
 
     .tablerot-old use[href=&quot;#tablerot-table-head&quot;] {
@@ -146,11 +150,11 @@
     }
     @keyframes tablerot-new-head {
         0% { transform: rotate(0); animation-timing-function: ease-in; }
-        25%, 30% { transform: rotate(-45deg);  animation-timing-function: ease-in; }
-        40% { transform: translateX(65px) rotate(-45deg); }
-        45% { transform: translateX(58px) rotate(-45deg); }
-        50% { transform: translateX(61px) rotate(-45deg); }
-        55%, 100% { transform: translateX(60px) rotate(-45deg); }
+        25%, 60% { transform: rotate(-45deg); animation-timing-function: ease-in; }
+        70% { transform: translateX(65px) rotate(-45deg); }
+        75% { transform: translateX(58px) rotate(-45deg); }
+        80% { transform: translateX(61px) rotate(-45deg); }
+        85%, 100% { transform: translateX(60px) rotate(-45deg); }
     }
 &lt;/style&gt;
 

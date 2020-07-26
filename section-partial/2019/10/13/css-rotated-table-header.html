@@ -69,14 +69,18 @@
     }
     @keyframes tablerot-old-group-head {
         0%, 45% { transform: translate(0, 0) }
-        55%, 60% {
+        /*
+         * Start the rotation 2% after tablerot-new so that they don't appear
+         * to be overly synchronized
+         */
+        55%, 62% {
             transform: translate(0, 5.85786437627px);
             animation-timing-function: ease-in;
         }
-        70% { transform: translate(50px, 5.85786437627px) }
-        75% { transform: translate(42px, 5.85786437627px) }
-        80% { transform: translate(47px, 5.85786437627px) }
-        85%, 100% { transform: translate(45.8578643763px, 5.85786437627px) }
+        72% { transform: translate(50px, 5.85786437627px) }
+        77% { transform: translate(42px, 5.85786437627px) }
+        82% { transform: translate(47px, 5.85786437627px) }
+        87%, 100% { transform: translate(45.8578643763px, 5.85786437627px) }
     }
 
     .tablerot-old use[href="#tablerot-table-head"] {
@@ -110,11 +114,11 @@
     }
     @keyframes tablerot-new-head {
         0% { transform: rotate(0); animation-timing-function: ease-in; }
-        25%, 30% { transform: rotate(-45deg);  animation-timing-function: ease-in; }
-        40% { transform: translateX(65px) rotate(-45deg); }
-        45% { transform: translateX(58px) rotate(-45deg); }
-        50% { transform: translateX(61px) rotate(-45deg); }
-        55%, 100% { transform: translateX(60px) rotate(-45deg); }
+        25%, 60% { transform: rotate(-45deg); animation-timing-function: ease-in; }
+        70% { transform: translateX(65px) rotate(-45deg); }
+        75% { transform: translateX(58px) rotate(-45deg); }
+        80% { transform: translateX(61px) rotate(-45deg); }
+        85%, 100% { transform: translateX(60px) rotate(-45deg); }
     }
 </style>
 
