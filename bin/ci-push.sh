@@ -122,8 +122,8 @@ create_deploy_tree() {
     # do it now
     git fetch --quiet origin +refs/heads/master:refs/remotes/origin/master
 
-    # We should be safe checking out master because CI won't run this script
-    # with it as the current branch
+    # We should be safe checking out master in a separate worktree because CI
+    # won't run this script with it as the current branch
     git worktree add --quiet --no-checkout $DEPLOY_DIR -B master origin/master
 
     rsync -a "$JEKYLL_BUILD_DIR/" $DEPLOY_DIR

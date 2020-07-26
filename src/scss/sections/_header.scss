@@ -1,3 +1,6 @@
+@use "base/colors";
+@use "base/sizing";
+
 $header-v-padding: 0.67rem;
 
 // Display inline if there is space, or collapse into multiple lines
@@ -5,9 +8,9 @@ $header-v-padding: 0.67rem;
   grid-template-areas:
     ". title title title"
     ". nav nav nav";
-  margin-bottom: $eight-grid-size;
+  margin-bottom: sizing.$eighth-grid;
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: sizing.$screen-md-min) {
     grid-template-areas: ". title nav nav";
   }
 }
@@ -17,11 +20,14 @@ $header-v-padding: 0.67rem;
 // and other fallback scenarios
 .grid-header-title {
   grid-area: title;
+
   margin: $header-v-padding 0;
+
   color: transparent;
   // Josefin Sans is not loaded as a webfont, but keep the declaration to help
   // with development
   font-family: "Josefin Sans", Helvetica, Arial, sans-serif;
+
   justify-self: end;
   align-self: end;
 
@@ -32,19 +38,23 @@ $header-v-padding: 0.67rem;
   }
 
   a:hover {
-    border-bottom: 1px solid $off-black;
+    border-bottom: 1px solid colors.$off-black;
   }
 
   a.active-link {
-    border-bottom: 1px solid $link-active-color;
+    border-bottom: 1px solid colors.$link-active;
   }
 
   a .header-title-text {
     display: inline-block;
+
     background: url("../buildtime-assets/img/header.svg") no-repeat;
+
     width: 185px; // matched to SVG dimensions
     height: 36.8px; // manually tweaked to match the text baseline positioning
+
     overflow: hidden;
+
     vertical-align: text-bottom;
   }
 }
@@ -61,7 +71,7 @@ $header-v-padding: 0.67rem;
       display: inline;
 
       + li {
-        margin-left: 15px;
+        margin-left: sizing.$margin-sm;
       }
     }
   }
@@ -74,9 +84,9 @@ $header-v-padding: 0.67rem;
   /* stylelint-enable */
 }
 
-@media (min-width: $screen-md-min) {
+@media (min-width: sizing.$screen-md-min) {
   .grid-header-title {
-    margin-right: 7px;
+    margin-right: sizing.$margin-xs;
   }
 
   .grid-header-navbar {
@@ -87,6 +97,6 @@ $header-v-padding: 0.67rem;
     // Hack: bottom margin is supposed to keep the navbar and title
     // aligned; probably need something more principled instead
     margin-bottom: 1.15rem;
-    margin-left: 7px;
+    margin-left: sizing.$margin-xs;
   }
 }

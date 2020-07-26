@@ -19,7 +19,7 @@ curl -o ~/download/jq -s -L --retry 3 "$URL"
 
 actual_hash="$(sha256sum ~/download/jq | cut -f1 -d' ')"
 if [[ "$actual_hash" != "$HASH" ]]; then
-    echo >&2 "Invalid SHA256 checksum for jq $actual"
+    echo >&2 "Invalid SHA256 checksum for jq (from $URL)"
     echo >&2 "Expected: $HASH"
     echo >&2 "Found:    $actual_hash"
 

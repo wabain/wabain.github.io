@@ -95,28 +95,34 @@ function transitionIn(contentElem: Element): Promise<void> {
  * Get difference of the offset of the start of primary content from the left
  * of the screen between longform to non-longform modes.
  *
- * See the style definition for a description of .layout-breakpoints.
+ * See the style definition for a description of `grid-layout-meta`.
  */
 function getLongformBodyOffset(): number {
     const body = document.body
+
+    const grid = document.createElement('div')
+    grid.className = 'grid-base grid-layout-meta'
+
     const bpCheck = document.createElement('div')
-    bpCheck.className = 'layout-breakpoints'
-    body.appendChild(bpCheck)
+    bpCheck.style.gridArea = 'a'
+    grid.appendChild(bpCheck)
+
+    body.appendChild(grid)
 
     let offset
     try {
-        const style = getComputedStyle(bpCheck)
+        grid.classList.add('content-longform-override--false')
+        const { left: nonLongform } = bpCheck.getBoundingClientRect()
 
-        if (style.content !== '"md"') {
-            offset = 0
-        } else {
-            const gridSize = parseFloat(style.backgroundSize)
-            const nonLongformPos = body.clientWidth / 2 - gridSize / 2
-            const longformPos = gridSize
-            offset = longformPos - nonLongformPos
-        }
+        grid.classList.replace(
+            'content-longform-override--false',
+            'content-longform-override--true',
+        )
+        const { left: longform } = bpCheck.getBoundingClientRect()
+
+        offset = longform - nonLongform
     } finally {
-        body.removeChild(bpCheck)
+        body.removeChild(grid)
     }
 
     return offset

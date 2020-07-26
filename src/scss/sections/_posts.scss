@@ -1,3 +1,6 @@
+@use "base/colors";
+@use "base/sizing";
+
 .grid-post {
   grid-template-areas:
     ". header header"
@@ -5,56 +8,62 @@
     ". separator ."
     ". content content";
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: sizing.$screen-md-min) {
     grid-template-areas:
       ". . header header"
-      ". separator separator ."
+      ". . separator ."
       ". meta content content";
   }
 }
 
 .grid-post-header {
   grid-area: header;
-  margin-left: 15px;
+  margin-left: sizing.$margin-sm;
 }
 
 .grid-post-separator {
   grid-area: separator;
-  transform: translateX(-$sixteenth-grid-size);
-  margin-top: 10px;
-  margin-bottom: 20px;
+
+  transform: translateX(-(sizing.$grid / 32));
+
+  margin-top: sizing.$margin-sm;
+  margin-bottom: sizing.$margin-md;
+
   background: url("../buildtime-assets/img/post-separator.svg") no-repeat;
+
   height: 4px;
 
-  @media (min-width: $screen-md-min) {
-    transform: translateX($quart-grid-size);
+  @media (min-width: sizing.$screen-sm-min) {
+    transform: translateX(-(sizing.$sixteenth-grid));
+  }
+
+  @media (min-width: sizing.$screen-md-min) {
+    transform: translateX(-100px + sizing.$sixteenth-grid);
     margin-top: 0;
-    margin-right: auto;
-    margin-left: auto;
-    width: $grid-size;
+    width: sizing.$grid;
   }
 }
 
 .grid-post-meta {
   grid-area: meta;
-  margin-left: 20px;
+  margin-left: sizing.$margin-md;
   font-family: "Playfair Display", serif;
   font-style: italic;
 
-  @media (min-width: $screen-md-min) {
-    margin-right: 15px;
+  @media (min-width: sizing.$screen-md-min) {
+    margin-right: sizing.$margin-sm;
     text-align: right;
   }
 }
 
 .grid-post-content {
   grid-area: content;
-  margin-left: 15px;
+  margin: 0 sizing.$margin-sm;
 }
 
 // From Markdown
 .footnotes {
-  border-top: 1px solid $light-gray;
+  border-top: 1px solid colors.$light-gray;
   line-height: 1.3;
 
   // TODO: Set the base font size on the body instead

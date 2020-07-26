@@ -1,3 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="5" viewBox="0 0 320 5">
-  <path fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="square" d="M160,0 L160,5"/>
+<!-- sizing.$grid = 352 -->
+<!-- sizing.$grid / 2 = 176 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="352" height="5" viewBox="0 0 352 5">
+  <path fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="square" d="M176,0 L176,5"/>
 </svg>

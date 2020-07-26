@@ -1,17 +1,19 @@
+@use "base/sizing";
+
 .grid-about {
   grid-template-areas:
     ". intro"
     ". more"
     ". close";
 
-  @media (min-width: $screen-sm-min) {
+  @media (min-width: sizing.$screen-sm-min) {
     grid-template-areas:
       ". intro intro"
       ". more more"
       ". . close";
   }
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: sizing.$screen-md-min) {
     grid-template-areas:
       ". . intro ."
       ". . more more"
@@ -20,7 +22,7 @@
 }
 
 .about-line {
-  margin: $eight-grid-size 0;
+  margin: sizing.$eighth-grid 0;
   font-size: 24px;
 }
 

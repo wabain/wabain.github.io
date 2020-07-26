@@ -1,8 +1,11 @@
+@use "base/colors";
+@use "base/sizing";
+
 // Text formatting
 
 body {
   line-height: 1.3;
-  color: $off-black;
+  color: colors.$off-black;
   font: {
     family: "Lato", "Helvetica", "Arial", sans-serif;
     size: 1.15rem;
@@ -33,10 +36,10 @@ h2 {
 
 .longform {
   line-height: 1.5;
-  font-size: 17px;
+  font-size: 18px;
 
-  @media (min-width: $screen-sm-min) {
-    font-size: 19px;
+  @media (min-width: sizing.$screen-sm-min) {
+    font-size: 21px;
   }
 
   p {
@@ -51,16 +54,16 @@ h2 {
 
 a {
   text-decoration: none;
-  color: $link-color;
+  color: colors.$link;
 
   &:hover {
     text-decoration: underline;
-    color: $link-hover-color;
+    color: colors.$link-hover;
   }
 
   &:active,
   &.active-link {
-    color: $link-active-color;
+    color: colors.$link-active;
   }
 }
 
@@ -71,25 +74,33 @@ samp {
   font-size: 1rem;
 }
 
-@media (max-width: $screen-sm-min - 1) {
-  figure {
+figure {
+  @media (max-width: sizing.$screen-sm-min - 1) {
     margin-right: 0;
     margin-left: 0;
+  }
+
+  .longform & {
+    video,
+    img {
+      width: 100%;
+      object-fit: scale-down;
+    }
   }
 }
 
 // Inspired by GitHub's rules
 p code {
   border-radius: 3px;
-  background-color: $light-gray;
+  background-color: colors.$light-gray;
   padding: 0.2rem 0.4rem;
   font-size: 0.915rem;
 }
 
 // pre with syntax highlighting
 pre.highlight {
-  border-top: 1px solid $light-gray;
-  border-bottom: 1px solid $light-gray;
+  border-top: 1px solid colors.$light-gray;
+  border-bottom: 1px solid colors.$light-gray;
   padding: 0.5rem 0;
   overflow-x: auto;
 }
