@@ -15,7 +15,7 @@ URL=https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
 HASH=af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44
 
 mkdir -p ~/download
-curl -o ~/download/jq -s -L --retry 3 "$URL"
+curl -o ~/download/jq -L --retry 3 "$URL"
 
 actual_hash="$(sha256sum ~/download/jq | cut -f1 -d' ')"
 if [[ "$actual_hash" != "$HASH" ]]; then
@@ -29,6 +29,7 @@ fi
 chmod +x ~/download/jq
 mv ~/download/jq "$USER_INSTALL_DIR"/jq
 
+echo "Installed jq binary in $USER_INSTALL_DIR"
 builtin hash -l jq
 echo "jq: $(which jq)"
 jq --version

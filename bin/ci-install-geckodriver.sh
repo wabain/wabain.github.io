@@ -2,16 +2,27 @@
 
 set -euo pipefail
 
-json=$(curl -H "Authorization: token $GH_TOKEN" -s https://api.github.com/repos/mozilla/geckodriver/releases/latest)
+json="$(curl -H "Authorization: token $GH_TOKEN" -s https://api.github.com/repos/mozilla/geckodriver/releases/latest)"
 echo "Latest geckodriver release..."
 
 echo
 echo "$json"
-url=$(echo "$json" | jq -r '.assets[].browser_download_url | select(contains("linux64"))')
-echo
+url="$(echo "$json" | jq -er '
+    .assets | [
+        .[] |
+        select(.content_type == "application/gzip") |
+        .browser_download_url |
+        select(contains("linux64"))
+    ] | first
+')"
 
+echo
 echo "Downloading from URL $url"
-curl -s -L --retry 3 "$url" | tar -xz
-chmod +x geckodriver
-mv geckodriver "$USER_INSTALL_DIR"
+
+mkdir -p ~/download
+curl -L --retry 3 -o ~/download/geckodriver.tgz "$url"
+tar -xzf ~/download/geckodriver.tgz -C "$USER_INSTALL_DIR" geckodriver
+
 echo "Installed geckodriver binary in $USER_INSTALL_DIR"
+builtin hash -l geckodriver
+echo "geckodriver: $(which geckodriver)"
