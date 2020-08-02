@@ -6,6 +6,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CssExtractPlugin = require('mini-css-extract-plugin')
 const svgToDataURI = require('mini-svg-data-uri')
 
+const commonEnv = require('./webpack/common-env')
+
 const IS_PROD = process.env.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
 
@@ -120,7 +122,7 @@ module.exports = {
                     process.env.RELEASE_VERSION || '',
                 ),
                 SENTRY_SDK_VERSION: JSON.stringify(
-                    require('@sentry/browser/package.json').version,
+                    commonEnv.SENTRY_SDK_VERSION,
                 ),
             },
         }),

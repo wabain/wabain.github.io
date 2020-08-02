@@ -50,7 +50,7 @@
     </section>
   </div>
 
-  <script defer src="https://browser.sentry-cdn.com/5.15.4/bundle.min.js" integrity="sha384-Nrg+xiw+qRl3grVrxJtWazjeZmUwoSt0FAVsbthlJ5OMpx0G08bqIq3b/v0hPjhB" crossorigin="anonymous"></script>
+  <script defer src="{{ site.env.sentry_dist_url }}" integrity="{{ site.env.sentry_dist_hash }}" crossorigin="anonymous"></script>
   <script defer src="{{ page.assets_dir }}/cs-homepage{% if jekyll.environment == 'production' %}.min.js{% else %}.js{% endif %}"></script>
 </body>
 </html>

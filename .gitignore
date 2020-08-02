@@ -32,13 +32,13 @@ yarn-error.log*
 # Ignore Byebug command history file.
 .byebug_history
 
-## Specific to RubyMotion:
-.dat*
-.repl_history
-build/
-*.bridgesupport
-build-iPhoneOS/
-build-iPhoneSimulator/
+# ## Specific to RubyMotion:
+# .dat*
+# .repl_history
+# build/
+# *.bridgesupport
+# build-iPhoneOS/
+# build-iPhoneSimulator/
 
 ## Documentation cache and generated files:
 /.yardoc/

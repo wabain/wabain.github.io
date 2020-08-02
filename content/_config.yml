@@ -36,6 +36,8 @@ defaults:
     values:
       partial_layout: "tag-partial"
 
+env: # fields set dynamically through _plugins/env_extension.rb
+
 jekyll-archives:
   enabled: [tags]
   layout: tag
