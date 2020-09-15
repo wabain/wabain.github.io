@@ -25,7 +25,7 @@
   <title>William Bain - CSS Trivia: Rotated table headers in 2019</title>
 
   <!-- Begin Jekyll SEO tag v2.6.1 -->
-<meta name="generator" content="Jekyll v3.8.7" />
+<meta name="generator" content="Jekyll v3.9.0" />
 <meta property="og:title" content="CSS Trivia: Rotated table headers in 2019" />
 <meta name="author" content="William Bain" />
 <meta property="og:locale" content="en_US" />
@@ -37,7 +37,7 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2019-10-13T00:00:00+00:00" />
 <script type="application/ld+json">
-{"author":{"@type":"Person","name":"William Bain"},"description":"Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table’s contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn’t find a current guide, I wanted to record what I settled on.","headline":"CSS Trivia: Rotated table headers in 2019","dateModified":"2019-10-13T00:00:00+00:00","datePublished":"2019-10-13T00:00:00+00:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://wabain.github.io/2019/10/13/css-rotated-table-header.html"},"url":"https://wabain.github.io/2019/10/13/css-rotated-table-header.html","@context":"https://schema.org"}</script>
+{"url":"https://wabain.github.io/2019/10/13/css-rotated-table-header.html","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://wabain.github.io/2019/10/13/css-rotated-table-header.html"},"datePublished":"2019-10-13T00:00:00+00:00","author":{"@type":"Person","name":"William Bain"},"headline":"CSS Trivia: Rotated table headers in 2019","dateModified":"2019-10-13T00:00:00+00:00","description":"Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table’s contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn’t find a current guide, I wanted to record what I settled on.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 </head>
@@ -86,9 +86,9 @@
     <div class="grid-post-content longform">
         <p>Recently I built an HTML report to aggregate the results of some automated jobs. The table headings being much longer than the table’s contents, I wanted to set the headings at a 45° angle. When I Googled for how to do this with CSS, the answers I got were all years old and involved some complications that seem to have become unnecessary. Since I didn’t find a current guide, I wanted to record what I settled on.</p>
 
-<p>The top Google result for “css rotate table header 45 degrees” is a 2014 <a href="https://css-tricks.com/rotated-table-column-headers/" target="_blank">CSS Tricks article</a> which rather breezily describes a variation on an earlier technique from another blog post.<sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup> The trail of posts traces back to one <a href="http://itpastorn.blogspot.com/2009/05/rotating-column-headers-using-css-only.html" target="_blank">from 2009</a>, a very different era in web development. At the time, the best technique was to rotate the header with its top left corner staying fixed, and then to apply what the CSS Tricks article calls “some math stuff using <code class="highlighter-rouge">tan()</code> and <code class="highlighter-rouge">cos()</code>” to figure out what translation needed to be applied in order for the bottom right of the rotated header to meet the top right-hand corner of the cell below.<sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup></p>
+<p>The top Google result for “css rotate table header 45 degrees” is a 2014 <a href="https://css-tricks.com/rotated-table-column-headers/" target="_blank">CSS Tricks article</a> which rather breezily describes a variation on an earlier technique from another blog post.<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote">1</a></sup> The trail of posts traces back to one <a href="http://itpastorn.blogspot.com/2009/05/rotating-column-headers-using-css-only.html" target="_blank">from 2009</a>, a very different era in web development. At the time, the best technique was to rotate the header with its top left corner staying fixed, and then to apply what the CSS Tricks article calls “some math stuff using <code class="language-plaintext highlighter-rouge">tan()</code> and <code class="language-plaintext highlighter-rouge">cos()</code>” to figure out what translation needed to be applied in order for the bottom right of the rotated header to meet the top right-hand corner of the cell below.<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote">2</a></sup></p>
 
-<p>The key to the updated approach is that instead of rotating from the top left and then correcting the horizontal and vertical positioning, we can keep the <em>bottom</em> left point of the header fixed by setting <code class="highlighter-rouge">transform-origin</code>. Then we only need to offset the horizontal position of the text by the width of the table column, a constant we’ll already have in our CSS.</p>
+<p>The key to the updated approach is that instead of rotating from the top left and then correcting the horizontal and vertical positioning, we can keep the <em>bottom</em> left point of the header fixed by setting <code class="language-plaintext highlighter-rouge">transform-origin</code>. Then we only need to offset the horizontal position of the text by the width of the table column, a constant we’ll already have in our CSS.</p>
 
 <style>
     /*
@@ -378,10 +378,10 @@
 
 <ul>
   <li>
-    <p>In this demo I’m using two <code class="highlighter-rouge">divs</code> inside each <code class="highlighter-rouge">th</code>: a wrapper to set the width of the header cell and an inner div for the rotated text. In theory I think it should be possible to fix the dimensions of the cell by styling the <code class="highlighter-rouge">th</code> itself, but I haven’t dug into the specifics of CSS table layout rules to figure out how to make it work.</p>
+    <p>In this demo I’m using two <code class="language-plaintext highlighter-rouge">divs</code> inside each <code class="language-plaintext highlighter-rouge">th</code>: a wrapper to set the width of the header cell and an inner div for the rotated text. In theory I think it should be possible to fix the dimensions of the cell by styling the <code class="language-plaintext highlighter-rouge">th</code> itself, but I haven’t dug into the specifics of CSS table layout rules to figure out how to make it work.</p>
   </li>
   <li>
-    <p>I rely on a <code class="highlighter-rouge">vertical-align</code> rule to push the header text to the bottom of the fixed-size <code class="highlighter-rouge">th</code> elements. Something similar can also be done with flexbox.</p>
+    <p>I rely on a <code class="language-plaintext highlighter-rouge">vertical-align</code> rule to push the header text to the bottom of the fixed-size <code class="language-plaintext highlighter-rouge">th</code> elements. Something similar can also be done with flexbox.</p>
   </li>
   <li>
     <p>I’ve set the hardcoded height of the header heuristically; in principle one could do “math stuff” to get the minimum height that includes the rotated header but in this demo the height of the rotated header is determined by the height of multiple lines of text; getting the necessary parameters dynamically is probably possible on the client side, but requires knowing exactly how the header text will be laid out. This is tricky, particularly if the font size or leading change responsively based on the window size.</p>
@@ -395,14 +395,14 @@
 
 <p>Support for CSS transforms is pretty robust, but what happens if a user agent lacks it? In my case, the problem child was the Outlook web client, which allows embedded CSS in emails, but strips transform styles for what I imagine are security reasons. Without my making special provisions, this resulted in the unrotated row headers overlapping and becoming unreadable.</p>
 
-<p>Fortunately, there’s a simple fix: wrap all of the rules related to header rotation in a <code class="highlighter-rouge">@supports(transform: ...)</code> query. Clients not supporting the transform will render an unwieldy but basically readable table. With support for <code class="highlighter-rouge">@supports</code> being <a href="https://caniuse.com/#feat=css-featurequeries" target="_blank" rel="noopener">a bit spottier</a> than support for the CSS transforms themselves, this probably results in some extra user agents rendering the fallback, but for me that’s an acceptable cost for what is basically a progressive enhancement.</p>
-<div class="footnotes">
+<p>Fortunately, there’s a simple fix: wrap all of the rules related to header rotation in a <code class="language-plaintext highlighter-rouge">@supports(transform: ...)</code> query. Clients not supporting the transform will render an unwieldy but basically readable table. With support for <code class="language-plaintext highlighter-rouge">@supports</code> being <a href="https://caniuse.com/#feat=css-featurequeries" target="_blank" rel="noopener">a bit spottier</a> than support for the CSS transforms themselves, this probably results in some extra user agents rendering the fallback, but for me that’s an acceptable cost for what is basically a progressive enhancement.</p>
+<div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1">
-      <p>CSS Tricks is an excellent resource; the post I stumbled on is the result of having a deep back catalog. As I was preparing this post I used posts from the same author to refresh my memory on how to animate SVG. <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    <li id="fn:1" role="doc-endnote">
+      <p>CSS Tricks is an excellent resource; the post I stumbled on is the result of having a deep back catalog. As I was preparing this post I used posts from the same author to refresh my memory on how to animate SVG. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2">
-      <p>The older posts also skew the shape of the header in order to have its horizontal lines stay parallel with the horizontal lines of the body rows. This is less relevant now that tables with external borders are largely out of style. <a href="#fnref:2" class="reversefootnote">&#8617;</a></p>
+    <li id="fn:2" role="doc-endnote">
+      <p>The older posts also skew the shape of the header in order to have its horizontal lines stay parallel with the horizontal lines of the body rows. This is less relevant now that tables with external borders are largely out of style. <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>
