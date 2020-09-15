@@ -1,6 +1,6 @@
 require 'html-proofer'
 
-class LinkTargetCheck < ::HTMLProofer::Check
+class LinkTargetCheck < HTMLProofer::Check
   def extern_link?(link)
     return false unless link.remote?
 
