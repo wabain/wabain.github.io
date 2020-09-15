@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby "~> 2.6.5"
+ruby "~> 2.7.1"
 
 gem 'html-proofer', '~> 3.16.0'
 gem 'nokogiri', '~> 1.10.10'
