@@ -10,7 +10,7 @@ echo "$json"
 url="$(echo "$json" | jq -er '
     .assets | [
         .[] |
-        select(.content_type == "application/gzip") |
+        select(.content_type == "application/x-gzip") |
         .browser_download_url |
         select(contains("linux64"))
     ] | first
