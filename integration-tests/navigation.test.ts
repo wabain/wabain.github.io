@@ -24,7 +24,9 @@ type PageParameters = {
 
 const { StaleElementReferenceError } = SeleniumErrors
 
-jest.setTimeout(10000) // We're gonna be sloooow
+// Updated from 10s when migrating CI to GitHub Actions; would be nice to have it
+// lower
+jest.setTimeout(30000)
 
 describe('navigation', function () {
     let webdriver: WebDriver = new Builder()

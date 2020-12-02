@@ -3,8 +3,7 @@
 set -euo pipefail
 
 #
-# Install the version of jq needed for CI scripts. This script may be invoked
-# either from a GitHub Action or from Travis CI.
+# Install the version of jq needed for CI scripts.
 #
 # Requires environment variables:
 #
