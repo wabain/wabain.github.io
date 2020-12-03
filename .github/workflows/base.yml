@@ -61,6 +61,7 @@ jobs:
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           tar -c -z --null --verbatim-files-from \
             --verbose --show-transformed-names \
