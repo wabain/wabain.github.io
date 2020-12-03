@@ -1,0 +1,158 @@
+name: Install common dependencies
+inputs:
+  dependencies:
+    description: Which dependencies to install
+    required: true
+    default: |
+      tree
+      jq
+      ruby
+      geckodriver
+
+  github-token:
+    description: Token to authenticate with when requesting geckodriver artifacts
+    required: false
+
+env:
+  # Use a default rcfile. See the comment in .github/workflows/base.yml
+  BASH_ENV: ci/env.sh
+
+runs:
+  using: composite
+  steps:
+    - name: Validate inputs
+      id: validated
+      shell: bash -e {0}
+      env:
+        INPUT_DEPENDENCIES: ${{ inputs.dependencies }}
+      run: |
+        jq --null-input --raw-output '
+          env.INPUT_DEPENDENCIES |
+            split("\n") |
+            [
+              .[] |
+              gsub("^\\s+|\\s+$"; "") |
+              select(. != "") |
+              if test("^(tree|jq|ruby|geckodriver)$") then
+                .
+              else
+                error("::error ::Unknown dependency: \(.)")
+              end
+            ] |
+            [
+              "Requested dependencies: \(. | join(", "))",
+              "::set-output name=dependencies::\(. | tojson)"
+            ] |
+            join("\n")
+        '
+
+    - name: Create user install dir
+      shell: bash -e {0}
+      run: mkdir -p $USER_INSTALL_DIR
+
+    - name: Install apt dependencies
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'tree') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install apt dependencies"
+        sudo apt-get update
+        sudo apt-get -yq --no-install-suggests --no-install-recommends install tree
+        echo "::endgroup::"
+
+    - name: Install jq
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'jq') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install jq"
+        bin/ci-install-jq.sh
+        echo "::endgroup::"
+
+    - name: Install Ruby
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'ruby') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Resolve Ruby version"
+        sudo gem install bundler
+        RUBY_VERSION="$(bin/ruby-version.sh)"
+        echo "::endgroup::"
+
+        echo "Target Ruby version is $RUBY_VERSION"
+
+        cd $HOME
+
+        echo "::group::Get RVM public keys"
+        for attempt in {1..10}; do
+          echo "Get RVM keys (attempt $attempt)..."
+
+          ret=0
+          gpg2 --keyserver hkp://pool.sks-keyservers.net \
+            --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB || \
+            ret=$?
+
+          if [ $ret -eq 0 ]; then
+            echo "Get RVM keys: success"
+            break
+          fi
+        done
+        echo "::endgroup::"
+
+        echo "::group::Install RVM/Ruby"
+        curl -sSL https://get.rvm.io | bash -s stable
+        source $HOME/.rvm/scripts/rvm
+        rvm install "$RUBY_VERSION"
+        rvm alias create default "$RUBY_VERSION"
+        echo "::endgroup::"
+
+        rvm list
+
+    - name: Install geckodriver
+      shell: bash -e {0}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'geckodriver') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        if [ -z "$GH_TOKEN" ]; then
+          echo '::error ::github-token input is required to install geckodriver'
+          exit 1
+        fi
+
+        echo "::group::Install geckodriver"
+        bin/ci-install-geckodriver.sh
+        echo "::endgroup::"
+
+    - name: List dependency executable versions
+      shell: bash -e {0}
+      run: |
+        echo "Versions:"
+
+        print-version() {
+          local cmd=$1
+
+          if ! hash "$cmd" &> /dev/null; then
+            echo "$cmd: not installed"
+            return
+          fi
+
+          echo "$cmd: $("$cmd" --version 2>&1 | head -n1)"
+        }
+
+        print-version firefox
+        print-version geckodriver
+        print-version git
+        print-version jq
+        print-version node
+        print-version ruby
+        print-version rvm
+        print-version tree
+        print-version yarn

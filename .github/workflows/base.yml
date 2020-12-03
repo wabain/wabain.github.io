@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 jobs:
   validate:
+    name: Validate commit
     runs-on: ubuntu-18.04
 
     env:
@@ -16,69 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Initialize user install dir
-        run: mkdir -p $USER_INSTALL_DIR
-
-      - name: Apt dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install tree
-
-      - name: Install jq
-        run: bin/ci-install-jq.sh
-
-      - name: Install Ruby
-        run: |
-          echo "::group::Ruby version"
-          sudo gem install bundler
-          RUBY_VERSION="$(bin/ruby-version.sh)"
-          echo "::endgroup::"
-
-          echo "Target Ruby version is $RUBY_VERSION"
-
-          cd $HOME
-
-          # rvm keys
-          echo "::group::RVM keys"
-          for attempt in {1..10}; do
-            echo "Get RVM keys (attempt $attempt)..."
-
-            ret=0
-            gpg2 --keyserver hkp://pool.sks-keyservers.net \
-              --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB || \
-              ret=$?
-
-            if [ $ret -eq 0 ]; then
-              echo "Get RVM keys: success"
-              break
-            fi
-          done
-          echo "::endgroup::"
-
-          echo "::group::RVM/Ruby install"
-          curl -sSL https://get.rvm.io | bash -s stable
-          source $HOME/.rvm/scripts/rvm
-          rvm install "$RUBY_VERSION"
-          rvm alias create default "$RUBY_VERSION"
-          echo "::endgroup::"
-
-          rvm list
-
-      - name: Install geckodriver
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bin/ci-install-geckodriver.sh
-
-      - name: List dependency executable versions
-        run: |
-          echo "firefox: $(firefox --version)"
-          echo "geckodriver: $(geckodriver --version | head -n1)"
-          echo "git: $(git --version)"
-          echo "jq: $(jq --version)"
-          echo "ruby: $(ruby --version)"
-          echo "rvm: $(rvm --version)"
-          echo "tree: $(tree --version)"
-          echo "yarn: $(yarn --version)"
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Repopulate Ruby gem cache
         uses: actions/cache@v2
