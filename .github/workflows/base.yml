@@ -59,8 +59,24 @@ jobs:
           JEKYLL_ENV=production yarn run jekyll-build
           JEKYLL_ENV=production yarn run jekyll-lint
 
+      - name: Create deploy tarfile
+        id: create-deploy-tarfile
+        run: |
+          tar -c -z --null --verbatim-files-from \
+            --verbose --show-transformed-names \
+            --transform='s,^_site/,site/,' \
+            --files-from=<(git ls-files -z --others --exclude-from=.deploy-gitignore _site) \
+            -f site.tgz
+
       - name: Test
         run: bin/ci-run-integration-tests.sh
 
       - name: Test CI infra
         run: ci/pull-request/test/tests.sh
+
+      - name: Upload deploy artifact
+        if: ${{ steps.create-deploy-tarfile.outcome == 'success' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: site.tgz
+          path: site.tgz
