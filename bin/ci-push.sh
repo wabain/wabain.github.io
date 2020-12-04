@@ -5,7 +5,8 @@
 
 set -euo pipefail
 
-# Expected variables: GH_TOKEN, GH_WRITE_TOKEN, HEAD_REF, BASE_REF, EFFECTIVE_EVENT, PR_NUMBER, GITHUB_*
+# Expected variables: GH_TOKEN, GH_WRITE_TOKEN, HEAD_REF, BASE_REF,
+# EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, GITHUB_*
 
 BASE_DIR="$PWD"
 JEKYLL_BUILD_DIR=_site
@@ -113,37 +114,24 @@ update_refs() {
 
 # Deploy pull requests only after filtering for eligibility
 evaluate_pr_merge() {
-    local pr
     local head_ref
     local head_commit
-    local merge_commit
-    local ci_commit
     local push_commit
 
     if [ -z "$PR_NUMBER" ]; then
         return
     fi
 
-    pr="$(bin/ci-evaluate-pr.sh)"
-
     echo "PR attributes:"
-    echo "$pr" | jq -C
+    echo "$PR_EVAL" | jq -C
 
-    if [[ "$(echo "$pr" | jq '.pr_is_eligible')" != "true" ]]; then
+    if [[ "$(echo "$PR_EVAL" | jq '.pr_is_eligible')" != "true" ]]; then
         echo "Not auto-merging ineligible pull request"
         return
     fi
 
-    head_ref="$(echo "$pr" | jq -r '.head_ref')"
-    head_commit="$(echo "$pr" | jq -r '.head_commit')"
-    merge_commit="$(git rev-parse HEAD)"
-
-    ci_commit="$(git rev-parse HEAD)"
-
-    if [[ "$ci_commit" != "$merge_commit" ]]; then
-        echo "Not auto-merging stale pull request (commit under test: $ci_commit, $head_ref merge: $merge_commit)"
-        return
-    fi
+    head_ref="$(echo "$PR_EVAL" | jq -r '.head_ref')"
+    head_commit="$(echo "$PR_EVAL" | jq -r '.head_commit')"
 
     git commit --quiet --amend --no-edit \
         -m "Merge pull request #$PR_NUMBER from $head_ref"

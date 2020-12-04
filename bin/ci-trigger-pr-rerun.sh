@@ -16,14 +16,7 @@ if [[ "$(echo "$pr" | jq '.pr_is_eligible')" != "true" ]]; then
     echo "PR is currently ineligible for automerge; not triggering rerun"
 
     if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "true" ]]; then
-        echo "Clearing merge-pending label"
-
-        curl --silent --show-error --fail -XDELETE \
-            -H "Authorization: token $GH_TOKEN" \
-            -H 'Accept: application/vnd.github.v3+json' \
-            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels/merge-pending"
-
-        echo "Clearing merge-pending label: complete"
+        bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
     fi
 
     exit

@@ -46,7 +46,7 @@ jobs:
                   error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
                 else
                   [
-                    # We check that the merge ref is up to date in bin/ci-push.sh before
+                    # We check that the merge ref is up to date in pr-eval before
                     # updating repo state based on this run
                     "::set-output name=ref::refs/pull/\(env.PR_NUMBER)/merge",
                     "::set-output name=head_ref::\(.head.ref)",
@@ -196,13 +196,80 @@ jobs:
           name: site.tgz
           path: site.tgz
 
+      - name: Evaluate pull request merge eligibility
+        id: pr-eval
+        if: ${{ always() && steps.resolve.outputs.effective_event == 'pull_request' }}
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr="$(bin/ci-evaluate-pr.sh)"
+
+          echo "PR attributes:"
+          echo "$pr" | jq -C
+
+          echo "::set-output name=eval::$pr"
+
+          head_ref="$(echo "$pr" | jq -r '.head_ref')"
+          merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
+
+          ci_commit="$(git rev-parse HEAD)"
+
+          if [[ "$ci_commit" != "$merge_commit" ]]; then
+            echo "PR is stale (commit under test: $ci_commit, $head_ref merge: $merge_commit)"
+            echo '::set-output name=stale::true'
+            exit
+          fi
+
+          echo '::set-output name=stale::false'
+
+          if [[ "$(echo "$pr" | jq '.pr_is_eligible')" == "true" ]]; then
+            if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
+              bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
+            fi
+          elif [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "true" ]]; then
+            bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+          fi
+
       - name: Push eligible refs
+        id: push-refs
+        if: ${{ success() && (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') }}
         env:
           CI_DRY_RUN: "true"
           HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
           EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_WRITE_TOKEN: ${{ secrets.GH_WRITE_TOKEN }}
         run: bin/ci-push.sh
+
+      - name: "Post-push: Clear pull request merge-pending label"
+        # Note: breaking the condition across multiple lines seemed to cause the
+        # step to always run
+        if: ${{ always() && steps.push-refs.outcome == 'success' && steps.resolve.outputs.effective_event == 'pull_request' && fromJSON(steps.pr-eval.outputs.eval).pr_is_eligible }}
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+
+      # For workflow_dispatch events there's no obvious indicator of a failure
+      # within the pull request, so add a comment
+      - name: "Post-run: Add pull request comment if dispatched rerun failed"
+        # Note: breaking the condition across multiple lines seemed to cause the
+        # step to always run
+        if: ${{ failure() && steps.resolve.outputs.effective_event == 'pull_request' && steps.push-refs.outcome != 'skipped' && github.event_name == 'workflow_dispatch' }}
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          curl --silent --show-error --fail -XPOST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d "$(jq -n '{ body: "A [job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"
