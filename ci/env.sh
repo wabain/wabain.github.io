@@ -3,5 +3,3 @@ unset BASH_ENV
 
 export USER_INSTALL_DIR=$HOME/bin
 export PATH="$USER_INSTALL_DIR:$PATH"
-
-[ -f $HOME/.rvm/scripts/rvm ] && source $HOME/.rvm/scripts/rvm

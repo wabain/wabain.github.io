@@ -115,6 +115,22 @@ jobs:
           # merge commits in bin/ci-push.sh
           fetch-depth: 2
 
+      - name: Get target ruby version
+        id: ruby-version
+        run: |
+          # We depend on bundler to look up the specific version
+          sudo gem install bundler
+
+          v="$(bin/ruby-version.sh | jq -rR 'capture("^(?<minor>[0-9]+\\.[0-9]+)(\\..+)?") | .minor')"
+
+          echo "Target Ruby version is $v"
+          echo "::set-output name=version::$v"
+
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.ruby-version.outputs.version }}
+
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
         with:
