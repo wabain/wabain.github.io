@@ -7,19 +7,7 @@
 
 set -euo pipefail
 
-curl --silent --show-error --fail \
-    -H "Authorization: token $GH_TOKEN" \
-    -H 'Accept: application/vnd.github.v3+json' \
-    "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
-    -o /tmp/pr.json
-
-curl --silent --show-error --fail \
-    -H "Authorization: token $GH_TOKEN" \
-    -H 'Accept: application/vnd.github.v3+json' \
-    "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
-    -o /tmp/pr-reviews.json
-
-pr="$(jq --slurp -f ci/pull-request/pull-request.jq /tmp/pr.json /tmp/pr-reviews.json)"
+pr="$(bin/ci-evaluate-pr.sh)"
 
 echo "PR attributes:"
 echo "$pr" | jq -C
