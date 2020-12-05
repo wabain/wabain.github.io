@@ -235,7 +235,7 @@ jobs:
         id: push-refs
         if: ${{ success() && (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') }}
         env:
-          CI_DRY_RUN: "true"
+          CI_DRY_RUN: "false"
           HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
           EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
