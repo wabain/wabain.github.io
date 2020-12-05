@@ -8,17 +8,24 @@ on:
 jobs:
   eval-automerge:
     runs-on: ubuntu-18.04
+
+    env:
+      # See comment in base.yml
+      BASH_ENV: ci/env.sh
+
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          dependencies: jq
+
       - name: Evaluate if pull request automerge required
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          STATUSES_URL: ${{ github.event.pull_request.statuses_url }}
-          TRAVIS_CI_TOKEN: ${{ secrets.TRAVIS_CI_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Token with repo access
+          GH_WRITE_TOKEN: ${{ secrets.GH_WRITE_TOKEN }}
         run: |
-          export USER_INSTALL_DIR=~/bin && \
-          mkdir -p $USER_INSTALL_DIR && \
-          export PATH="$USER_INSTALL_DIR:$PATH" && \
-          bin/ci-install-jq.sh && \
           bin/ci-trigger-pr-rerun.sh

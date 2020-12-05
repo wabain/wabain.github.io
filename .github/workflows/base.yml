@@ -1,5 +1,14 @@
+# Name referenced in bin/ci-trigger-pr-rerun.sh
 name: Build and test
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore: master
+  pull_request: {}
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Number of the pull request targeted by a workflow dispatch job
+        default: ""
 
 jobs:
   validate:
@@ -15,7 +24,96 @@ jobs:
       BASH_ENV: ci/env.sh
 
     steps:
+      - name: Resolve dispatched pull request
+        id: dispatched-pr
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.pull_request_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
+        run: |
+          # Note: here we use stock jq and not the updated version installed below
+          curl --silent --show-error --fail \
+              -H "Authorization: token $GH_TOKEN" \
+              -H 'Accept: application/vnd.github.v3+json' \
+              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$(jq -nr '@uri "\(env.PR_NUMBER)"')" | \
+              jq -r '
+                if .head.ref != (env.GITHUB_REF | sub("^refs/heads/"; "")) then
+                  error("Ref mismatch: dispatched with \(env.GITHUB_REF), PR has \(.head.ref)")
+                elif .mergeable == false then
+                  error("PR \(env.PR_NUMBER) at \(.head.sha) cannot be merged with \(.base.sha)")
+                elif .mergeable == null then
+                  # TODO: Poll until this changes?
+                  error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
+                else
+                  [
+                    # We check that the merge ref is up to date in bin/ci-push.sh before
+                    # updating repo state based on this run
+                    "::set-output name=ref::refs/pull/\(env.PR_NUMBER)/merge",
+                    "::set-output name=head_ref::\(.head.ref)",
+                    "::set-output name=base_ref::\(.base.ref)"
+                  ] | join("\n")
+                end
+              '
+
+      # Currently it isn't possible to trigger a rerun of a pull request job
+      # through the API, so we implement some manual indirection over the
+      # workflow_dispatch event.
+      #
+      # Use the outputs of this step as follows:
+      #
+      # - effective_event: replaces github.event_name, will be 'pull_request' for
+      #   for workflow_dispatch jobs which trigger pull request logic
+      #
+      # - ref: replaces github.ref / $GITHUB_REF
+      #
+      #   If effective_event != 'pull_request' then ref will be equivalent to
+      #   github.ref. When processing pull requests, use HEAD instead of github.sha /
+      #   $GITHUB_SHA.
+      #
+      # - head_ref: replaces github.head_ref
+      #
+      # - base_ref: replaces github.base_ref
+      #
+      # - pr_number: replaces github.event.pull_request.number
+      - name: Resolve parameters
+        id: resolve
+        env:
+          DISPATCHED_PR_OUTCOME: ${{ steps.dispatched-pr.outcome }}
+          EVENT_NAME: ${{ github.event_name }}
+          GH_HEAD_REF: ${{ github.head_ref }}
+          GH_BASE_REF: ${{ github.base_ref }}
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+          DISPATCHED_REF: ${{ steps.dispatched-pr.outputs.ref }}
+          DISPATCHED_HEAD_REF: ${{ steps.dispatched-pr.outputs.head_ref }}
+          DISPATCHED_BASE_REF: ${{ steps.dispatched-pr.outputs.base_ref }}
+          DISPATCHED_PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
+        run: |
+          case "$DISPATCHED_PR_OUTCOME" in
+          success)
+            echo "::set-output name=effective_event::pull_request"
+            echo "::set-output name=ref::$DISPATCHED_REF"
+            echo "::set-output name=head_ref::$DISPATCHED_HEAD_REF"
+            echo "::set-output name=base_ref::$DISPATCHED_BASE_REF"
+            echo "::set-output name=pr_number::$DISPATCHED_PR_NUMBER"
+            ;;
+          skipped)
+            echo "::set-output name=effective_event::$EVENT_NAME"
+            echo "::set-output name=ref::$GITHUB_REF"
+            echo "::set-output name=head_ref::$GH_HEAD_REF"
+            echo "::set-output name=base_ref::$GH_BASE_REF"
+            echo "::set-output name=pr_number::$GH_PR_NUMBER"
+            ;;
+          *)
+            echo "::error ::Unexpected prereq outcome: $DISPATCHED_PR_OUTCOME"
+            exit 1
+          esac
+
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.resolve.outputs.ref }}
+          # We need to fetch the parent commit so that it's retained when amending
+          # merge commits in bin/ci-push.sh
+          fetch-depth: 2
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -61,7 +159,7 @@ jobs:
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
         run: |
           tar -c -z --null --verbatim-files-from \
             --verbose --show-transformed-names \
@@ -81,3 +179,14 @@ jobs:
         with:
           name: site.tgz
           path: site.tgz
+
+      - name: Push eligible refs
+        env:
+          CI_DRY_RUN: "true"
+          HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_WRITE_TOKEN: ${{ secrets.GH_WRITE_TOKEN }}
+        run: bin/ci-push.sh
