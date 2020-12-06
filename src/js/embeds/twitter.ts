@@ -25,7 +25,7 @@ export default function initializeTwitterEmbeds(content: HTMLElement): void {
             debug('twitter widgets load complete')
         })
         .catch((e) => {
-            debug('failed to load twitter API and widgets: ' + e)
+            debug('failed to load twitter API and widgets: %s', e)
         })
 }
 

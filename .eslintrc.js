@@ -15,19 +15,28 @@ module.exports = {
             plugins: ['@typescript-eslint'],
             extends: [
                 'eslint:recommended',
-                'plugin:@typescript-eslint/eslint-recommended',
                 'plugin:@typescript-eslint/recommended',
+                'plugin:@typescript-eslint/recommended-requiring-type-checking',
                 'prettier/@typescript-eslint',
             ],
             parserOptions: {
                 ecmaVersion: 6,
                 sourceType: 'module',
+                project: ['tsconfig.json', 'integration-tests/tsconfig.json'],
+                tsconfigRootDir: __dirname,
             },
             rules: {
                 '@typescript-eslint/no-use-before-define': [
                     'error',
                     { functions: false },
                 ],
+
+                // Rules which limit different uses of `any`; seems better to
+                // just not use it unnecessarily. We do keep `no-unsafe-return`;
+                // in that case an explicit cast probably makes sense.
+                '@typescript-eslint/no-unsafe-assignment': ['off'],
+                '@typescript-eslint/no-unsafe-member-access': ['off'],
+                '@typescript-eslint/no-unsafe-call': ['off'],
             },
         },
         // Source files
