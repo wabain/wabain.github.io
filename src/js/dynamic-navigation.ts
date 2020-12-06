@@ -65,7 +65,7 @@ function parseTitle(title: string): { base: string; page: string | null } {
     }
 
     return {
-        base: parsed[1],
+        base: parsed[1]!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
         page: parsed[2] || null,
     }
 }
@@ -249,9 +249,7 @@ class ContentLoader {
     load(href: string): Promise<{ content: string; loadElapsed?: number }> {
         const cached = this._cache[href]
 
-        // Current TS version doesn't understand this is fallible
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        if (cached) {
+        if (cached !== undefined) {
             debug('load %s: using cached promise', href)
             return cached
         }
@@ -533,7 +531,8 @@ class PageTransformer {
         const len = collection.length
 
         for (let i = 0; i < len; i++) {
-            const elem = collection[i]
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const elem = collection[i]!
             if (getDomainRelativeUrl(elem.href) === active) {
                 elem.classList.add('active-link')
             } else {
@@ -570,11 +569,11 @@ class PageTransformer {
 function getContentAttributes(
     root: Element | DocumentFragment,
 ): ContentAttributes {
-    if (!root.children) {
+    const e = root.children[0]
+
+    if (!e) {
         return { title: null, isLongform: false }
     }
-
-    const e = root.children[0]
 
     return {
         title: e.getAttribute('data-page-meta'),
