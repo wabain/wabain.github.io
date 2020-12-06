@@ -200,6 +200,7 @@ jobs:
         id: pr-eval
         if: ${{ always() && steps.resolve.outputs.effective_event == 'pull_request' }}
         env:
+          STATUS: ${{ job.status }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -223,7 +224,7 @@ jobs:
 
           echo '::set-output name=stale::false'
 
-          if [[ "$(echo "$pr" | jq '.pr_is_eligible')" == "true" ]]; then
+          if [[ "$(echo "$pr" | jq '.pr_is_eligible')" == "true" && "$STATUS" != "failure" ]]; then
             if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
               bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
             fi
