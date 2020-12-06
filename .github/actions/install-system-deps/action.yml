@@ -1,0 +1,130 @@
+name: Install common dependencies
+inputs:
+  dependencies:
+    description: Which dependencies to install
+    required: true
+    default: |
+      tree
+      jq
+      bundler
+      geckodriver
+
+  github-token:
+    description: Token to authenticate with when requesting geckodriver artifacts
+    required: false
+
+env:
+  # Use a default rcfile. See the comment in .github/workflows/base.yml
+  BASH_ENV: ci/env.sh
+
+runs:
+  using: composite
+  steps:
+    - name: Validate inputs
+      id: validated
+      shell: bash -e {0}
+      env:
+        INPUT_DEPENDENCIES: ${{ inputs.dependencies }}
+      run: |
+        jq --null-input --raw-output '
+          env.INPUT_DEPENDENCIES |
+            split("\n") |
+            [
+              .[] |
+              # Strip whitespace
+              gsub("^\\s+|\\s+$"; "") |
+              # Filter empty entries
+              select(. != "") |
+              if test("^(tree|jq|bundler|geckodriver)$") then
+                .
+              else
+                error("::error ::Unknown dependency: \(.)")
+              end
+            ] |
+            [
+              "Requested dependencies: \(. | join(", "))",
+              "::set-output name=dependencies::\(. | tojson)"
+            ] |
+            join("\n")
+        '
+
+    - name: Create user install dir
+      shell: bash -e {0}
+      run: mkdir -p $USER_INSTALL_DIR
+
+    - name: Install apt dependencies
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'tree') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install apt dependencies"
+        sudo apt-get update
+        sudo apt-get -yq --no-install-suggests --no-install-recommends install tree
+        echo "::endgroup::"
+
+    - name: Install jq
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'jq') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install jq"
+        bin/ci-install-jq.sh
+        echo "::endgroup::"
+
+    - name: Install bundler
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'bundler') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install bundler"
+        gem install bundler
+        echo "::endgroup::"
+
+    - name: Install geckodriver
+      shell: bash -e {0}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'geckodriver') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        if [ -z "$GH_TOKEN" ]; then
+          echo '::error ::github-token input is required to install geckodriver'
+          exit 1
+        fi
+
+        echo "::group::Install geckodriver"
+        bin/ci-install-geckodriver.sh
+        echo "::endgroup::"
+
+    - name: List dependency executable versions
+      shell: bash -e {0}
+      run: |
+        echo "Versions:"
+
+        print-version() {
+          local cmd=$1
+
+          if ! hash "$cmd" &> /dev/null; then
+            echo "$cmd: not installed"
+            return
+          fi
+
+          echo "$cmd: $("$cmd" --version 2>&1 | head -n1)"
+        }
+
+        print-version firefox
+        print-version geckodriver
+        print-version git
+        print-version jq
+        print-version node
+        print-version ruby
+        print-version bundler
+        print-version tree
+        print-version yarn

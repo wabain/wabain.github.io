@@ -28,6 +28,7 @@ def by_owner: .author_association == "OWNER";
     head_ref: .head.ref,
     head_commit: .head.sha,
     merge_commit: .merge_commit_sha,
+    merge_pending_label_present: .labels | any(.name == "merge-pending"),
     pr_is_eligible: $pr_is_eligible,
     pr_eligibility: $pr_eligibility,
 }

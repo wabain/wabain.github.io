@@ -1,0 +1,275 @@
+# Name referenced in bin/ci-trigger-pr-rerun.sh
+name: Build and test
+on:
+  push:
+    branches-ignore: master
+  pull_request: {}
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Number of the pull request targeted by a workflow dispatch job
+        default: ""
+
+jobs:
+  validate:
+    name: Validate commit
+    runs-on: ubuntu-18.04
+
+    env:
+      # Use a default rcfile. GitHub Actions prefers an incremental update model
+      # to environment setup where environment changes are written to $GITHUB_ENV
+      # or $GITHUB_PATH, but unless dynamic variables really need to be propagated
+      # everywhere a fixed rcfile provides more flexibility without the incidental
+      # lock-in.
+      BASH_ENV: ci/env.sh
+
+    steps:
+      - name: Resolve dispatched pull request
+        id: dispatched-pr
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.pull_request_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
+        run: |
+          # Note: here we use stock jq and not the updated version installed below
+          curl --silent --show-error --fail \
+              -H "Authorization: token $GH_TOKEN" \
+              -H 'Accept: application/vnd.github.v3+json' \
+              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$(jq -nr '@uri "\(env.PR_NUMBER)"')" | \
+              jq -r '
+                if .head.ref != (env.GITHUB_REF | sub("^refs/heads/"; "")) then
+                  error("Ref mismatch: dispatched with \(env.GITHUB_REF), PR has \(.head.ref)")
+                elif .mergeable == false then
+                  error("PR \(env.PR_NUMBER) at \(.head.sha) cannot be merged with \(.base.sha)")
+                elif .mergeable == null then
+                  # TODO: Poll until this changes?
+                  error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
+                else
+                  [
+                    # We check that the merge ref is up to date in pr-eval before
+                    # updating repo state based on this run
+                    "::set-output name=ref::refs/pull/\(env.PR_NUMBER)/merge",
+                    "::set-output name=head_ref::\(.head.ref)",
+                    "::set-output name=base_ref::\(.base.ref)"
+                  ] | join("\n")
+                end
+              '
+
+      # Currently it isn't possible to trigger a rerun of a pull request job
+      # through the API, so we implement some manual indirection over the
+      # workflow_dispatch event.
+      #
+      # Use the outputs of this step as follows:
+      #
+      # - effective_event: replaces github.event_name, will be 'pull_request' for
+      #   for workflow_dispatch jobs which trigger pull request logic
+      #
+      # - ref: replaces github.ref / $GITHUB_REF
+      #
+      #   If effective_event != 'pull_request' then ref will be equivalent to
+      #   github.ref. When processing pull requests, use HEAD instead of github.sha /
+      #   $GITHUB_SHA.
+      #
+      # - head_ref: replaces github.head_ref
+      #
+      # - base_ref: replaces github.base_ref
+      #
+      # - pr_number: replaces github.event.pull_request.number
+      - name: Resolve parameters
+        id: resolve
+        env:
+          DISPATCHED_PR_OUTCOME: ${{ steps.dispatched-pr.outcome }}
+          EVENT_NAME: ${{ github.event_name }}
+          GH_HEAD_REF: ${{ github.head_ref }}
+          GH_BASE_REF: ${{ github.base_ref }}
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+          DISPATCHED_REF: ${{ steps.dispatched-pr.outputs.ref }}
+          DISPATCHED_HEAD_REF: ${{ steps.dispatched-pr.outputs.head_ref }}
+          DISPATCHED_BASE_REF: ${{ steps.dispatched-pr.outputs.base_ref }}
+          DISPATCHED_PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
+        run: |
+          case "$DISPATCHED_PR_OUTCOME" in
+          success)
+            echo "::set-output name=effective_event::pull_request"
+            echo "::set-output name=ref::$DISPATCHED_REF"
+            echo "::set-output name=head_ref::$DISPATCHED_HEAD_REF"
+            echo "::set-output name=base_ref::$DISPATCHED_BASE_REF"
+            echo "::set-output name=pr_number::$DISPATCHED_PR_NUMBER"
+            ;;
+          skipped)
+            echo "::set-output name=effective_event::$EVENT_NAME"
+            echo "::set-output name=ref::$GITHUB_REF"
+            echo "::set-output name=head_ref::$GH_HEAD_REF"
+            echo "::set-output name=base_ref::$GH_BASE_REF"
+            echo "::set-output name=pr_number::$GH_PR_NUMBER"
+            ;;
+          *)
+            echo "::error ::Unexpected prereq outcome: $DISPATCHED_PR_OUTCOME"
+            exit 1
+          esac
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.resolve.outputs.ref }}
+          # We need to fetch the parent commit so that it's retained when amending
+          # merge commits in bin/ci-push.sh
+          fetch-depth: 2
+
+      - name: Get target ruby version
+        id: ruby-version
+        run: |
+          # We depend on bundler to look up the specific version
+          sudo gem install bundler
+
+          v="$(bin/ruby-version.sh | jq -rR 'capture("^(?<minor>[0-9]+\\.[0-9]+)(\\..+)?") | .minor')"
+
+          echo "Target Ruby version is $v"
+          echo "::set-output name=version::$v"
+
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.ruby-version.outputs.version }}
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Repopulate Ruby gem cache
+        uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-bundle-${{ hashFiles('Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bundle-
+
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Repopulate Yarn package cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install packages
+        run: |
+          bundle install --jobs=3 --retry=3 --deployment
+          yarn install --frozen-lockfile
+
+      - name: Configure git
+        run: |
+          git config --global user.email "bain.william.a+ci@gmail.com"
+          git config --global user.name "CI"
+
+      - name: Lint and build
+        run: |
+          yarn run lint-build-infra
+          JEKYLL_ENV=production yarn run pre-jekyll
+          JEKYLL_ENV=production yarn run jekyll-build
+          JEKYLL_ENV=production yarn run jekyll-lint
+
+      - name: Create deploy tarfile
+        id: create-deploy-tarfile
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          tar -c -z --null --verbatim-files-from \
+            --verbose --show-transformed-names \
+            --transform='s,^_site/,site/,' \
+            --files-from=<(git ls-files -z --others --exclude-from=.deploy-gitignore _site) \
+            -f site.tgz
+
+      - name: Test
+        run: bin/ci-run-integration-tests.sh
+
+      - name: Test CI infra
+        run: ci/pull-request/test/tests.sh
+
+      - name: Upload deploy artifact
+        if: ${{ steps.create-deploy-tarfile.outcome == 'success' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: site.tgz
+          path: site.tgz
+
+      - name: Evaluate pull request merge eligibility
+        id: pr-eval
+        if: ${{ always() && steps.resolve.outputs.effective_event == 'pull_request' }}
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr="$(bin/ci-evaluate-pr.sh)"
+
+          echo "PR attributes:"
+          echo "$pr" | jq -C
+
+          echo "::set-output name=eval::$pr"
+
+          head_ref="$(echo "$pr" | jq -r '.head_ref')"
+          merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
+
+          ci_commit="$(git rev-parse HEAD)"
+
+          if [[ "$ci_commit" != "$merge_commit" ]]; then
+            echo "PR is stale (commit under test: $ci_commit, $head_ref merge: $merge_commit)"
+            echo '::set-output name=stale::true'
+            exit
+          fi
+
+          echo '::set-output name=stale::false'
+
+          if [[ "$(echo "$pr" | jq '.pr_is_eligible')" == "true" ]]; then
+            if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
+              bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
+            fi
+          elif [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "true" ]]; then
+            bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+          fi
+
+      - name: Push eligible refs
+        id: push-refs
+        if: ${{ success() && (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') }}
+        env:
+          CI_DRY_RUN: "false"
+          HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+        run: bin/ci-push.sh
+
+      - name: "Post-push: Clear pull request merge-pending label"
+        # Note: breaking the condition across multiple lines seemed to cause the
+        # step to always run
+        if: ${{ always() && steps.push-refs.outcome == 'success' && steps.resolve.outputs.effective_event == 'pull_request' && fromJSON(steps.pr-eval.outputs.eval).pr_is_eligible }}
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+
+      # For workflow_dispatch events there's no obvious indicator of a failure
+      # within the pull request, so add a comment
+      - name: "Post-run: Add pull request comment if dispatched rerun failed"
+        # Note: breaking the condition across multiple lines seemed to cause the
+        # step to always run
+        if: ${{ failure() && steps.resolve.outputs.effective_event == 'pull_request' && steps.push-refs.outcome != 'skipped' && github.event_name == 'workflow_dispatch' }}
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          curl --silent --show-error --fail -XPOST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d "$(jq -n '{ body: "A [job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"
