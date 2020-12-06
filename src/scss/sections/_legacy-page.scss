@@ -1,4 +1,4 @@
-@use "base/sizing";
+@use "../base/sizing";
 
 .grid-legacy-page {
   grid-template-areas: ". content content";
