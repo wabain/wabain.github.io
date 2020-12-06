@@ -99,8 +99,8 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new CopyWebpackPlugin(
-            [
+        new CopyWebpackPlugin({
+            patterns: [
                 // Image assets, etc.
                 // TODO: Might be good to run these through image-optimization passes
                 {
@@ -109,9 +109,7 @@ module.exports = {
                     to: DIST_PATH,
                 },
             ],
-            // https: //github.com/webpack-contrib/copy-webpack-plugin/issues/261#issuecomment-552550859
-            { copyUnmodified: true },
-        ),
+        }),
         new DefinePlugin({
             'process.env': {
                 JEKYLL_ENV: JSON.stringify(
