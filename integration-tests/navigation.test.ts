@@ -35,11 +35,17 @@ describe('navigation', function () {
         .setChromeOptions(new ChromeOptions().headless())
         .build()
 
+    // Seems like a problem with the jest declarations
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-misused-promises
     beforeAll(async () => {
         // wait for the concrete driver to be resolved before proceeding
+
+        // This value actually is thenable but ts-eslint is confused by the type
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         webdriver = await webdriver
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-misused-promises
     afterAll(() => webdriver.quit())
 
     const siteMeta: TestMeta = require(SITE_META_PATH)
@@ -343,6 +349,8 @@ class NavigablePage {
     }: {
         window: SiteWindow
     }): Promise<void> {
+        /* eslint @typescript-eslint/restrict-template-expressions: ['error', { allowNullish: true }] */
+
         const driver = await window.resolveDriver()
 
         // should have requested URL
@@ -351,7 +359,7 @@ class NavigablePage {
         try {
             // should have expected title
             const expectedTitle = new RegExp(
-                '^(\\[dev\\] )?William Bain - ' + this.params.title + '$',
+                `^(\\[dev\\] )?William Bain - ${this.params.title}$`,
             )
 
             await driver.wait(until.titleMatches(expectedTitle), 1000)

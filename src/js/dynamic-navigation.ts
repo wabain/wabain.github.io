@@ -85,10 +85,6 @@ export class DynamicNavDispatcher {
 
     constructor({ analytics, contentTriggers }: DynamicNavParameters) {
         this.analytics = analytics
-
-        this._handleClick = this._handleClick.bind(this)
-        this._handlePopState = this._handlePopState.bind(this)
-
         this._lastHref = location.href
 
         // Only initialize dynamic navigation if HTML5 history APIs are available
@@ -113,8 +109,17 @@ export class DynamicNavDispatcher {
             initialContent: pageTrans.currentContent,
         })
 
-        this.pageTrans.root.addEventListener('click', this._handleClick, false)
-        window.addEventListener('popstate', this._handlePopState, false)
+        this.pageTrans.root.addEventListener(
+            'click',
+            (e) => this._handleClick(e),
+            false,
+        )
+
+        window.addEventListener(
+            'popstate',
+            (e) => this._handlePopState(e),
+            false,
+        )
 
         analytics.onEvent('dynamic_nav_installed', {
             label: 'Dynamic nav installed',
@@ -244,6 +249,8 @@ class ContentLoader {
     load(href: string): Promise<{ content: string; loadElapsed?: number }> {
         const cached = this._cache[href]
 
+        // Current TS version doesn't understand this is fallible
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         if (cached) {
             debug('load %s: using cached promise', href)
             return cached
@@ -290,7 +297,7 @@ class ContentLoader {
             .then((res) => {
                 if (!res.ok)
                     throw new Error(
-                        'network error: ' + res.status + ' ' + res.statusText,
+                        `network error: ${res.status} ${res.statusText}`,
                     )
 
                 return res.text()
@@ -420,13 +427,13 @@ class PageTransformer {
 
         const idx = ++this._fetchIdx
 
-        promise.then(({ content, loadElapsed }) => {
+        void promise.then(({ content, loadElapsed }) => {
             if (this._fetchIdx !== idx) {
                 debug('page transform %s: old fetch; bailing from load', href)
                 return
             }
 
-            this._receivedContent(href, content, loadElapsed, trigger)
+            return this._receivedContent(href, content, loadElapsed, trigger)
         })
     }
 

@@ -179,7 +179,7 @@ export const GtagBackend: AnalyticsBackend = {
 
     onError({ exception, context }) {
         const params: Gtag.EventParams = {
-            description: `${context}: ${exception}`,
+            description: `${context}: ${String(exception)}`,
             fatal: false,
         }
 
@@ -204,7 +204,7 @@ export const GtagBackend: AnalyticsBackend = {
 
         // prettier-ignore
         const params: Gtag.ControlParams & Gtag.EventParams = {
-            'description': `${context}: ${exception}`,
+            'description': `${context}: ${String(exception)}`,
             'fatal': true,
             'event_callback': resolve,
         }
