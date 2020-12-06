@@ -242,7 +242,7 @@ jobs:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_WRITE_TOKEN: ${{ secrets.GH_WRITE_TOKEN }}
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: bin/ci-push.sh
 
       - name: "Post-push: Clear pull request merge-pending label"

@@ -133,7 +133,7 @@ status_code="$(
     curl --silent -XPOST \
         --output /dev/stderr \
         --write-out "%{http_code}" \
-        -H "Authorization: token $GH_WRITE_TOKEN" \
+        -H "Authorization: token $GH_BOT_TOKEN" \
         -H 'Accept: application/vnd.github.v3+json' \
         "$dispatch_url" \
         -d "$dispatch_params"

@@ -1,17 +1,19 @@
 #!/bin/bash
 
-## Adapted from https://gist.github.com/domenic/ec8b0fc8ab45f39403dd and
-## https://github.com/marionettejs/marionettejs.com/blob/da632860fd0e9b4437d8230d0bf3fc369164db2c/travis-runner.sh
+# Based loosely on https://gist.github.com/domenic/ec8b0fc8ab45f39403dd
 
 set -euo pipefail
 
-# Expected variables: GH_TOKEN, GH_WRITE_TOKEN, HEAD_REF, BASE_REF,
+# Expected variables: GH_TOKEN, GH_BOT_TOKEN, HEAD_REF, BASE_REF,
 # EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, GITHUB_*
 
 BASE_DIR="$PWD"
 JEKYLL_BUILD_DIR=_site
 DEPLOY_DIR="$BASE_DIR/../deploy"
 
+RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+# Mutable globals
 PUSH_PR_MERGE=false
 PUSH_PAGES_DEPLOY=false
 PUSH_ARGS=(--follow-tags --atomic origin)
@@ -49,9 +51,45 @@ main() {
         PUSH_ARGS=(--dry-run "${PUSH_ARGS[@]}")
     fi
 
-    # Redirect output to /dev/null to hide any sensitive credential data that
-    # might otherwise be exposed.
-    git remote set-url --push origin "https://${GH_WRITE_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" &> /dev/null
+    # If the owner approval criterion wasn't met then attach a review to satisfy
+    # the branch protection rules
+    if [[ "$PUSH_PR_MERGE" == "true" && "$(echo "$PR_EVAL" | jq '.pr_eligibility.approver_is_owner')" == "false" ]]; then
+        start_group "Attach review approval to PR"
+
+        local review_params="$(echo "$PR_EVAL" | jq --arg run_url "$RUN_URL" '{
+            commit_id: .head_commit,
+            event: "APPROVE",
+            body: (
+                "Approving [automatically] based on the following criteria:\n\n" +
+                "```json\n\(.pr_eligibility | tojson)\n```\n\n" +
+                "[automatically]: \($run_url)"
+            )
+        }')"
+
+        echo "Parameters: $review_params"
+
+        local status_code="$(
+            curl --silent -XPOST \
+                --output /dev/stderr \
+                --write-out "%{http_code}" \
+                -H "Authorization: token $GH_BOT_TOKEN" \
+                -H 'Accept: application/vnd.github.v3+json' \
+                "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
+                -d "$review_params"
+        )"
+
+        # Terminate the stderr-printed payload
+        echo >&2
+
+        if [ "$status_code" -ne 200 ]; then
+            echo "Failed to create PR review"
+            exit 22
+        fi
+
+        end_group
+    fi
+
+    git remote set-url --push origin "https://${GH_BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
     echo "Attempting push: git push ${PUSH_ARGS[@]}"
     echo "(PR merge: $PUSH_PR_MERGE, Pages deploy: $PUSH_PAGES_DEPLOY)"
@@ -228,7 +266,7 @@ evaluate_pages_deploy() {
 
     git tag -a "$deploy_tag" master \
         -m "Deploy $deploy_description triggered by ${EFFECTIVE_EVENT/_/ }" \
-        -m "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+        -m "$RUN_URL"
 
     PUSH_PAGES_DEPLOY=true
     PUSH_ARGS+=("master:master")
