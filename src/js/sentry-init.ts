@@ -1,12 +1,13 @@
-import * as Sentry from '@sentry/browser'
 import debugFactory from 'debug'
+import Sentry from './sentry-shim'
+import type { Breadcrumb, SentryClient } from './sentry-shim'
 
 const dsn =
     'https://fff9e84f915d461d8d0347e42f2b07c1@o376549.ingest.sentry.io/5197459'
 
 const debug = debugFactory('init:sentry')
 
-export default function init(): typeof import('@sentry/browser') | null {
+export default function init(): SentryClient | null {
     if (!Sentry) {
         debug('instance not defined')
         return null
@@ -24,7 +25,7 @@ export default function init(): typeof import('@sentry/browser') | null {
     }
 
     try {
-        postInit()
+        postInit(Sentry)
         debug('complete')
     } catch (e) {
         debug('post-init failed: %o', e)
@@ -39,7 +40,7 @@ export default function init(): typeof import('@sentry/browser') | null {
     return Sentry
 }
 
-function postInit(): void {
+function postInit(Sentry: SentryClient): void {
     if (process.env.SENTRY_SDK_VERSION !== Sentry.SDK_VERSION) {
         const msg = `Sentry version mismatch: want ${process.env.SENTRY_SDK_VERSION}, got ${Sentry.SDK_VERSION}`
         debug(msg)
@@ -52,7 +53,7 @@ function postInit(): void {
 
     if (dataLayer?.length) {
         for (const args of dataLayer) {
-            const data: Sentry.Breadcrumb['data'] = {}
+            const data: Breadcrumb['data'] = {}
 
             for (const [i, arg] of Array.from(args).entries()) {
                 data[i] = arg

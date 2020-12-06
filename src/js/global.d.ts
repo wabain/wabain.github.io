@@ -1,4 +1,4 @@
-import { DynamicNavDispatcher } from './dynamic-navigation'
+import type { DynamicNavDispatcher } from './dynamic-navigation'
 
 declare global {
     const process: {

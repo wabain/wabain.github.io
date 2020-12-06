@@ -1,15 +1,9 @@
 import { it, jest, describe, beforeAll, afterAll, expect } from '@jest/globals'
 
-import {
-    Builder,
-    By,
-    WebDriver,
-    WebElement,
-    until,
-    error as SeleniumErrors,
-} from 'selenium-webdriver'
+import { Builder, By, until, error as SeleniumErrors } from 'selenium-webdriver'
 import { Options as FirefoxOptions } from 'selenium-webdriver/firefox'
 import { Options as ChromeOptions } from 'selenium-webdriver/chrome'
+import type { WebDriver, WebElement } from 'selenium-webdriver'
 
 import { BROWSER, ORIGIN, SITE_META_PATH } from './env'
 

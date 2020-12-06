@@ -1,4 +1,5 @@
 import debugFactory from 'debug'
+import type { SentryClient } from './sentry-shim'
 
 const debug = debugFactory('analytics')
 
@@ -92,12 +93,10 @@ export interface AnalyticsBackend {
     onFatalError(params: ErrorParams): Promise<void>
 }
 
-type Sentry = typeof import('@sentry/browser')
-
 export class SentryBackend implements AnalyticsBackend {
-    S: Sentry
+    S: SentryClient
 
-    constructor(client: Sentry) {
+    constructor(client: SentryClient) {
         this.S = client
     }
 
