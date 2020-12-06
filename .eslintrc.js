@@ -31,6 +31,8 @@ module.exports = {
                     { functions: false },
                 ],
 
+                '@typescript-eslint/consistent-type-imports': ['error'],
+
                 // Rules which limit different uses of `any`; seems better to
                 // just not use it unnecessarily. We do keep `no-unsafe-return`;
                 // in that case an explicit cast probably makes sense.

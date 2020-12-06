@@ -7,10 +7,16 @@ import {
 } from './normalize-href'
 import { transitionContent } from './layout-transition'
 
-import Analytics from './analytics'
-import { ContentAttributes, ContentTrigger } from './content-types'
+import type Analytics from './analytics'
 
 const debug = debugFactory('dynamic-navigation')
+
+export type ContentAttributes = {
+    title: string | null
+    isLongform: boolean
+}
+
+export type ContentTrigger = (contentElem: HTMLElement) => void
 
 export type DynamicNavParameters = {
     analytics: Analytics

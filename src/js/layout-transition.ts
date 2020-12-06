@@ -1,5 +1,5 @@
 import anim from 'animejs'
-import { ContentAttributes } from './content-types'
+import type { ContentAttributes } from './dynamic-navigation'
 
 export type LayoutTransitionNavigationParameters = {
     hasManagedScroll: boolean
