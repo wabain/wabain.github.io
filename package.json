@@ -14,7 +14,7 @@
     "@types/debug": "^4.1.5",
     "@types/gtag.js": "^0.0.3",
     "@types/node": "^13.13.4",
-    "@types/selenium-webdriver": "^4.0.9",
+    "@types/selenium-webdriver": "^4.0.10",
     "@types/twitter-for-web": "^0.0.1",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
