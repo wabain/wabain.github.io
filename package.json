@@ -46,7 +46,7 @@
     "typescript": "~4.1.2",
     "url-loader": "^4.1.0",
     "webpack": "^4.44.2",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^4.3.1"
   },
   "scripts": {
     "clean": "rm -rf content/home-assets/ content/section-partial/ _site/",
@@ -54,7 +54,7 @@
     "lint": "eslint . --ext .js,.ts && stylelint src/scss && prettier --check .",
     "pre-jekyll": "yarn run lint-pre-jekyll && yarn run build-pre-jekyll && yarn run verify-bundled",
     "lint-pre-jekyll": "prettier --check . && stylelint src/scss",
-    "build-pre-jekyll": "webpack --verbose",
+    "build-pre-jekyll": "webpack --stats=verbose",
     "verify-bundled": "eslint --no-eslintrc --no-ignore --config .eslintrc.bundled.js content/home-assets",
     "lint-build-infra": "eslint --ignore-pattern src --ext .js,.ts . && tsc -p integration-tests",
     "jekyll-build": "bundle exec jekyll build --source content",
