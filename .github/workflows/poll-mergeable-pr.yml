@@ -3,6 +3,8 @@ on:
   schedule:
     - cron: "*/15 * * * *"
 
+  workflow_dispatch:
+
 jobs:
   eval-automerge:
     runs-on: ubuntu-18.04
