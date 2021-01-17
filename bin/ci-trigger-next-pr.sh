@@ -53,7 +53,7 @@ rerun_triggered=0
 
 while IFS= read -r candidate; do
     pr_number="(echo "$candidate" | jq -r .number)"
-    PR_NUMBER="$pr_number" pr_eval="$(bin/ci-evaluate-pr.sh)"
+    pr_eval="$(PR_NUMBER="$pr_number" bin/ci-evaluate-pr.sh)"
 
     if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
         echo "PR $pr_number is no longer eligible for automerge"
