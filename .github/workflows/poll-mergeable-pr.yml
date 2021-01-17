@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  eval-automerge:
+  poll-mergeable:
     runs-on: ubuntu-18.04
 
     env:
