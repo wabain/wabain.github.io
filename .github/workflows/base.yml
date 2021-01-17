@@ -205,6 +205,16 @@ jobs:
 
           echo "::set-output name=eval::$pr"
 
+          # Add labels before checking for staleness in order to ensure the PR
+          # shows up in the maintenance cron job's check
+          if [[ "$(echo "$pr" | jq '.pr_is_eligible')" == "true" && "$STATUS" != "failure" ]]; then
+            if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
+              bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
+            fi
+          elif [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "true" ]]; then
+            bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+          fi
+
           head_ref="$(echo "$pr" | jq -r '.head_ref')"
           merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
 
@@ -217,14 +227,6 @@ jobs:
           fi
 
           echo '::set-output name=stale::false'
-
-          if [[ "$(echo "$pr" | jq '.pr_is_eligible')" == "true" && "$STATUS" != "failure" ]]; then
-            if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
-              bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
-            fi
-          elif [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "true" ]]; then
-            bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
-          fi
 
       - name: Push eligible refs
         id: push-refs
