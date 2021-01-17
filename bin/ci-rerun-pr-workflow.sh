@@ -3,7 +3,8 @@
 set -euo pipefail
 
 #
-# Rerun the main pull request workflow for the given pull request.
+# If the given pull request is eligible for merge, rerun the main pull request
+# workflow.
 #
 # Usage: bin/ci-rerun-branch-workflow.sh pr_number pr_eval
 #
@@ -14,6 +15,11 @@ set -euo pipefail
 
 pr_number="$1"
 pr="$2"
+
+if [[ "$(echo "$pr" | jq '.pr_is_eligible')" != "true" ]]; then
+    echo "PR is currently ineligible for automerge; not triggering rerun"
+    exit
+fi
 
 # Locate a prior workflow run for the branch; we will rerun it
 

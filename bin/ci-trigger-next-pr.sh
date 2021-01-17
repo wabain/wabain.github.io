@@ -66,9 +66,14 @@ while IFS= read -r candidate; do
 
     echo "Eligibility for PR $pr_number: $(echo "$pr_eval" | jq -C)"
 
-    if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
+    if [[ "$(echo "$pr_eval" | jq '.pr_may_be_eligible')" != "true" ]]; then
         echo "PR $pr_number is no longer eligible for automerge"
         bin/ci-update-pr-label.sh "$pr_number" del merge-pending
+        continue
+    fi
+
+    if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
+        echo "PR $pr_number is not eligible for automerge until mergeability is reevaluated"
         continue
     fi
 
