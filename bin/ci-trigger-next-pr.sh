@@ -57,6 +57,10 @@ echo "::endgroup::"
 rerun_triggered=0
 
 while IFS= read -r candidate; do
+    if [ -z "$candidate" ]; then
+        continue
+    fi
+
     pr_number="$(echo "$candidate" | jq -r .number)"
     pr_eval="$(PR_NUMBER="$pr_number" bin/ci-evaluate-pr.sh)"
 
