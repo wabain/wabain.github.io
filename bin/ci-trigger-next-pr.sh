@@ -28,7 +28,7 @@ while true; do
     )"
 
     # Drop verbose fields which don't add anything meaningful
-    echo "$run_page" | jq -C 'del(.[]["head", "base"].repo)'
+    echo "$run_page" | jq -C 'del(.[]["head", "base"].repo) | del(.[].body)'
 
     echo "::endgroup::"
 
@@ -49,7 +49,7 @@ while true; do
     page=$(( $page + 1 ))
 done
 
-echo "Candidates: $(echo "$candidates" | jq -C 'del(.[]["head", "base"].repo)')"
+echo "Candidates: $(echo "$candidates" | jq -C 'del(.[]["head", "base"].repo) | del(.[].body)')"
 
 rerun_triggered=0
 
