@@ -63,6 +63,7 @@ run-test "First party: Eligible" \
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": true,
+        "pr_may_be_eligible": true,
         "pr_eligibility": {
             "automerge_label_present": true,
             "author_is_owner": true,
@@ -82,6 +83,7 @@ run-test "No automerge label" \
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
+        "pr_may_be_eligible": false,
         "pr_eligibility": {
             "automerge_label_present": false,
             "author_is_owner": true,
@@ -101,11 +103,32 @@ run-test "Not mergeable" \
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
+        "pr_may_be_eligible": false,
         "pr_eligibility": {
             "automerge_label_present": true,
             "author_is_owner": true,
             "approver_is_owner": false,
             "mergeable": false,
+            "non_draft": true
+        }
+    }'
+
+run-test "Null mergeability" \
+    jq -s -f pull-request.jq \
+        <(jq '.mergeable = null' test/first-party.pr.json) \
+        test/none.pr-reviews.json \
+    '{
+        "head_ref": "ci-statuses",
+        "head_commit": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
+        "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
+        "merge_pending_label_present": false,
+        "pr_is_eligible": false,
+        "pr_may_be_eligible": true,
+        "pr_eligibility": {
+            "automerge_label_present": true,
+            "author_is_owner": true,
+            "approver_is_owner": false,
+            "mergeable": null,
             "non_draft": true
         }
     }'
@@ -120,6 +143,7 @@ run-test "Draft" \
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
+        "pr_may_be_eligible": false,
         "pr_eligibility": {
             "automerge_label_present": true,
             "author_is_owner": true,
@@ -137,6 +161,7 @@ run-test "Third-party: Approved by owner" \
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
         "pr_is_eligible": true,
+        "pr_may_be_eligible": true,
         "pr_eligibility": {
             "automerge_label_present": true,
             "author_is_owner": false,
@@ -154,6 +179,7 @@ run-test "Third-party: Unapproved" \
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
+        "pr_may_be_eligible": false,
         "pr_eligibility": {
             "automerge_label_present": true,
             "author_is_owner": false,
@@ -173,6 +199,7 @@ run-test "Third-party: Approved by other" \
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
+        "pr_may_be_eligible": false,
         "pr_eligibility": {
             "automerge_label_present": true,
             "author_is_owner": false,

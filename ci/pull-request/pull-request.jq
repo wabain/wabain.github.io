@@ -19,9 +19,8 @@ def by_owner: .author_association == "OWNER";
     $pr_eligibility |
     .automerge_label_present and
         (.author_is_owner or .approver_is_owner) and
-        .mergeable and
         .non_draft
-) as $pr_is_eligible |
+) as $eligible_up_to_mergeability |
 
 # Collate output
 {
@@ -29,6 +28,7 @@ def by_owner: .author_association == "OWNER";
     head_commit: .head.sha,
     merge_commit: .merge_commit_sha,
     merge_pending_label_present: .labels | any(.name == "merge-pending"),
-    pr_is_eligible: $pr_is_eligible,
+    pr_is_eligible: ($eligible_up_to_mergeability and $pr_eligibility.mergeable),
+    pr_may_be_eligible: ($eligible_up_to_mergeability and $pr_eligibility.mergeable != false),
     pr_eligibility: $pr_eligibility,
 }

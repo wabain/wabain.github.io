@@ -9,8 +9,6 @@
 
 set -euo pipefail
 
-set -x
-
 page=1
 per_page=25
 candidates='[]'
@@ -28,7 +26,7 @@ while true; do
     )"
 
     # Drop verbose fields which don't add anything meaningful
-    echo "$run_page" | jq -C 'del(.[]["head", "base"].repo)'
+    echo "$run_page" | jq -C 'del(.[]["head", "base"].repo) | del(.[].body)'
 
     echo "::endgroup::"
 
@@ -49,23 +47,39 @@ while true; do
     page=$(( $page + 1 ))
 done
 
-echo "Candidates: $(echo "$candidates" | jq -C 'del(.[]["head", "base"].repo)')"
+echo "::group ::Located candidates"
+
+echo "Candidates: $(echo "$candidates" | jq -C 'del(.[]["head", "base"].repo) | del(.[].body)')"
+echo
+
+echo "::endgroup::"
 
 rerun_triggered=0
 
 while IFS= read -r candidate; do
-    pr_number="(echo "$candidate" | jq -r .number)"
+    if [ -z "$candidate" ]; then
+        continue
+    fi
+
+    pr_number="$(echo "$candidate" | jq -r .number)"
     pr_eval="$(PR_NUMBER="$pr_number" bin/ci-evaluate-pr.sh)"
 
-    if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
+    echo "Eligibility for PR $pr_number: $(echo "$pr_eval" | jq -C)"
+
+    if [[ "$(echo "$pr_eval" | jq '.pr_may_be_eligible')" != "true" ]]; then
         echo "PR $pr_number is no longer eligible for automerge"
         bin/ci-update-pr-label.sh "$pr_number" del merge-pending
         continue
     fi
 
+    if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
+        echo "PR $pr_number is not eligible for automerge until mergeability is reevaluated"
+        continue
+    fi
+
     if [ $rerun_triggered -eq 0 ]; then
         echo "Retriggering execution for PR $pr_number"
-        bin/ci-rerun-pr-workflow.sh "$pr_number" "$pr"
+        bin/ci-rerun-pr-workflow.sh "$pr_number" "$pr_eval"
 
         rerun_triggered=1
     fi
