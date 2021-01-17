@@ -9,6 +9,8 @@
 
 set -euo pipefail
 
+set -x
+
 page=1
 per_page=25
 candidates='[]'
