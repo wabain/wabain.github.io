@@ -2,9 +2,12 @@
 
 set -euo pipefail
 
-# Usage: bin/ci-update-pr-label.sh 100 add some-label
+# Usage: bin/ci-update-pr-label.sh pr_number (add|del) label
 #
-# Expected variables: GH_TOKEN, GITHUB_*
+#   bin/ci-update-pr-label.sh 100 add some-label
+#   bin/ci-update-pr-label.sh 101 del some-label
+#
+# Expected variables: GH_TOKEN, repository-level variables GITHUB_*
 
 pr_number="${1:-}"
 action="${2:-}"

@@ -11,7 +11,8 @@
 # Inputs
 # ======
 #
-# Expects environment variables GH_TOKEN, PR_NUMBER, GITHUB_*.
+# Expects environment variables GH_TOKEN, PR_NUMBER, repository-level variables
+# GITHUB_*.
 
 set -euo pipefail
 
