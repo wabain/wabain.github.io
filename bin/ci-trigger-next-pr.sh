@@ -74,7 +74,7 @@ while IFS= read -r candidate; do
 
     if [ $rerun_triggered -eq 0 ]; then
         echo "Retriggering execution for PR $pr_number"
-        bin/ci-rerun-pr-workflow.sh "$pr_number" "$pr"
+        bin/ci-rerun-pr-workflow.sh "$pr_number" "$pr_eval"
 
         rerun_triggered=1
     fi
