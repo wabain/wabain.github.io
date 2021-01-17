@@ -69,22 +69,14 @@ module.exports = {
             {
                 test: /\.svg$/,
                 include: [local('src/buildtime-assets')],
-                use: [
-                    {
-                        loader: 'url-loader',
-                        options: {
-                            encoding: false,
-                            generator: (content, _mimetype, encoding) =>
-                                svgToDataURI(
-                                    content.toString(encoding || undefined),
-                                ),
-                        },
-                    },
-                    // postcss-loader has facilities for running SVGO, but it
-                    // runs before these external resources are resolved, so run
-                    // a homegrown loader against them.
-                    { loader: './webpack/svgo-loader' },
-                ],
+                type: 'asset/inline',
+                generator: {
+                    dataUrl: (content) => svgToDataURI(content.toString()),
+                },
+                // postcss-loader has facilities for running SVGO, but it
+                // runs before these external resources are resolved, so run
+                // a homegrown loader against them.
+                loader: './webpack/svgo-loader',
             },
         ],
     },
