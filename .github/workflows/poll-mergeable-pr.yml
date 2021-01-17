@@ -1,0 +1,28 @@
+name: Check for mergeable PRs needing action
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+
+jobs:
+  eval-automerge:
+    runs-on: ubuntu-18.04
+
+    env:
+      # See comment in base.yml
+      BASH_ENV: ci/env.sh
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          dependencies: jq
+
+      - name: Evaluate if pull request automerge required
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Token with repo access and without the builtin GITHUB_TOKEN restrictions
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+        run: |
+          bin/ci-trigger-next-pr.sh
