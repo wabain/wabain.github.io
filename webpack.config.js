@@ -4,6 +4,7 @@ const { DefinePlugin } = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CssExtractPlugin = require('mini-css-extract-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin')
 const svgToDataURI = require('mini-svg-data-uri')
 
 const commonEnv = require('./webpack/common-env')
@@ -41,13 +42,6 @@ module.exports = {
     devtool: IS_PROD ? 'source-map' : 'inline-source-map',
     module: {
         rules: [
-            {
-                enforce: 'pre',
-                test: /\.[jt]s$/,
-                exclude: /node_modules/,
-                use: 'eslint-loader',
-            },
-
             {
                 test: /\.ts$/,
                 exclude: /node_modules/,
@@ -98,6 +92,7 @@ module.exports = {
         '@sentry/browser': 'Sentry',
     },
     plugins: [
+        new ESLintPlugin({ extensions: ['js', 'ts'] }),
         new CleanWebpackPlugin(),
         new CopyWebpackPlugin({
             patterns: [
