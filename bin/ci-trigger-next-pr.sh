@@ -47,13 +47,20 @@ while true; do
     page=$(( $page + 1 ))
 done
 
+echo "::group ::Located candidates"
+
 echo "Candidates: $(echo "$candidates" | jq -C 'del(.[]["head", "base"].repo) | del(.[].body)')"
+echo
+
+echo "::endgroup::"
 
 rerun_triggered=0
 
 while IFS= read -r candidate; do
     pr_number="$(echo "$candidate" | jq -r .number)"
     pr_eval="$(PR_NUMBER="$pr_number" bin/ci-evaluate-pr.sh)"
+
+    echo "Eligibility for PR $pr_number: $(echo "$pr_eval" | jq -C)"
 
     if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
         echo "PR $pr_number is no longer eligible for automerge"
