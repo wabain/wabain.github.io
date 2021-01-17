@@ -9,8 +9,6 @@
 
 set -euo pipefail
 
-set -x
-
 page=1
 per_page=25
 candidates='[]'
@@ -54,7 +52,7 @@ echo "Candidates: $(echo "$candidates" | jq -C 'del(.[]["head", "base"].repo) | 
 rerun_triggered=0
 
 while IFS= read -r candidate; do
-    pr_number="(echo "$candidate" | jq -r .number)"
+    pr_number="$(echo "$candidate" | jq -r .number)"
     pr_eval="$(PR_NUMBER="$pr_number" bin/ci-evaluate-pr.sh)"
 
     if [[ "$(echo "$pr_eval" | jq '.pr_is_eligible')" != "true" ]]; then
