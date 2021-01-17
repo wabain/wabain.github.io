@@ -117,14 +117,7 @@ jobs:
 
       - name: Get target ruby version
         id: ruby-version
-        run: |
-          # We depend on bundler to look up the specific version
-          sudo gem install bundler
-
-          v="$(bin/ruby-version.sh | jq -rR 'capture("^(?<minor>[0-9]+\\.[0-9]+)(\\..+)?") | .minor')"
-
-          echo "Target Ruby version is $v"
-          echo "::set-output name=version::$v"
+        run: echo "::set-output name=version::$(cat .ruby-version)"
 
       - name: Set up Ruby
         uses: actions/setup-ruby@v1
