@@ -4,6 +4,7 @@ const { DefinePlugin } = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CssExtractPlugin = require('mini-css-extract-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin')
 const svgToDataURI = require('mini-svg-data-uri')
 
 const commonEnv = require('./webpack/common-env')
@@ -42,13 +43,6 @@ module.exports = {
     module: {
         rules: [
             {
-                enforce: 'pre',
-                test: /\.[jt]s$/,
-                exclude: /node_modules/,
-                use: 'eslint-loader',
-            },
-
-            {
                 test: /\.ts$/,
                 exclude: /node_modules/,
                 loader: 'ts-loader',
@@ -75,22 +69,14 @@ module.exports = {
             {
                 test: /\.svg$/,
                 include: [local('src/buildtime-assets')],
-                use: [
-                    {
-                        loader: 'url-loader',
-                        options: {
-                            encoding: false,
-                            generator: (content, _mimetype, encoding) =>
-                                svgToDataURI(
-                                    content.toString(encoding || undefined),
-                                ),
-                        },
-                    },
-                    // postcss-loader has facilities for running SVGO, but it
-                    // runs before these external resources are resolved, so run
-                    // a homegrown loader against them.
-                    { loader: './webpack/svgo-loader' },
-                ],
+                type: 'asset/inline',
+                generator: {
+                    dataUrl: (content) => svgToDataURI(content.toString()),
+                },
+                // postcss-loader has facilities for running SVGO, but it
+                // runs before these external resources are resolved, so run
+                // a homegrown loader against them.
+                loader: './webpack/svgo-loader',
             },
         ],
     },
@@ -98,6 +84,7 @@ module.exports = {
         '@sentry/browser': 'Sentry',
     },
     plugins: [
+        new ESLintPlugin({ extensions: ['js', 'ts'] }),
         new CleanWebpackPlugin(),
         new CopyWebpackPlugin({
             patterns: [
