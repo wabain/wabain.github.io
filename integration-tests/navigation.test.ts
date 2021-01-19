@@ -30,7 +30,6 @@ describe('navigation', function () {
         .build()
 
     // Seems like a problem with the jest declarations
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-misused-promises
     beforeAll(async () => {
         // wait for the concrete driver to be resolved before proceeding
 
@@ -39,7 +38,6 @@ describe('navigation', function () {
         webdriver = await webdriver
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-misused-promises
     afterAll(() => webdriver.quit())
 
     const siteMeta: TestMeta = require(SITE_META_PATH)
