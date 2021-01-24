@@ -59,7 +59,7 @@
     "jekyll-build": "bundle exec jekyll build --source content",
     "jekyll-serve": "bundle exec jekyll serve --source content -H 0.0.0.0 -P 8080",
     "jekyll-lint": "bundle exec ruby build/jekyll-lint.rb",
-    "tck": "tsc -p . -p integration-tests",
+    "tck": "tsc -p . && tsc -p integration-tests",
     "test": "jest"
   },
   "dependencies": {

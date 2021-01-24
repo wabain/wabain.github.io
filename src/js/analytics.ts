@@ -128,26 +128,10 @@ export class SentryBackend implements AnalyticsBackend {
     }
 }
 
-type GtagOptional = Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams
+const gtag: Gtag.Gtag = window.gtag || gtagMissing
 
-type GtagArgs =
-    | ['config', string, GtagOptional?]
-    | ['set', Gtag.CustomParams]
-    | ['js', Date]
-    | ['event', Gtag.EventNames | string, GtagOptional?]
-
-type WhenDefined<T, X> = undefined extends T ? never : X
-
-const gtag: Gtag.Gtag = function gtag(...args: GtagArgs) {
-    const { gtag: globalGtag } = window as { gtag?: Gtag.Gtag }
-
-    if (globalGtag) {
-        // Work around issues with sum types and the spread operator
-        type GtagFn = (...args: GtagArgs) => void
-        ;(globalGtag as WhenDefined<typeof globalGtag, GtagFn>)(...args)
-    } else {
-        console.error('gtag is not defined for', ...args)
-    }
+function gtagMissing(...args: unknown[]): void {
+    console.error('gtag is not defined for', ...args)
 }
 
 /**
