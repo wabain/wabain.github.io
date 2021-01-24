@@ -321,7 +321,7 @@ class SiteWindow {
         const png = await driver.takeScreenshot()
         const filename = `screenshot-${idx}-${asSlug(slug)}.png`
 
-        require('fs').writeFileSync(filename, new Buffer(png, 'base64'))
+        require('fs').writeFileSync(filename, Buffer.from(png, 'base64'))
     }
 }
 
