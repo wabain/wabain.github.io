@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 ruby "~> 2.7.1"
 
-gem 'html-proofer', '~> 3.18.5'
+gem 'html-proofer', '~> 3.18.6'
 gem 'nokogiri', '~> 1.11.1'
 gem 'crass', '~> 1.0.6'
 
