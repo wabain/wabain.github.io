@@ -6,6 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CssExtractPlugin = require('mini-css-extract-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const svgToDataURI = require('mini-svg-data-uri')
+const { optimize: optimizeSvg } = require('svgo')
 
 const commonEnv = require('./webpack/common-env')
 
@@ -71,12 +72,17 @@ module.exports = {
                 include: [local('src/buildtime-assets')],
                 type: 'asset/inline',
                 generator: {
-                    dataUrl: (content) => svgToDataURI(content.toString()),
+                    dataUrl: (content) => {
+                        content = content.toString()
+
+                        if (IS_PROD) {
+                            content = optimizeSvg(content, { multipass: true })
+                                .data
+                        }
+
+                        return svgToDataURI(content)
+                    },
                 },
-                // postcss-loader has facilities for running SVGO, but it
-                // runs before these external resources are resolved, so run
-                // a homegrown loader against them.
-                loader: './webpack/svgo-loader',
             },
         ],
     },
