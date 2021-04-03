@@ -1,6 +1,6 @@
 const path = require('path')
 
-const { DefinePlugin } = require('webpack')
+const webpack = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CssExtractPlugin = require('mini-css-extract-plugin')
@@ -103,19 +103,11 @@ module.exports = {
                 },
             ],
         }),
-        new DefinePlugin({
-            'process.env': {
-                JEKYLL_ENV: JSON.stringify(
-                    IS_PROD ? 'production' : 'development',
-                ),
-                // TODO(wabain): Generate version in CI
-                RELEASE_VERSION: JSON.stringify(
-                    process.env.RELEASE_VERSION || '',
-                ),
-                SENTRY_SDK_VERSION: JSON.stringify(
-                    commonEnv.SENTRY_SDK_VERSION,
-                ),
-            },
+        new webpack.EnvironmentPlugin({
+            JEKYLL_ENV: IS_PROD ? 'production' : 'development',
+            // TODO(wabain): Generate version in CI
+            RELEASE_VERSION: process.env.RELEASE_VERSION || '',
+            SENTRY_SDK_VERSION: commonEnv.SENTRY_SDK_VERSION,
         }),
         ...cssLoadPlugin,
     ],
