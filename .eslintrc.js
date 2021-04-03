@@ -1,5 +1,5 @@
 module.exports = {
-    extends: ['eslint:recommended', 'eslint-config-prettier'],
+    extends: ['eslint:recommended', 'prettier'],
     parser: 'babel-eslint',
     root: true,
     env: {
@@ -17,7 +17,6 @@ module.exports = {
                 'eslint:recommended',
                 'plugin:@typescript-eslint/recommended',
                 'plugin:@typescript-eslint/recommended-requiring-type-checking',
-                'prettier/@typescript-eslint',
             ],
             parserOptions: {
                 ecmaVersion: 6,
