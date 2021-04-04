@@ -172,11 +172,11 @@ jobs:
             local res="$(git rev-parse $ref)"
             [ $? -ne 0 ] && return 1
 
-            ref="${ref#refs/heads/}"
-
             if [[ "$ref" != "$res" ]]; then
+              ref="${ref#refs/heads/}"
               echo "$ref.$res"
             else
+              ref="${ref#refs/heads/}"
               echo "$ref"
             fi
           }
