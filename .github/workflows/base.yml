@@ -161,11 +161,32 @@ jobs:
           git config --global user.name "CI"
 
       - name: Lint and build
+        env:
+          HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
         run: |
+          function qualify_ref() {
+            local ref="$1"
+
+            local res="$(git rev-parse $ref)"
+            [ $? -ne 0 ] && return 1
+
+            if [[ "$ref" != "$res" ]]; then
+              echo "$ref-$res"
+            else
+              echo "$ref"
+            fi
+          }
+
+          v="wabain.github.io@$(qualify_ref "$HEAD_REF")+$(qualify_ref "$BASE_REF")"
+          echo "Release version: $v"
+
+          export JEKYLL_ENV=production RELEASE_VERSION="$v"
+
           yarn run lint-build-infra
-          JEKYLL_ENV=production yarn run pre-jekyll
-          JEKYLL_ENV=production yarn run jekyll-build
-          JEKYLL_ENV=production yarn run jekyll-lint
+          yarn run pre-jekyll
+          yarn run jekyll-build
+          yarn run jekyll-lint
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile

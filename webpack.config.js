@@ -105,7 +105,6 @@ module.exports = {
         }),
         new webpack.EnvironmentPlugin({
             JEKYLL_ENV: IS_PROD ? 'production' : 'development',
-            // TODO(wabain): Generate version in CI
             RELEASE_VERSION: process.env.RELEASE_VERSION || '',
             SENTRY_SDK_VERSION: commonEnv.SENTRY_SDK_VERSION,
         }),
