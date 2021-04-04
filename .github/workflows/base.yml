@@ -172,8 +172,10 @@ jobs:
             local res="$(git rev-parse $ref)"
             [ $? -ne 0 ] && return 1
 
+            ref="${ref#refs/heads/}"
+
             if [[ "$ref" != "$res" ]]; then
-              echo "$ref-$res"
+              echo "$ref.$res"
             else
               echo "$ref"
             fi
