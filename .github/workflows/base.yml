@@ -162,6 +162,7 @@ jobs:
 
       - name: Lint and build
         env:
+          REF: ${{ steps.resolve.outputs.ref }}
           HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
         run: |
@@ -178,7 +179,11 @@ jobs:
             fi
           }
 
-          v="wabain.github.io@$(qualify_ref "$HEAD_REF")+$(qualify_ref "$BASE_REF")"
+          if [ ! -z "$HEAD_REF" ] && [ ! -z "$BASE_REF" ]; then
+            v="wabain.github.io@$(qualify_ref "$HEAD_REF")+$(qualify_ref "$BASE_REF")"
+          else
+            v="wabain.github.io@$(qualify_ref "$REF")"
+          fi
           echo "Release version: $v"
 
           export JEKYLL_ENV=production RELEASE_VERSION="$v"
