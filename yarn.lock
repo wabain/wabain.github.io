@@ -868,10 +868,10 @@
   resolved "https://registry.yarnpkg.com/@types/tapable/-/tapable-1.0.6.tgz#a9ca4b70a18b270ccb2bc0aaafefd1d486b7ea74"
   integrity sha512-W+bw9ds02rAQaMvaLYxAbJ6cvguW/iJXNT6lTssS1ps6QdrMKttqEAMEG/b5CR8TZl3/L7/lH0ZV5nNR1LXikA==
 
-"@types/twitter-for-web@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@types/twitter-for-web/-/twitter-for-web-0.0.1.tgz#85ab870204fae7e9e6d4de5f83d3a407370a0859"
-  integrity sha512-4yM/kodB/NVF9mrVpuW7L0h++ZelPlRtk1dz8QvGS/ZPACSNDTbQ05bSQSwWhGA3d7zbv58vIL3EX4imEmsViw==
+"@types/twitter-for-web@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@types/twitter-for-web/-/twitter-for-web-0.0.2.tgz#515a8c1bbbd123e6abed550a7ac64a71032db61e"
+  integrity sha512-fDg882G9KHOkVxyJFkZ1hIOHxgj1vHLZnMJshF9W+8C2f9lzkIc/DeD1Ed2q1SWaHD/hdooaFIWTDhgL8zzpYg==
 
 "@types/uglify-js@*":
   version "3.11.1"
