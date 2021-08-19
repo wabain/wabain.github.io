@@ -120,7 +120,7 @@ jobs:
         run: echo "::set-output name=version::$(cat .ruby-version)"
 
       - name: Set up Ruby
-        uses: actions/setup-ruby@v1
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ steps.ruby-version.outputs.version }}
 
