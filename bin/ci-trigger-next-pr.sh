@@ -14,7 +14,9 @@ per_page=25
 candidates='[]'
 
 while true; do
-    url="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=$per_page&page=$page"
+    # Search open PRs, oldest first
+    params="state=open&sort=created&direction=asc&per_page=$per_page&page=$page"
+    url="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls?$params"
 
     echo "::group ::Page $page"
 
