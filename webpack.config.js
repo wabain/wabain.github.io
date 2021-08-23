@@ -76,8 +76,9 @@ module.exports = {
                         content = content.toString()
 
                         if (IS_PROD) {
-                            content = optimizeSvg(content, { multipass: true })
-                                .data
+                            content = optimizeSvg(content, {
+                                multipass: true,
+                            }).data
                         }
 
                         return svgToDataURI(content)
