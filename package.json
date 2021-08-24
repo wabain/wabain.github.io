@@ -24,7 +24,7 @@
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.0",
     "cssnano": "^5.0.8",
-    "eslint": "^7.23.0",
+    "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-webpack-plugin": "^3.0.1",
     "jest": "^27.0.6",
