@@ -7,7 +7,7 @@ set -euo pipefail
 #   bin/ci-update-pr-label.sh 100 add some-label
 #   bin/ci-update-pr-label.sh 101 del some-label
 #
-# Expected variables: GH_TOKEN, repository-level variables GITHUB_*
+# Expected variables: GH_BOT_TOKEN, repository-level variables GITHUB_*
 
 pr_number="${1:-}"
 action="${2:-}"
@@ -26,7 +26,7 @@ case "$#:$action" in
     echo "POST to $url with $params"
 
     curl --silent --show-error --fail -XPOST \
-        -H "Authorization: token $GH_TOKEN" \
+        -H "Authorization: token $GH_BOT_TOKEN" \
         -H 'Accept: application/vnd.github.v3+json' \
         "$url" -d "$params"
 
@@ -44,7 +44,7 @@ case "$#:$action" in
     echo "DELETE from $url"
 
     curl --silent --show-error --fail -XDELETE \
-        -H "Authorization: token $GH_TOKEN" \
+        -H "Authorization: token $GH_BOT_TOKEN" \
         -H 'Accept: application/vnd.github.v3+json' \
         "$url"
 
