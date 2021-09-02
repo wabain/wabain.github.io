@@ -114,6 +114,9 @@ jobs:
           # We need to fetch the parent commit so that it's retained when amending
           # merge commits in bin/ci-push.sh
           fetch-depth: 2
+          # Avoid having checkout write credentials so that we can more easily
+          # select our own in bin/ci-push.sh
+          persist-credentials: false
 
       - name: Get target ruby version
         id: ruby-version
