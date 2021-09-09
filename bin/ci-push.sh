@@ -89,13 +89,14 @@ main() {
         end_group
     fi
 
-    git remote set-url --push origin "https://${GH_BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
     echo "Attempting push: git push ${PUSH_ARGS[@]}"
     echo "(PR merge: $PUSH_PR_MERGE, Pages deploy: $PUSH_PAGES_DEPLOY)"
 
     # Need to disable askPass to prevent it firing with the PAT in the URL
-    git -c core.askPass= push "${PUSH_ARGS[@]}"
+    git \
+        -c core.askPass= \
+        -c remote.origin.pushurl="https://x-access-token:${GH_BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+        push "${PUSH_ARGS[@]}"
 }
 
 start_group() {
