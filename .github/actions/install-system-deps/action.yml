@@ -14,7 +14,7 @@ inputs:
     required: false
 
 env:
-  # Use a default rcfile. See the comment in .github/workflows/base.yml
+  # Use a default rcfile. See the comment in .github/workflows/validate.yml
   BASH_ENV: ci/env.sh
 
 runs:
