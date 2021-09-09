@@ -94,7 +94,8 @@ main() {
     echo "Attempting push: git push ${PUSH_ARGS[@]}"
     echo "(PR merge: $PUSH_PR_MERGE, Pages deploy: $PUSH_PAGES_DEPLOY)"
 
-    git push "${PUSH_ARGS[@]}"
+    # Need to disable askPass to prevent it firing with the PAT in the URL
+    git -c core.askPass= push "${PUSH_ARGS[@]}"
 }
 
 start_group() {
