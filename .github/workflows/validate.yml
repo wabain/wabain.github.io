@@ -1,4 +1,4 @@
-# Name referenced in bin/ci-trigger-pr-rerun.sh
+# Name referenced in .github/workflows/check-merge-deploy.yml
 name: Build and test
 on:
   push:
@@ -46,8 +46,6 @@ jobs:
                   error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
                 else
                   [
-                    # We check that the merge ref is up to date in pr-eval before
-                    # updating repo state based on this run
                     "::set-output name=ref::refs/pull/\(env.PR_NUMBER)/merge",
                     "::set-output name=head_ref::\(.head.ref)",
                     "::set-output name=base_ref::\(.base.ref)"
@@ -111,12 +109,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ steps.resolve.outputs.ref }}
-          # We need to fetch the parent commit so that it's retained when amending
-          # merge commits in bin/ci-push.sh
-          fetch-depth: 2
-          # Avoid having checkout write credentials so that we can more easily
-          # select our own in bin/ci-push.sh
-          persist-credentials: false
 
       - name: Get target ruby version
         id: ruby-version
@@ -158,11 +150,6 @@ jobs:
           bundle install --jobs=4 --retry=3
           yarn install --frozen-lockfile
 
-      - name: Configure git
-        run: |
-          git config --global user.email "bain.william.a+ci@gmail.com"
-          git config --global user.name "CI"
-
       - name: Lint and build
         run: |
           yarn run lint-build-infra
@@ -192,69 +179,6 @@ jobs:
         with:
           name: site.tgz
           path: site.tgz
-
-      - name: Evaluate pull request merge eligibility
-        id: pr-eval
-        if: ${{ always() && steps.resolve.outputs.effective_event == 'pull_request' }}
-        env:
-          STATUS: ${{ job.status }}
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        run: |
-          pr="$(bin/ci-evaluate-pr.sh)"
-
-          echo "PR attributes:"
-          echo "$pr" | jq -C
-
-          echo "::set-output name=eval::$pr"
-
-          # Add labels before checking for staleness in order to ensure the PR
-          # shows up in the maintenance cron job's check
-          if [[ "$(echo "$pr" | jq '.pr_may_be_eligible')" == "true" && "$STATUS" != "failure" ]]; then
-            if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
-              bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
-            fi
-          elif [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "true" ]]; then
-            bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
-          fi
-
-          head_ref="$(echo "$pr" | jq -r '.head_ref')"
-          merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
-
-          ci_commit="$(git rev-parse HEAD)"
-
-          if [[ "$ci_commit" != "$merge_commit" ]]; then
-            echo "PR is stale (commit under test: $ci_commit, $head_ref merge: $merge_commit)"
-            echo '::set-output name=stale::true'
-            exit
-          fi
-
-          echo '::set-output name=stale::false'
-
-      - name: Push eligible refs
-        id: push-refs
-        if: ${{ success() && (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') }}
-        env:
-          CI_DRY_RUN: "false"
-          HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
-          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
-          EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        run: bin/ci-push.sh
-
-      - name: "Post-push: Clear pull request merge-pending label"
-        # Note: breaking the condition across multiple lines seemed to cause the
-        # step to always run
-        if: ${{ always() && steps.push-refs.outcome == 'success' && steps.resolve.outputs.effective_event == 'pull_request' && fromJSON(steps.pr-eval.outputs.eval).pr_is_eligible }}
-        continue-on-error: true
-        env:
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
 
       # For workflow_dispatch events there's no obvious indicator of a failure
       # within the pull request, so add a comment

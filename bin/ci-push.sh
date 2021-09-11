@@ -4,12 +4,12 @@
 
 set -euo pipefail
 
-# Expected variables: GH_TOKEN, GH_BOT_TOKEN, HEAD_REF, BASE_REF,
+# Expected variables: BASE_DIR, GH_BOT_TOKEN, HEAD_REF, BASE_REF,
 # EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, GITHUB_*
 
-BASE_DIR="$PWD"
-JEKYLL_BUILD_DIR=_site
-DEPLOY_DIR="$BASE_DIR/../deploy"
+CHECKOUT_DIR="$PWD"
+JEKYLL_BUILD_DIR="$BASE_DIR/site"
+DEPLOY_DIR="$BASE_DIR/deploy"
 
 RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
@@ -68,6 +68,11 @@ main() {
 
         echo "Parameters: $review_params"
 
+        if [ -z "$GH_BOT_TOKEN" ]; then
+            echo "error: GH_BOT_TOKEN environment variable not provided"
+            exit 1
+        fi
+
         local status_code="$(
             curl --silent -XPOST \
                 --output /dev/stderr \
@@ -92,16 +97,7 @@ main() {
     echo "Attempting push: git push ${PUSH_ARGS[@]}"
     echo "(PR merge: $PUSH_PR_MERGE, Pages deploy: $PUSH_PAGES_DEPLOY)"
 
-    if [ -z "$GH_BOT_TOKEN" ]; then
-        echo "error: GH_BOT_TOKEN environment variable not provided"
-        exit 1
-    fi
-
-    # Need to disable askPass to prevent it firing with the PAT in the URL
-    git \
-        -c core.askPass= \
-        -c remote.origin.pushurl="https://${GH_BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-        push "${PUSH_ARGS[@]}"
+    git push "${PUSH_ARGS[@]}"
 }
 
 start_group() {
@@ -178,6 +174,8 @@ evaluate_pr_merge() {
     head_ref="$(echo "$PR_EVAL" | jq -r '.head_ref')"
     head_commit="$(echo "$PR_EVAL" | jq -r '.head_commit')"
 
+    git checkout "refs/remotes/origin/pull/$PR_NUMBER/head"
+
     git commit --quiet --amend --no-edit \
         -m "Merge pull request #$PR_NUMBER from $head_ref"
 
@@ -209,7 +207,7 @@ git_deploy_tree() {
     git \
         --git-dir=$DEPLOY_DIR/.git \
         --work-tree=$DEPLOY_DIR \
-        -c core.excludesfile=$BASE_DIR/.deploy-gitignore \
+        -c core.excludesfile=$CHECKOUT_DIR/.deploy-gitignore \
         "$@"
 }
 
@@ -226,19 +224,22 @@ evaluate_pages_deploy() {
         return
     fi
 
-    # If this is a pull request event, we want the head ref; if it's a push we
-    # fall back to GITHUB_REF. There may be a refs/heads/ we want to strip out.
-    deploy_src_ref="$(git rev-parse --abbrev-ref=strict "${HEAD_REF:-$GITHUB_REF}")"
-    deploy_src_sha="$(git rev-parse HEAD)"
+    # If this is a pull request event, we want the head ref; if it's a push the
+    # HEAD_REF variable should specify the branch to which the push went. There
+    # may be a refs/heads/ we want to strip out.
+    deploy_src_ref="$(git rev-parse --abbrev-ref=strict "$HEAD_REF")"
+    deploy_src_sha="$(git rev-parse "$HEAD_REF")"
 
-    # If we are handling a previously pushed commit, bail if we are rebuilding
-    # the last deployed commit, as determined using the deploy tags
+    # Handle scenarios where the build is triggered for a commit already on
+    # develop
     if [[ "$EFFECTIVE_EVENT" == "push" || "$EFFECTIVE_EVENT" == "cron" ]]; then
         if [[ "$deploy_src_ref" != develop ]]; then
             echo "Not deploying to GitHub Pages (branch: $deploy_src_ref)"
             return
         fi
 
+        # Bail if we are rebuilding the last deployed commit, as determined
+        # using the deploy tags
         local has_prior="$(
             git ls-remote --tags origin "deploy/master/*-$deploy_src_sha^{}" |
             jq -R -r --arg prior_deploy "$(git rev-parse origin/master)" '

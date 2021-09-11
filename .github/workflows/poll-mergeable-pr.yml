@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-18.04
 
     env:
-      # See comment in base.yml
+      # See comment in validate.yml
       BASH_ENV: ci/env.sh
 
     steps:
