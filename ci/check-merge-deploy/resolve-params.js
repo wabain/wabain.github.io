@@ -70,7 +70,7 @@ module.exports = async function resolveMergeCheckParameters({
                 branch: targetPr.head.ref,
             })
 
-            const latestRun = runs
+            const latestRun = runs.workflow_runs
                 .filter((run) =>
                     run.pull_requests.some(
                         (pr) => pr.number === targetPr.number,
