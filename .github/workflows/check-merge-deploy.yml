@@ -44,7 +44,7 @@ jobs:
         id: resolve
         uses: actions/github-script@v4
         with:
-          script: await require('./ci/check-merge-deploy/resolve-params.js')({ context, github })
+          script: await require('./ci/check-merge-deploy/resolve-params.js')({ context, github, core })
 
       - name: Download workflow artifacts
         id: artifact-download
@@ -54,7 +54,7 @@ jobs:
           WORKSPACE: ${{ github.workspace }}
           WORKFLOW_RUN_ID: ${{ steps.resolve.outputs.workflow_run }}
         with:
-          script: await require('./ci/check-merge-deploy/download.js')({ context, github })
+          script: await require('./ci/check-merge-deploy/download.js')({ context, github, core })
 
       - name: Extract
         if: ${{ steps.artifact-download.outputs.deploy_path != null }}
