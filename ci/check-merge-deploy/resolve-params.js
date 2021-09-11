@@ -8,15 +8,6 @@ module.exports = async function resolveMergeCheckParameters({
         case 'workflow_run': {
             const run = context.payload.workflow_run
 
-            // sanity check: should be enforced by job-level `if`
-            if (run.conclusion !== 'success') {
-                throw new Error(
-                    `unexpected workflow run event conclusion: ${JSON.stringify(
-                        run,
-                    )}`,
-                )
-            }
-
             switch (run.event) {
                 case 'pull_request': {
                     const prs = run.pull_requests
