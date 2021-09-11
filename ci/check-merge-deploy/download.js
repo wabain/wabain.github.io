@@ -10,7 +10,7 @@ module.exports = async function download({ context, github, core }) {
         run_id: process.env.WORKFLOW_RUN_ID,
     })
 
-    core.debug(`artifacts: ${JSON.stringify(artifacts, undefined, '    ')}`)
+    core.group('artifacts list', () => core.info(toJson(artifacts)))
 
     const deployTree = artifacts.data.artifacts.find(
         ({ name }) => name === NAME,
@@ -18,7 +18,7 @@ module.exports = async function download({ context, github, core }) {
 
     if (!deployTree) {
         core.info(`no artifact found with name ${NAME}`)
-        return JSON.stringify({ deploy_path: null })
+        return toJson({ deploy_path: null })
     }
 
     const download = await github.actions.downloadArtifact({
@@ -32,5 +32,9 @@ module.exports = async function download({ context, github, core }) {
 
     core.info(`wrote artifact ${NAME} from ${deployTree.id} to ${PATH}`)
 
-    return JSON.stringify({ deploy_path: PATH })
+    return toJson({ deploy_path: PATH })
+}
+
+function toJson(input) {
+    return JSON.stringify(input, undefined, '    ')
 }

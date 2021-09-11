@@ -15,11 +15,9 @@ jobs:
     name: Check merge and deploy eligibility
     runs-on: ubuntu-18.04
 
-    if: >
-      ${{ github.eventName != 'workflow_run' ||
-          github.event.workflow_run.event == 'pull_request' ||
-          (github.event.workflow_run.event == 'push' &&
-           github.context.ref == 'refs/heads/develop') }}
+    # Note: breaking the condition across multiple lines seemed to cause the
+    # step to always run
+    if: ${{ github.eventName != 'workflow_run' || github.event.workflow_run.event == 'pull_request' || (github.event.workflow_run.event == 'push' && github.context.ref == 'refs/heads/develop') }}
 
     env:
       # See comment in validate.yml
@@ -131,12 +129,9 @@ jobs:
 
       - name: Push eligible refs
         id: push-refs
-        if: >
-          ${{
-            steps.resolve.outputs.workflow_run != null &&
-              steps.resolve.outputs.conclusion == 'success' &&
-              (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false')
-          }}
+        # Note: breaking the condition across multiple lines seemed to cause the
+        # step to always run
+        if: ${{ steps.resolve.outputs.workflow_run != null && steps.resolve.outputs.conclusion == 'success' && (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') }}
         env:
           CI_DRY_RUN: "true"
           BASE_DIR: ${{ github.workspace }}

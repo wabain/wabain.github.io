@@ -3,9 +3,7 @@ module.exports = async function resolveMergeCheckParameters({
     github,
     core,
 }) {
-    core.debug(
-        `event payload: ${JSON.stringify(context.payload, undefined, '    ')}`,
-    )
+    core.group('event payload', () => core.info(toJson(context.payload)))
 
     switch (context.eventName) {
         case 'workflow_run': {
@@ -17,9 +15,7 @@ module.exports = async function resolveMergeCheckParameters({
 
                     if (prs.length !== 1) {
                         throw new Error(
-                            `expected one pull request associated with run, got ${JSON.stringify(
-                                prs,
-                            )}`,
+                            `expected one pull request, got ${toJson(prs)}`,
                         )
                     }
 
@@ -55,7 +51,7 @@ module.exports = async function resolveMergeCheckParameters({
 
                 default: {
                     throw new Error(
-                        `unexpected workflow run event: ${JSON.stringify(run)}`,
+                        `unexpected workflow run event: ${toJson(run)}`,
                     )
                 }
             }
@@ -73,9 +69,7 @@ module.exports = async function resolveMergeCheckParameters({
                 branch: targetPr.head.ref,
             })
 
-            core.debug(
-                `listed runs: ${JSON.stringify(runs, undefined, '    ')}`,
-            )
+            core.group('listed runs', () => core.info(toJson(runs)))
 
             const latestRun = runs.workflow_runs
                 .filter((run) =>
@@ -113,7 +107,11 @@ module.exports = async function resolveMergeCheckParameters({
 }
 
 function logOutputs(core, outputs) {
-    const serialized = JSON.stringify(outputs, undefined, '   ')
+    const serialized = toJson(outputs)
     core.info(`outputs: ${serialized}`)
     return serialized
+}
+
+function toJson(input) {
+    return JSON.stringify(input, undefined, '    ')
 }
