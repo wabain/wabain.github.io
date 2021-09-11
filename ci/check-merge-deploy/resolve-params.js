@@ -1,8 +1,11 @@
 module.exports = async function resolveMergeCheckParameters({
     context,
     github,
+    core,
 }) {
-    console.log('event payload:', context.payload)
+    core.debug(
+        `event payload: ${JSON.stringify(context.payload, undefined, '    ')}`,
+    )
 
     switch (context.eventName) {
         case 'workflow_run': {
@@ -26,7 +29,7 @@ module.exports = async function resolveMergeCheckParameters({
                         base: { ref: baseRef, sha: baseSha },
                     } = prs[0]
 
-                    return JSON.stringify({
+                    return logOutputs(core, {
                         workflow_run: run.id,
                         conclusion: run.conclusion,
 
@@ -40,7 +43,7 @@ module.exports = async function resolveMergeCheckParameters({
                 }
 
                 case 'push': {
-                    return JSON.stringify({
+                    return logOutputs(core, {
                         workflow_run: run.id,
                         conclusion: run.conclusion,
 
@@ -70,7 +73,11 @@ module.exports = async function resolveMergeCheckParameters({
                 branch: targetPr.head.ref,
             })
 
-            const latestRun = runs
+            core.debug(
+                `listed runs: ${JSON.stringify(runs, undefined, '    ')}`,
+            )
+
+            const latestRun = runs.workflow_runs
                 .filter((run) =>
                     run.pull_requests.some(
                         (pr) => pr.number === targetPr.number,
@@ -86,7 +93,7 @@ module.exports = async function resolveMergeCheckParameters({
                 latestRun.find((pr) => pr.number === targetPr.number)) ||
             targetPr
 
-            return JSON.stringify({
+            return logOutputs(core, {
                 workflow_run: latestRun ? latestRun.id : null,
                 conclusion: latestRun ? latestRun.conclusion : null,
 
@@ -103,4 +110,10 @@ module.exports = async function resolveMergeCheckParameters({
             throw new Error(`unexpected triggering event: ${context.eventName}`)
         }
     }
+}
+
+function logOutputs(core, outputs) {
+    const serialized = JSON.stringify(outputs, undefined, '   ')
+    core.info(`outputs: ${serialized}`)
+    return serialized
 }
