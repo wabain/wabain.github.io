@@ -89,8 +89,7 @@ module.exports = async function resolveMergeCheckParameters({
                 number,
                 head: { ref: headRef, sha: headSha },
                 base: { ref: baseRef, sha: baseSha },
-            } = (latestRun &&
-                latestRun.find((pr) => pr.number === targetPr.number)) ??
+            } = latestRun?.find((pr) => pr.number === targetPr.number) ??
             targetPr
 
             return JSON.stringify({
