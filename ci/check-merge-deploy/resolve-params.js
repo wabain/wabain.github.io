@@ -89,12 +89,13 @@ module.exports = async function resolveMergeCheckParameters({
                 number,
                 head: { ref: headRef, sha: headSha },
                 base: { ref: baseRef, sha: baseSha },
-            } = latestRun?.find((pr) => pr.number === targetPr.number) ??
+            } = (latestRun &&
+                latestRun.find((pr) => pr.number === targetPr.number)) ||
             targetPr
 
             return JSON.stringify({
-                workflow_run: latestRun?.id ?? null,
-                conclusion: latestRun?.conclusion ?? null,
+                workflow_run: latestRun ? latestRun.id : null,
+                conclusion: latestRun ? latestRun.conclusion : null,
 
                 effective_event: 'pull_request',
                 pr_number: number,
