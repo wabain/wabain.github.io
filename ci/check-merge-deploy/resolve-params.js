@@ -65,7 +65,7 @@ module.exports = async function resolveMergeCheckParameters({
             const runs = await github.actions.listWorkflowRuns({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                workflow_id: 'base.yaml',
+                workflow_id: 'validate.yml',
                 event: 'pull_request',
                 branch: targetPr.head.ref,
             })
