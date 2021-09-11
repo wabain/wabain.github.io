@@ -2,6 +2,8 @@ module.exports = async function resolveMergeCheckParameters({
     context,
     github,
 }) {
+    console.log('event payload:', context.payload)
+
     switch (context.eventName) {
         case 'workflow_run': {
             const run = context.payload.workflow_run
@@ -17,7 +19,7 @@ module.exports = async function resolveMergeCheckParameters({
 
             switch (run.event) {
                 case 'pull_request': {
-                    const prs = context.payload.pull_requests
+                    const prs = run.pull_requests
 
                     if (prs.length !== 1) {
                         throw new Error(
