@@ -14,6 +14,7 @@ DEPLOY_DIR="$BASE_DIR/deploy"
 RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
 # Mutable globals
+HAS_DEPLOY_TREE=false
 PUSH_PR_MERGE=false
 PUSH_PAGES_DEPLOY=false
 PUSH_ARGS=(--follow-tags --atomic origin)
@@ -23,15 +24,17 @@ main() {
     update_refs
     end_group
 
-    start_group "Prepare deploy content"
+    if [ -e "$JEKYLL_BUILD_DIR" ]; then
+        start_group "Prepare deploy content"
 
-    echo "Deployment content is:"
-    tree -ah "$JEKYLL_BUILD_DIR"
+        echo "Deployment content is:"
+        tree -ah "$JEKYLL_BUILD_DIR"
 
-    create_deploy_tree
-    git -c color.ui=always diff origin/master $DEPLOY_TREE
+        create_deploy_tree
+        git -c color.ui=always diff origin/master $DEPLOY_TREE
 
-    end_group
+        end_group
+    fi
 
     start_group "Check for PR merge"
     evaluate_pr_merge
@@ -201,6 +204,7 @@ create_deploy_tree() {
 
     git_deploy_tree add -A .
     DEPLOY_TREE=$(git_deploy_tree write-tree)
+    HAS_DEPLOY_TREE=true
 }
 
 git_deploy_tree() {
@@ -221,6 +225,11 @@ evaluate_pages_deploy() {
     # Deploy to GitHub pages only if we're targeting the develop branch
     if [[ "$EFFECTIVE_EVENT" == "pull_request" ]] && [[ "$PUSH_PR_MERGE" == "false" || "$BASE_REF" != develop ]]; then
         echo "Not deploying to GitHub Pages (target branch: $BASE_REF, pull request: $PR_NUMBER)"
+        return
+    fi
+
+    if [[ "$HAS_DEPLOY_TREE" == false ]]; then
+        echo "Not deploying to GitHub Pages: no deploy content available"
         return
     fi
 

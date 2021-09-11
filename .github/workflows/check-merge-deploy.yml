@@ -49,10 +49,10 @@ jobs:
       - name: Download workflow artifacts
         id: artifact-download
         uses: actions/github-script@v4
-        if: ${{ steps.resolve.workflow_run != null }}
+        if: ${{ steps.resolve.outputs.workflow_run != null }}
         env:
           WORKSPACE: ${{ github.workspace }}
-          WORKFLOW_RUN_ID: ${{ steps.resolve.workflow_run }}
+          WORKFLOW_RUN_ID: ${{ steps.resolve.outputs.workflow_run }}
         with:
           script: await require('./ci/check-merge-deploy/download.js')({ context, github })
 
@@ -133,8 +133,8 @@ jobs:
         id: push-refs
         if: >
           ${{
-            steps.resolve.workflow_run != null &&
-              steps.resolve.conclusion == 'success' &&
+            steps.resolve.outputs.workflow_run != null &&
+              steps.resolve.outputs.conclusion == 'success' &&
               (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false')
           }}
         env:
