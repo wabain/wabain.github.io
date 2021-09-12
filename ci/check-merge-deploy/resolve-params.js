@@ -140,7 +140,7 @@ function logOutputs(core, outputs) {
             break
 
         case 'push':
-            logNotice(`for push of ${outputs.head_sha} to ${outputs.head_ref}`)
+            logNotice(`for push of ${outputs.sha} to ${outputs.ref}`)
             break
 
         default:
