@@ -87,7 +87,7 @@ jobs:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
         run: |
           git fetch --no-tags --depth=2 origin \
-            "+refs/pull/$PR_NUMBER/head:refs/remotes/origin/pull/$PR_NUMBER/head"
+            "+refs/pull/$PR_NUMBER/merge:refs/remotes/origin/pull/$PR_NUMBER/merge"
 
       - name: Evaluate pull request merge eligibility
         id: pr-eval
@@ -124,7 +124,7 @@ jobs:
           base_sha="$(echo "$pr" | jq -r '.base_commit')"
           merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
 
-          effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/head)"
+          effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/merge)"
 
           if [[ "$head_sha" != "$RUN_HEAD_SHA" || "$base_sha" != "$RUN_BASE_SHA" ]]; then
             echo "Run is stale (commit under test is merge of $RUN_HEAD_SHA into"

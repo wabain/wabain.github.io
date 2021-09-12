@@ -177,7 +177,7 @@ evaluate_pr_merge() {
     head_ref="$(echo "$PR_EVAL" | jq -r '.head_ref')"
     head_commit="$(echo "$PR_EVAL" | jq -r '.head_commit')"
 
-    git checkout "refs/remotes/origin/pull/$PR_NUMBER/head"
+    git checkout "refs/remotes/origin/pull/$PR_NUMBER/merge"
 
     git commit --quiet --amend --no-edit \
         -m "Merge pull request #$PR_NUMBER from $head_ref"
