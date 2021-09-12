@@ -202,3 +202,23 @@ jobs:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+
+      # For workflow_run events there's no obvious indicator of a failure
+      # within the pull request, so add a comment
+      - name: "Post-run: Add pull request comment on failure"
+        if: >
+          failure() &&
+            steps.resolve.outputs.effective_event == 'pull_request' &&
+            github.event_name == 'workflow_run'
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          curl --silent --show-error --fail -XPOST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d "$(jq -n '{ body: "A [merge/deploy check job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"
