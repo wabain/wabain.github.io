@@ -120,15 +120,16 @@ jobs:
           fi
 
           head_ref="$(echo "$pr" | jq -r '.head_ref')"
-          head_sha="$(echo "$pr" | jq -r '.head_comit')"
+          head_sha="$(echo "$pr" | jq -r '.head_commit')"
           base_sha="$(echo "$pr" | jq -r '.base_commit')"
           merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
 
           effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/head)"
 
           if [[ "$head_sha" != "$RUN_HEAD_SHA" || "$base_sha" != "$RUN_BASE_SHA" ]]; then
-            echo "Run is stale (commit under test: $RUN_HEAD_SHA into $RUN_BASE_SHA,"
-            echo "$head_ref merge: $merge_commit of $head_sha into $base_sha)"
+            echo "Run is stale (commit under test is merge of $RUN_HEAD_SHA into"
+            echo "base $RUN_BASE_SHA, but current $head_ref merge $merge_commit"
+            echo "is of $head_sha into base $base_sha)"
             echo '::set-output name=stale::true'
             exit
           fi
