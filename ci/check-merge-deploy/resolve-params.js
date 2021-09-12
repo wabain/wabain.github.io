@@ -27,6 +27,7 @@ module.exports = async function resolveMergeCheckParameters({
 
                     return logOutputs(core, {
                         workflow_run: run.id,
+                        workflow_run_url: run.html_url,
                         conclusion: run.conclusion,
 
                         effective_event: 'pull_request',
@@ -41,6 +42,7 @@ module.exports = async function resolveMergeCheckParameters({
                 case 'push': {
                     return logOutputs(core, {
                         workflow_run: run.id,
+                        workflow_run_url: run.html_url,
                         conclusion: run.conclusion,
 
                         effective_event: 'push',
@@ -71,26 +73,30 @@ module.exports = async function resolveMergeCheckParameters({
 
             logGrouped(core, 'Listed runs', toJson(runs))
 
-            const latestRun = runs.data.workflow_runs
-                .filter((run) =>
-                    run.pull_requests.some(
-                        (pr) => pr.number === targetPr.number,
-                    ),
-                )
-                .reduce((r1, r2) => (r1.created_at < r2.created_at ? r2 : r1))
+            const relevantRuns = runs.data.workflow_runs.filter((run) =>
+                run.pull_requests.some((pr) => pr.number === targetPr.number),
+            )
+
+            const latestRun =
+                relevantRuns.length === 0
+                    ? null
+                    : relevantRuns.reduce((r1, r2) =>
+                          r1.created_at < r2.created_at ? r2 : r1,
+                      )
 
             const {
                 number,
                 head: { ref: headRef, sha: headSha },
                 base: { ref: baseRef, sha: baseSha },
-            } = (latestRun &&
-                latestRun.pull_requests.find(
-                    (pr) => pr.number === targetPr.number,
-                )) ||
-            targetPr
+            } = latestRun
+                ? latestRun.pull_requests.find(
+                      (pr) => pr.number === targetPr.number,
+                  )
+                : targetPr
 
             return logOutputs(core, {
                 workflow_run: latestRun ? latestRun.id : null,
+                workflow_run_url: latestRun ? latestRun.html_url : null,
                 conclusion: latestRun ? latestRun.conclusion : null,
 
                 effective_event: 'pull_request',
@@ -116,6 +122,33 @@ function logGrouped(core, outer, inner) {
 
 function logOutputs(core, outputs) {
     core.info(`outputs: ${toJson(outputs)}`)
+
+    if (outputs.workflow_run === null) {
+        core.notice('no associated workflow run found')
+    } else {
+        core.notice(
+            `workflow run ${outputs.workflow_run} (conclusion: ${outputs.conclusion}): ${outputs.workflow_run_url}`,
+        )
+    }
+
+    switch (outputs.effective_event) {
+        case 'pull_request':
+            core.notice(
+                `for pull_request #${outputs.pr_number} from ${outputs.head_ref} into ${outputs.base_ref}`,
+            )
+            break
+
+        case 'push':
+            core.notice(
+                `for push of ${outputs.head_sha} to ${outputs.head_ref}`,
+            )
+            break
+
+        default:
+            core.notice(`for ${outputs.effective_event}`)
+            break
+    }
+
     return outputs
 }
 
