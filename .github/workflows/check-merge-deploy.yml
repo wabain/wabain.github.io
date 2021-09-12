@@ -75,6 +75,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          file "$PATH"
           unzip "$PATH" -d "$BASE_DIR"
           tar -xzf "$BASE_DIR"/site.tgz -C "$BASE_DIR"
 
