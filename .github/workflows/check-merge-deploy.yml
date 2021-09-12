@@ -62,7 +62,9 @@ jobs:
           script: return await require('./ci/check-merge-deploy/download.js')({ context, github, core })
 
       - name: Extract
-        if: fromJSON(steps.artifact-download.outputs.result).deploy_path != null
+        if: >
+          steps.artifact-download.outcome == 'success' &&
+            fromJSON(steps.artifact-download.outputs.result).deploy_path != null
         env:
           PATH: ${{ fromJSON(steps.artifact-download.outputs.result).deploy_path }}
           BASE_DIR: ${{ github.workspace }}
