@@ -18,7 +18,7 @@ module.exports = async function download({ context, github, core }) {
 
     if (!deployTree) {
         core.info(`no artifact found with name ${NAME}`)
-        return toJson({ deploy_path: null })
+        return { deploy_path: null }
     }
 
     const download = await github.actions.downloadArtifact({
@@ -32,7 +32,7 @@ module.exports = async function download({ context, github, core }) {
 
     core.info(`wrote artifact ${NAME} from ${deployTree.id} to ${PATH}`)
 
-    return toJson({ deploy_path: PATH })
+    return { deploy_path: PATH }
 }
 
 function toJson(input) {
