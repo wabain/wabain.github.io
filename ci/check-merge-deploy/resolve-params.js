@@ -71,7 +71,7 @@ module.exports = async function resolveMergeCheckParameters({
 
             logGrouped(core, 'Listed runs', toJson(runs))
 
-            const latestRun = runs.workflow_runs
+            const latestRun = runs.data.workflow_runs
                 .filter((run) =>
                     run.pull_requests.some(
                         (pr) => pr.number === targetPr.number,
