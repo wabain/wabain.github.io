@@ -115,13 +115,19 @@ runs:
 
         print-version() {
           local cmd=$1
+          shift
+
+          local args="$@"
+          if [ -z "$args" ]; then
+            args=--version
+          fi
 
           if ! hash "$cmd" &> /dev/null; then
             echo "$cmd: not installed"
             return
           fi
 
-          echo "$cmd: $("$cmd" --version 2>&1 | head -n1)"
+          echo "$cmd: $("$cmd" $args 2>&1 | head -n1)"
         }
 
         print-version firefox
@@ -132,4 +138,5 @@ runs:
         print-version ruby
         print-version bundler
         print-version tree
+        print-version unzip -v
         print-version yarn
