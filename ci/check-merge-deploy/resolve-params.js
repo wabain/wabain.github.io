@@ -3,7 +3,7 @@ module.exports = async function resolveMergeCheckParameters({
     github,
     core,
 }) {
-    core.group('event payload', () => core.info(toJson(context.payload)))
+    logGrouped(core, 'Event payload', toJson(context.payload))
 
     switch (context.eventName) {
         case 'workflow_run': {
@@ -69,7 +69,7 @@ module.exports = async function resolveMergeCheckParameters({
                 branch: targetPr.head.ref,
             })
 
-            core.group('listed runs', () => core.info(toJson(runs)))
+            logGrouped(core, 'Listed runs', toJson(runs))
 
             const latestRun = runs.workflow_runs
                 .filter((run) =>
@@ -104,6 +104,12 @@ module.exports = async function resolveMergeCheckParameters({
             throw new Error(`unexpected triggering event: ${context.eventName}`)
         }
     }
+}
+
+function logGrouped(core, outer, inner) {
+    core.startGroup(outer)
+    core.info(inner)
+    core.endGroup()
 }
 
 function logOutputs(core, outputs) {
