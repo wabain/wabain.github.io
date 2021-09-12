@@ -40,14 +40,16 @@ jobs:
             jq
 
       - name: Resolve inputs
-        id: resolve
+        id: resolve-impl
         uses: actions/github-script@v4
         with:
           script: return await require('./ci/check-merge-deploy/resolve-params.js')({ context, github, core })
 
-      - env:
-          RESOLVED: ${{ toJson(steps.resolve) }}
-        run: echo "$RESOLVED"
+      - name: Unpack resolved parameters
+        id: resolve
+        env:
+          VALUES: ${{ steps.resolve-impl.outputs.result }}
+        run: jq -n -r --argjson values "$VALUES" '$values | to_entries[] | "::set-output name=\(.key)::\(.value)"'
 
       - name: Download workflow artifacts
         id: artifact-download
@@ -60,9 +62,9 @@ jobs:
           script: return await require('./ci/check-merge-deploy/download.js')({ context, github, core })
 
       - name: Extract
-        if: steps.artifact-download.outputs.deploy_path != null
+        if: fromJSON(steps.artifact-download.outputs.result).deploy_path != null
         env:
-          PATH: ${{ steps.artifact-download.outputs.deploy_path }}
+          PATH: ${{ fromJSON(steps.artifact-download.outputs.result).deploy_path }}
           BASE_DIR: ${{ github.workspace }}
         run: |
           set -euo pipefail
