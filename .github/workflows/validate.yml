@@ -216,7 +216,10 @@ jobs:
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile
-        if: steps.resolve.outputs.effective_event == 'pull_request'
+        if: >
+          steps.resolve.outputs.effective_event == 'pull_request' ||
+            (steps.resolve.outputs.effective_event == 'push' &&
+             steps.resolve.outputs.ref == 'refs/heads/develop')
         run: |
           tar -c -z --null --verbatim-files-from \
             --verbose --show-transformed-names \
