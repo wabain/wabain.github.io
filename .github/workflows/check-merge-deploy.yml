@@ -76,8 +76,12 @@ jobs:
           set -euo pipefail
 
           file "$DEPLOY_PATH"
-          unzip "$DEPLOY_PATH" -d "$BASE_DIR"
-          tar -xzf "$BASE_DIR"/site.tgz -C "$BASE_DIR"
+          unzip "$DEPLOY_PATH" site.tgz site.revisions.json -d "$BASE_DIR"
+          tar -xzf "$BASE_DIR"/site.tgz -C "$BASE_DIR" site
+
+          if [ ! -f "$BASE_DIR/site.revisions.json" ]; then
+            echo "::warning ::missing site.revisions.json in archive"
+          fi
 
           tree "$BASE_DIR"
 
@@ -95,10 +99,6 @@ jobs:
         env:
           CONCLUSION: ${{ steps.resolve.outputs.conclusion }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-
-          RUN_HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
-          RUN_BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
-
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pr="$(bin/ci-evaluate-pr.sh)"
@@ -110,6 +110,7 @@ jobs:
 
           # Add labels before checking for staleness in order to ensure the PR
           # shows up in the maintenance cron job's check
+
           if [[ "$(echo "$pr" | jq '.pr_may_be_eligible')" == "true" && "$CONCLUSION" == success ]]; then
             if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
               bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
@@ -118,22 +119,53 @@ jobs:
             bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
           fi
 
-          head_ref="$(echo "$pr" | jq -r '.head_ref')"
-          head_sha="$(echo "$pr" | jq -r '.head_commit')"
-          base_sha="$(echo "$pr" | jq -r '.base_commit')"
-          merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
+          # Ensure the revisions used in the job match the revisions found by
+          # the PR evaluation
 
-          effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/merge)"
-
-          if [[ "$head_sha" != "$RUN_HEAD_SHA" || "$base_sha" != "$RUN_BASE_SHA" ]]; then
-            echo "Run is stale (commit under test is merge of $RUN_HEAD_SHA into"
-            echo "base $RUN_BASE_SHA, but current $head_ref merge $merge_commit"
-            echo "is of $head_sha into base $base_sha)"
+          if [ ! -f "site.revisions.json" ]; then
+            echo "No site.revisions.json: treating workflow run as stale"
             echo '::set-output name=stale::true'
             exit
           fi
 
-          if [[ "$merge_commit" != "$effective_merge_commit" ]]; then
+          stale_records="$(
+            jq \
+            --null-input \
+            --raw-output \
+            --argjson pr_eval "$pr" \
+            --slurpfile run_entries site.revisions.json \
+            '
+              (
+                if ($run_entries | length) == 1 then
+                  $run_entries[0]
+                else
+                  error("revisions file contains multiple JSON records")
+                end
+              ) as $run |
+              ["head_ref", "base_ref", "head_sha", "base_sha"] as $fields |
+              [
+                $fields |
+                  { field: ., run: $run[.]?, current: $pr_eval[.] } |
+                  select(.run != .current) |
+                  @json "\(.field) has changed since run (was \(.run), now \(.current))"
+              ] |
+              join("\n")
+            '
+          )"
+
+          if [ ! -z "$stale_records" ]; then
+            echo "$stale_records"
+            echo '::set-output name=stale::true'
+            exit
+          fi
+
+          # Ensure the fetched merge commit matches the revision found in the
+          # PR evaluation
+
+          eval_merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
+          effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/merge)"
+
+          if [[ "$eval_merge_commit" != "$effective_merge_commit" ]]; then
             echo "PR data is stale (got merge $effective_merge_commit, expected $head_ref merge $merge_commit)"
             echo '::set-output name=stale::true'
             exit
@@ -170,3 +202,23 @@ jobs:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
+
+      # For workflow_run events there's no obvious indicator of a failure
+      # within the pull request, so add a comment
+      - name: "Post-run: Add pull request comment on failure"
+        if: >
+          failure() &&
+            steps.resolve.outputs.effective_event == 'pull_request' &&
+            github.event_name == 'workflow_run'
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          curl --silent --show-error --fail -XPOST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d "$(jq -n '{ body: "A [merge/deploy check job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"

@@ -21,8 +21,8 @@ module.exports = async function resolveMergeCheckParameters({
 
                     const {
                         number,
-                        head: { ref: headRef, sha: headSha },
-                        base: { ref: baseRef, sha: baseSha },
+                        head: { ref: headRef },
+                        base: { ref: baseRef },
                     } = prs[0]
 
                     return logOutputs(core, {
@@ -33,9 +33,7 @@ module.exports = async function resolveMergeCheckParameters({
                         effective_event: 'pull_request',
                         pr_number: number,
                         head_ref: headRef,
-                        head_sha: headSha,
                         base_ref: baseRef,
-                        base_sha: baseSha,
                     })
                 }
 
@@ -46,8 +44,9 @@ module.exports = async function resolveMergeCheckParameters({
                         conclusion: run.conclusion,
 
                         effective_event: 'push',
+                        ref: context.ref,
+                        sha: context.sha,
                         head_ref: context.ref,
-                        head_sha: context.sha,
                     })
                 }
 
@@ -86,8 +85,8 @@ module.exports = async function resolveMergeCheckParameters({
 
             const {
                 number,
-                head: { ref: headRef, sha: headSha },
-                base: { ref: baseRef, sha: baseSha },
+                head: { ref: headRef },
+                base: { ref: baseRef },
             } = latestRun
                 ? latestRun.pull_requests.find(
                       (pr) => pr.number === targetPr.number,
@@ -102,9 +101,7 @@ module.exports = async function resolveMergeCheckParameters({
                 effective_event: 'pull_request',
                 pr_number: number,
                 head_ref: headRef,
-                head_sha: headSha,
                 base_ref: baseRef,
-                base_sha: baseSha,
             })
         }
 
