@@ -15,9 +15,10 @@ jobs:
     name: Check merge and deploy eligibility
     runs-on: ubuntu-18.04
 
-    # Note: breaking the condition across multiple lines seemed to cause the
-    # step to always run
-    if: ${{ github.eventName != 'workflow_run' || github.event.workflow_run.event == 'pull_request' || (github.event.workflow_run.event == 'push' && github.context.ref == 'refs/heads/develop') }}
+    if: >
+      github.eventName != 'workflow_run' ||
+        github.event.workflow_run.event == 'pull_request' ||
+        (github.event.workflow_run.event == 'push' && github.context.ref == 'refs/heads/develop')
 
     env:
       # See comment in validate.yml
@@ -47,7 +48,7 @@ jobs:
       - name: Download workflow artifacts
         id: artifact-download
         uses: actions/github-script@v4
-        if: ${{ steps.resolve.outputs.workflow_run != null }}
+        if: steps.resolve.outputs.workflow_run != null
         env:
           WORKSPACE: ${{ github.workspace }}
           WORKFLOW_RUN_ID: ${{ steps.resolve.outputs.workflow_run }}
@@ -55,7 +56,7 @@ jobs:
           script: return await require('./ci/check-merge-deploy/download.js')({ context, github, core })
 
       - name: Extract
-        if: ${{ steps.artifact-download.outputs.deploy_path != null }}
+        if: steps.artifact-download.outputs.deploy_path != null
         env:
           PATH: ${{ steps.artifact-download.outputs.deploy_path }}
           BASE_DIR: ${{ github.workspace }}
@@ -68,7 +69,7 @@ jobs:
           tree "$BASE_DIR"
 
       - name: Fetch merge ref
-        if: ${{ steps.resolve.outputs.effective_event == 'pull_request' }}
+        if: steps.resolve.outputs.effective_event == 'pull_request'
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
         run: |
@@ -77,7 +78,7 @@ jobs:
 
       - name: Evaluate pull request merge eligibility
         id: pr-eval
-        if: ${{ steps.resolve.outputs.effective_event == 'pull_request' }}
+        if: steps.resolve.outputs.effective_event == 'pull_request'
         env:
           CONCLUSION: ${{ steps.resolve.outputs.conclusion }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
@@ -129,9 +130,10 @@ jobs:
 
       - name: Push eligible refs
         id: push-refs
-        # Note: breaking the condition across multiple lines seemed to cause the
-        # step to always run
-        if: ${{ steps.resolve.outputs.workflow_run != null && steps.resolve.outputs.conclusion == 'success' && (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') }}
+        if: >
+          steps.resolve.outputs.workflow_run != null &&
+            steps.resolve.outputs.conclusion == 'success' &&
+            (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false')
         env:
           CI_DRY_RUN: "true"
           BASE_DIR: ${{ github.workspace }}
@@ -145,9 +147,11 @@ jobs:
         run: bin/ci-push.sh
 
       - name: "Post-push: Clear pull request merge-pending label"
-        # Note: breaking the condition across multiple lines seemed to cause the
-        # step to always run
-        if: ${{ always() && steps.resolve.outputs.effective_event == 'pull_request' && steps.push-refs.outcome == 'success' && fromJSON(steps.pr-eval.outputs.eval).pr_is_eligible }}
+        if: >
+          always() &&
+            steps.resolve.outputs.effective_event == 'pull_request' &&
+            steps.push-refs.outcome == 'success' &&
+            fromJSON(steps.pr-eval.outputs.eval).pr_is_eligible
         continue-on-error: true
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
