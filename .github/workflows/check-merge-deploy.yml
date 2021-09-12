@@ -45,6 +45,10 @@ jobs:
         with:
           script: return await require('./ci/check-merge-deploy/resolve-params.js')({ context, github, core })
 
+      - env:
+          RESOLVED: ${{ toJson(steps.resolve) }}
+        run: echo "$RESOLVED"
+
       - name: Download workflow artifacts
         id: artifact-download
         uses: actions/github-script@v4
