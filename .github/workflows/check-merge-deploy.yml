@@ -70,13 +70,13 @@ jobs:
           steps.artifact-download.outcome == 'success' &&
             fromJSON(steps.artifact-download.outputs.result).deploy_path != null
         env:
-          PATH: ${{ fromJSON(steps.artifact-download.outputs.result).deploy_path }}
+          DEPLOY_PATH: ${{ fromJSON(steps.artifact-download.outputs.result).deploy_path }}
           BASE_DIR: ${{ github.workspace }}
         run: |
           set -euo pipefail
 
-          file "$PATH"
-          unzip "$PATH" -d "$BASE_DIR"
+          file "$DEPLOY_PATH"
+          unzip "$DEPLOY_PATH" -d "$BASE_DIR"
           tar -xzf "$BASE_DIR"/site.tgz -C "$BASE_DIR"
 
           tree "$BASE_DIR"
