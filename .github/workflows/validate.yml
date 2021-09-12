@@ -186,7 +186,6 @@ jobs:
         if: >
           failure() &&
             steps.resolve.outputs.effective_event == 'pull_request' &&
-            steps.push-refs.outcome != 'skipped' &&
             github.event_name == 'workflow_dispatch'
         continue-on-error: true
         env:
