@@ -100,7 +100,6 @@ jobs:
           RUN_BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
 
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
           pr="$(bin/ci-evaluate-pr.sh)"
 
@@ -169,5 +168,5 @@ jobs:
         continue-on-error: true
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
