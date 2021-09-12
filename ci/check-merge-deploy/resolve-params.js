@@ -123,29 +123,31 @@ function logGrouped(core, outer, inner) {
 function logOutputs(core, outputs) {
     core.info(`outputs: ${toJson(outputs)}`)
 
+    const logNotice = core.notice
+        ? (...args) => core.notice(...args)
+        : (...args) => core.info(...args)
+
     if (outputs.workflow_run === null) {
-        core.notice('no associated workflow run found')
+        logNotice('no associated workflow run found')
     } else {
-        core.notice(
+        logNotice(
             `workflow run ${outputs.workflow_run} (conclusion: ${outputs.conclusion}): ${outputs.workflow_run_url}`,
         )
     }
 
     switch (outputs.effective_event) {
         case 'pull_request':
-            core.notice(
+            logNotice(
                 `for pull_request #${outputs.pr_number} from ${outputs.head_ref} into ${outputs.base_ref}`,
             )
             break
 
         case 'push':
-            core.notice(
-                `for push of ${outputs.head_sha} to ${outputs.head_ref}`,
-            )
+            logNotice(`for push of ${outputs.head_sha} to ${outputs.head_ref}`)
             break
 
         default:
-            core.notice(`for ${outputs.effective_event}`)
+            logNotice(`for ${outputs.effective_event}`)
             break
     }
 
