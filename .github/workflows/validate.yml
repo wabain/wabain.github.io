@@ -168,6 +168,7 @@ jobs:
       - name: Create revisions file
         env:
           EVENT: ${{ steps.resolve.outputs.effective_event }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           REF: ${{ steps.resolve.outputs.ref }}
           HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
@@ -203,6 +204,15 @@ jobs:
                 }
               ' \
               > site.revisions.json
+
+            cat site.revisions.json | jq -C .
+            echo "::notice ::Pull request #$PR_NUMBER: $(
+                cat site.revisions.json |
+                jq --raw-output '
+                  "Ref \(.ref) [1] merges \(.head_ref) [2] into \(.base_ref) [3]. " +
+                  "[1]: \(.sha) [2]: \(.head_sha) [3]: \(.base_sha)"
+                '
+              )"
           else
             jq \
               --null-input \
@@ -210,9 +220,13 @@ jobs:
               --arg tree "$tree" \
               '{ ref: env.REF, sha: $sha, tree: $tree }' \
               > site.revisions.json
-          fi
 
-          cat site.revisions.json | jq -C .
+            cat site.revisions.json | jq -C .
+            echo "::notice ::$EVENT event: $(
+                cat site.revisions.json |
+                jq --raw-output '"ref \(.ref) at \(.sha)"'
+              )"
+          fi
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile
