@@ -8,6 +8,7 @@ inputs:
       jq
       bundler
       geckodriver
+      unzip
 
   github-token:
     description: Token to authenticate with when requesting geckodriver artifacts
@@ -35,7 +36,7 @@ runs:
               gsub("^\\s+|\\s+$"; "") |
               # Filter empty entries
               select(. != "") |
-              if test("^(tree|jq|bundler|geckodriver)$") then
+              if test("^(tree|jq|bundler|geckodriver|unzip)$") then
                 .
               else
                 error("::error ::Unknown dependency: \(.)")
@@ -55,13 +56,17 @@ runs:
     - name: Install apt dependencies
       shell: bash -e {0}
       env:
-        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'tree') }}
+        DEPS: ${{ steps.validated.outputs.dependencies }}
       run: |
-        [[ "$NEEDED" == true ]] || exit 0
+        apt_deps="$(jq --null-input --raw-output '
+          [env.DEPS | fromjson[] | select(test("^(tree|unzip)$"))] | join(" ")
+        ')"
 
-        echo "::group::Install apt dependencies"
+        [[ ! -z "$apt_deps" ]] || exit 0
+
+        echo "::group::Install apt dependencies ($apt_deps)"
         sudo apt-get update
-        sudo apt-get -yq --no-install-suggests --no-install-recommends install tree
+        sudo apt-get -yq --no-install-suggests --no-install-recommends install $apt_deps
         echo "::endgroup::"
 
     - name: Install jq
