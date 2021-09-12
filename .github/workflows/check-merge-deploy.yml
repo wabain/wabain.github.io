@@ -50,7 +50,10 @@ jobs:
         id: resolve
         env:
           VALUES: ${{ steps.resolve-impl.outputs.result }}
-        run: jq --null-input --raw-output 'env.VALUES | to_entries[] | "::set-output name=\(.key)::\(.value)"'
+        run: |
+          jq --null-input --raw-output '
+            env.VALUES | fromjson | to_entries[] | "::set-output name=\(.key)::\(.value)"
+          '
 
       - name: Download workflow artifacts
         id: artifact-download
