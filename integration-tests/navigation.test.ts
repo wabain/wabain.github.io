@@ -1,5 +1,3 @@
-import { it, jest, describe, beforeAll, afterAll, expect } from '@jest/globals'
-
 import { Builder, By, until, error as SeleniumErrors } from 'selenium-webdriver'
 import { Options as FirefoxOptions } from 'selenium-webdriver/firefox'
 import { Options as ChromeOptions } from 'selenium-webdriver/chrome'
