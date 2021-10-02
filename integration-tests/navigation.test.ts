@@ -125,7 +125,10 @@ function testPageNavigation({
             await navigateToPage(window, secondPage, firstPage)
         } catch (e) {
             // If there's no back-link, disregard the error
-            if (e.message != `no usable link to ${firstPage.params.url}`) {
+            if (
+                !(e instanceof Error) ||
+                e.message != `no usable link to ${firstPage.params.url}`
+            ) {
                 throw e
             }
         }
