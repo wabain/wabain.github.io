@@ -13,7 +13,7 @@ export type EventParams = {
 }
 
 export type ErrorParams = {
-    exception: Error
+    exception: unknown
     context: string
     category: EventCategory
 }
