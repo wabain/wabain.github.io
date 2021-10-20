@@ -1,5 +1,0 @@
-<!-- sizing.$grid = 352 -->
-<!-- add 10 to the width so that the line can fall in the middle -->
-<svg xmlns="http://www.w3.org/2000/svg" width="362" height="5" viewBox="-5 0 362 5">
-  <path fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="square" d="M352,0 L352,5"/>
-</svg>

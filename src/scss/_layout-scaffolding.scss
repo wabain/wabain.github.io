@@ -1,6 +1,7 @@
 @use "sass:list";
 
 @use "base/sizing";
+@use "base/colors";
 
 $xs-main-margin: sizing.$margin-sm;
 
@@ -57,38 +58,8 @@ $xs-main-margin: sizing.$margin-sm;
 // The normalize stylesheet ensures there's no body margin.
 .container {
   box-sizing: border-box;
-  background: url("../buildtime-assets/img/grid-bg-line-start.svg") left
-      $xs-main-margin center repeat-y,
-    url("../buildtime-assets/img/grid-bg-line-end.svg") right $xs-main-margin
-      center repeat-y;
   padding-top: sizing.$eighth-grid;
   min-height: 100vh;
-
-  @media (min-width: sizing.$screen-sm-min) {
-    background: url("../buildtime-assets/img/grid-bg-center-2x.svg") center
-      repeat-y;
-  }
-
-  @media (min-width: sizing.$screen-md-min) {
-    background: url("../buildtime-assets/img/grid-bg-hide.svg") center repeat-y,
-      url("../buildtime-assets/img/grid-bg.svg") center repeat;
-  }
-
-  @media (min-width: sizing.$screen-lg-min) {
-    background: url("../buildtime-assets/img/grid-bg-center-hide.svg") center
-        repeat-y,
-      url("../buildtime-assets/img/grid-bg-center.svg") center repeat;
-  }
-
-  @include content-longform {
-    background: url("../buildtime-assets/img/grid-bg-line-hl-start.svg") left
-      $xs-main-margin center repeat-y;
-
-    @media (min-width: sizing.$screen-sm-min) {
-      background: url("../buildtime-assets/img/grid-bg-center-2x-hl-start.svg")
-        center repeat-y;
-    }
-  }
 }
 
 // Base definition for the layout grid
@@ -140,5 +111,55 @@ $xs-main-margin: sizing.$margin-sm;
       $sizes: 1fr sizing.$grid sizing.$grid sizing.$grid sizing.$grid 1fr,
       $primary: 3 6
     );
+  }
+}
+
+// Background support
+//
+// The background is defined on the before and after pseudo elements to allow
+// CSS grid to be used to position the start and end, avoiding having the
+// background cover the primary area.
+.container-underlay {
+  position: fixed;
+
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  // Safari seems to require fixed size (not 1fr, 100%, etc.) in order to occupy
+  // the full space pinned between top and bottom
+  grid-auto-rows: 100vh;
+
+  z-index: -1;
+
+  box-sizing: border-box;
+
+  &::before {
+    grid-column: outer-left / primary-start;
+    background: right (-(sizing.$grid - 1px)) center repeat;
+  }
+
+  &::after {
+    grid-column: primary-end / outer-right;
+    background: left center repeat;
+  }
+
+  &::before,
+  &::after {
+    background-image: url("../buildtime-assets/img/grid-bg-line-start.svg");
+    content: " ";
+  }
+
+  // stylelint-disable-next-line order/order
+  @include content-longform {
+    &::before,
+    &::after {
+      background: none;
+    }
+
+    &::before {
+      border-right: 1px solid colors.$complement;
+    }
   }
 }
