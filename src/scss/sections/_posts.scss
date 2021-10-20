@@ -2,28 +2,49 @@
 @use "../base/sizing";
 
 .grid-post {
-  grid-template-areas:
-    ". header header"
-    ". meta meta"
-    ". separator ."
-    ". content content";
+  grid-template-rows:
+    [post-header] auto
+    [post-meta] auto
+    [post-separator] auto
+    [post-content] auto;
 
   @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas:
-      ". . header header"
-      ". . separator ."
-      ". meta content content";
+    grid-template-rows:
+      [post-header] auto
+      [post-separator] auto
+      [post-meta post-content] auto;
   }
 }
 
 .grid-post-header {
-  grid-area: header;
+  grid-row: post-header;
+  grid-column: primary;
+}
+
+.grid-post-separator {
+  grid-row: post-separator;
+  grid-column: primary / span 1;
+}
+
+.grid-post-meta {
+  grid-row: post-meta;
+  grid-column: primary;
+
+  @media (min-width: sizing.$screen-md-min) {
+    grid-column: span 1 / primary-start;
+  }
+}
+
+.grid-post-content {
+  grid-row: post-content;
+  grid-column: primary;
+}
+
+.grid-post-header {
   margin-left: sizing.$margin-sm;
 }
 
 .grid-post-separator {
-  grid-area: separator;
-
   transform: translateX(-(sizing.$grid / 32));
 
   margin-top: sizing.$margin-sm;
@@ -45,7 +66,6 @@
 }
 
 .grid-post-meta {
-  grid-area: meta;
   margin-left: sizing.$margin-md;
   font-family: "Playfair Display", serif;
   font-style: italic;
@@ -57,7 +77,6 @@
 }
 
 .grid-post-content {
-  grid-area: content;
   margin: 0 sizing.$margin-sm;
 }
 

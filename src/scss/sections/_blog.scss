@@ -1,29 +1,26 @@
 @use "../base/colors";
 @use "../base/sizing";
 
-.grid-blog {
-  grid-template-areas:
-    "header header header"
-    ". listing listing";
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas:
-      ". header . ."
-      ". . listing listing";
-  }
-}
-
 .grid-blog-header {
-  grid-area: header;
-
-  @media (min-width: sizing.$screen-md-min) {
-    margin-right: sizing.$margin-xs;
-    justify-self: end;
-  }
+  grid-row: 1;
+  grid-column: outer-left / outer-right;
 }
 
 .grid-blog-listing {
-  grid-area: listing;
+  grid-row: 2;
+  grid-column: primary;
+}
+
+@media (min-width: sizing.$screen-md-min) {
+  .grid-blog-header {
+    grid-column: span 1 / primary-start;
+    margin-right: sizing.$margin-xs;
+    justify-self: end;
+  }
+
+  .grid-blog-listing {
+    grid-column: primary;
+  }
 }
 
 .blog-post-link,

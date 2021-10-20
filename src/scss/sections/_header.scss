@@ -3,15 +3,34 @@
 
 $header-v-padding: 0.67rem;
 
-// Display inline if there is space, or collapse into multiple lines
-.grid-header {
-  grid-template-areas:
-    ". title title title"
-    ". nav nav nav";
-  margin-bottom: sizing.$eighth-grid;
+// Display run-in header if there is space, or collapse into multiple lines
 
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas: ". title nav nav";
+.grid-header {
+  grid-template-rows: [header-title] auto [header-nav] auto;
+  margin-bottom: sizing.$eighth-grid;
+}
+
+.grid-header-title {
+  grid-row: header-title;
+  grid-column: outer-left / outer-right;
+}
+
+.grid-header-navbar {
+  grid-row: header-nav;
+  grid-column: outer-left / outer-right;
+}
+
+@media (min-width: sizing.$screen-md-min) {
+  .grid-header {
+    grid-template-rows: [header-title header-nav] auto;
+  }
+
+  .grid-header-title {
+    grid-column: span 1 / primary-start;
+  }
+
+  .grid-header-navbar {
+    grid-column: primary;
   }
 }
 
@@ -19,8 +38,6 @@ $header-v-padding: 0.67rem;
 // the text is still included with "color: transparent" to support screenreaders
 // and other fallback scenarios
 .grid-header-title {
-  grid-area: title;
-
   margin: $header-v-padding 0;
 
   color: transparent;
@@ -60,7 +77,6 @@ $header-v-padding: 0.67rem;
 }
 
 .grid-header-navbar {
-  grid-area: nav;
   align-self: end;
   justify-self: end;
 

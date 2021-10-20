@@ -101,10 +101,10 @@ function getLongformBodyOffset(): number {
     const body = document.body
 
     const grid = document.createElement('div')
-    grid.className = 'grid-base grid-layout-meta'
+    grid.className = 'grid-base'
 
     const bpCheck = document.createElement('div')
-    bpCheck.style.gridArea = 'a'
+    bpCheck.style.gridArea = 'primary'
     grid.appendChild(bpCheck)
 
     body.appendChild(grid)

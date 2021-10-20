@@ -1,6 +1,50 @@
+@use "sass:list";
+
 @use "base/sizing";
 
 $xs-main-margin: sizing.$margin-sm;
+
+@function named-grid-columns($sizes, $primary) {
+  @if list.length($sizes) != 6 {
+    @error "expected 6 column sizes, got #{list.length($sizes)}: #{$sizes}";
+  }
+
+  @if list.length($primary) != 2 {
+    @error "expected primary column indices, got #{$primary}";
+  }
+
+  $tracks: [outer-left] [] [] [] [] [] [outer-right];
+
+  $p-start: list.nth($primary, 1);
+  $p-end: list.nth($primary, 2);
+
+  $tracks: list.set-nth(
+    $tracks,
+    $p-start,
+    list.append(list.nth($tracks, $p-start), primary-start)
+  );
+  $tracks: list.set-nth(
+    $tracks,
+    $p-end,
+    list.append(list.nth($tracks, $p-end), primary-end)
+  );
+
+  @for $i from $p-start + 1 to $p-end {
+    $tracks: list.set-nth(
+      $tracks,
+      $i,
+      list.join([primary-inner], list.nth($tracks, $i))
+    );
+  }
+
+  $out: ();
+  @each $pair in list.zip($tracks, $sizes) {
+    $out: list.join($out, $pair, $separator: space);
+  }
+
+  $out: list.append($out, list.nth($tracks, list.length($tracks)));
+  @return $out;
+}
 
 @mixin content-longform {
   .content-longform &:not(.content-longform-override--false),
@@ -49,47 +93,52 @@ $xs-main-margin: sizing.$margin-sm;
 
 // Base definition for the layout grid
 //
-// In the `xs` layout all space is allocated to a single column, with margins
-// excepted. A zero-sized grid cell is left so that the grid definition
-// matches the `sm` layout, where two fixed-sized columns are available.
+// The grid is defined with 6 columns, of which up to three columns on the
+// outside may be empty.
 //
-// On larger screens, three or four centred columns are allocated for the
-// primary content (although there may be more space available). This includes
-// the column which contains the site branding.
+// In the `xs` layout all space is allocated to a single column, with margins
+// excepted. In the `sm` layout two fixed-sized columns are available. On larger
+// screens, where there are at least three columns available, column to the left
+// of centre is allocated for secondary content, followed by two to three
+// columns for primary content. The outer tracks around the primary area are
+// named `primary-start` and `primary-end`, while any tracks between primary
+// columns are named `primary-inner`.
 //
 // Given longform content, in the `md` layout, where there are between 3 and 4
 // columns available, the rightmost two complete columns, which contain the
 // longform content, are centred.
 .grid-base {
   display: grid;
-  grid-template-columns: $xs-main-margin minmax(150px, auto) 0 $xs-main-margin;
+  grid-template-columns: named-grid-columns(
+    $sizes: 0 $xs-main-margin minmax(150px, auto) $xs-main-margin 0 0,
+    $primary: 3 4
+  );
 
   @media (min-width: sizing.$screen-sm-min) {
-    grid-template-columns: 1fr sizing.$grid sizing.$grid 1fr;
+    grid-template-columns: named-grid-columns(
+      $sizes: 0 1fr sizing.$grid sizing.$grid 1fr 0,
+      $primary: 3 5
+    );
   }
 
   @media (min-width: sizing.$screen-md-min) {
-    grid-template-columns: 1fr repeat(3, sizing.$grid) 1fr;
+    grid-template-columns: named-grid-columns(
+      $sizes: 1fr sizing.$grid sizing.$grid sizing.$grid 1fr 0,
+      $primary: 3 5
+    );
 
     @include content-longform {
-      grid-template-columns: 0 1fr sizing.$grid sizing.$grid 1fr;
+      grid-template-columns: named-grid-columns(
+        $sizes: 0 1fr sizing.$grid sizing.$grid 1fr 0,
+        $primary: 3 5
+      );
     }
   }
 
   @media (min-width: sizing.$screen-lg-min) {
-    grid-template-columns: 1fr repeat(4, sizing.$grid) 1fr;
-  }
-}
-
-// Base
-.grid-base.grid-layout-meta {
-  grid-template-areas: "left a b right";
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas: "left left a b right";
-  }
-
-  @media (min-width: sizing.$screen-lg-min) {
-    grid-template-areas: "left left a b c right";
+    grid-template-columns: named-grid-columns(
+      $sizes: 1fr sizing.$grid sizing.$grid sizing.$grid sizing.$grid 1fr,
+      $primary: 3 6
+    );
   }
 }

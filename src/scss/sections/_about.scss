@@ -1,39 +1,21 @@
 @use "../base/sizing";
 
-.grid-about {
-  grid-template-areas:
-    ". intro"
-    ". more"
-    ". close";
-
-  @media (min-width: sizing.$screen-sm-min) {
-    grid-template-areas:
-      ". intro intro"
-      ". more more"
-      ". . close";
-  }
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas:
-      ". . intro ."
-      ". . more more"
-      ". . . close";
-  }
-}
-
 .about-line {
   margin: sizing.$eighth-grid 0;
   font-size: 24px;
 }
 
 .grid-about-intro {
-  grid-area: intro;
+  grid-row: 1;
+  grid-column: primary-start / span 1;
 }
 
 .grid-about-more {
-  grid-area: more;
+  grid-row: 2;
+  grid-column: primary;
 }
 
 .grid-about-close {
-  grid-area: close;
+  grid-row: 3;
+  grid-column: span 1 / primary-end;
 }
