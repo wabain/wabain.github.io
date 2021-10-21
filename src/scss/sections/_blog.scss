@@ -1,20 +1,9 @@
 @use "../base/colors";
 @use "../base/sizing";
 
-.grid-blog {
-  grid-template-areas:
-    "header header header"
-    ". listing listing";
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas:
-      ". header . ."
-      ". . listing listing";
-  }
-}
-
 .grid-blog-header {
-  grid-area: header;
+  grid-row: 1;
+  grid-column: secondary-full;
 
   @media (min-width: sizing.$screen-md-min) {
     margin-right: sizing.$margin-xs;
@@ -23,7 +12,8 @@
 }
 
 .grid-blog-listing {
-  grid-area: listing;
+  grid-row: 2; // never collapses onto a row with the header
+  grid-column: primary;
 }
 
 .blog-post-link,

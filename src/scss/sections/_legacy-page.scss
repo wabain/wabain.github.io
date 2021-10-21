@@ -1,13 +1,3 @@
-@use "../base/sizing";
-
-.grid-legacy-page {
-  grid-template-areas: ". content content";
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas: ". . content content";
-  }
-}
-
 .grid-legacy-page-content {
-  grid-area: content;
+  grid-column: primary;
 }

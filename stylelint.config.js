@@ -4,7 +4,27 @@ module.exports = {
     rules: {
         'at-rule-no-unknown': [
             true,
-            { ignoreAtRules: ['extend', 'use', 'mixin', 'include'] },
+            {
+                ignoreAtRules: [
+                    'use',
+                    'forward',
+                    'import',
+                    'mixin',
+                    'include',
+                    'function',
+                    'return',
+                    'extend',
+                    'error',
+                    'warn',
+                    'debug',
+                    'at-root',
+                    'if',
+                    'else',
+                    'each',
+                    'for',
+                    'while',
+                ],
+            },
         ],
         'declaration-empty-line-before': [
             'always',

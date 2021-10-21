@@ -1,15 +1,7 @@
 @use "../base/sizing";
 
-.grid-projects-head {
-  grid-template-areas: "projects-text projects-text projects-text";
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas: "projects-text projects-text . .";
-  }
-}
-
 .grid-projects-head-text {
-  grid-area: projects-text;
+  grid-column: secondary-full;
 
   @media (min-width: sizing.$screen-md-min) {
     margin-right: sizing.$margin-xs;
@@ -17,63 +9,32 @@
   }
 }
 
-.grid-linear {
-  grid-template-areas:
-    ". header"
-    ". text";
-
-  @media (min-width: sizing.$screen-sm-min) {
-    grid-template-areas:
-      ". header header"
-      ". text text";
-  }
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas:
-      ". . header header"
-      ". . text text";
-  }
-}
+// linear
 
 .grid-linear-header {
-  grid-area: header;
+  grid-row: 1;
+  grid-column: primary;
 }
 
 .grid-linear-text {
-  grid-area: text;
+  grid-row: 2;
+  grid-column: primary;
 }
 
+// DDMAL
+
 .grid-ddmal {
-  grid-template-areas:
-    ". header header ."
-    ". image image image"
-    ". text text .";
-
-  @media (min-width: sizing.$screen-md-min) {
-    grid-template-areas:
-      ". . header header ."
-      ". . image image image"
-      ". . text text .";
-  }
-
-  @media (min-width: sizing.$screen-lg-min) {
-    grid-template-areas:
-      ". . header header ."
-      ". . text image image";
-  }
+  grid-template-rows: [ddmal-header] auto [ddmal-image] auto [ddmal-text] auto;
 }
 
 .grid-ddmal-header {
-  grid-area: header;
+  grid-row: ddmal-header;
+  grid-column: primary;
 }
 
 .grid-ddmal-image {
-  grid-area: image;
-
-  @media (min-width: sizing.$screen-lg-min) {
-    margin-top: 1em; // Match paragraph margin
-    margin-left: sizing.$sixteenth-grid;
-  }
+  grid-row: ddmal-image;
+  grid-column: primary-start / outer-right;
 
   img {
     max-width: 100%;
@@ -82,5 +43,22 @@
 }
 
 .grid-ddmal-text {
-  grid-area: text;
+  grid-row: ddmal-text;
+  grid-column: primary;
+}
+
+@media (min-width: sizing.$screen-lg-min) {
+  .grid-ddmal {
+    grid-template-rows: [ddmal-header] auto [ddmal-text ddmal-image] auto;
+  }
+
+  .grid-ddmal-text {
+    grid-column: primary-start / primary-inner 1;
+    margin-top: 1em; // Match paragraph margin
+    margin-left: sizing.$sixteenth-grid;
+  }
+
+  .grid-ddmal-image {
+    grid-column: primary-inner 1 / primary-end;
+  }
 }
