@@ -54,11 +54,11 @@
 
   .grid-ddmal-text {
     grid-column: primary-start / primary-inner 1;
-    margin-top: 1em; // Match paragraph margin
-    margin-left: sizing.$sixteenth-grid;
   }
 
   .grid-ddmal-image {
     grid-column: primary-inner 1 / primary-end;
+    margin-top: 1em; // Match paragraph margin
+    margin-left: sizing.$sixteenth-grid;
   }
 }
