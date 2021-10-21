@@ -3,24 +3,17 @@
 
 .grid-blog-header {
   grid-row: 1;
-  grid-column: outer-left / outer-right;
-}
+  grid-column: secondary-full;
 
-.grid-blog-listing {
-  grid-row: 2;
-  grid-column: primary;
-}
-
-@media (min-width: sizing.$screen-md-min) {
-  .grid-blog-header {
-    grid-column: span 1 / primary-start;
+  @media (min-width: sizing.$screen-md-min) {
     margin-right: sizing.$margin-xs;
     justify-self: end;
   }
+}
 
-  .grid-blog-listing {
-    grid-column: primary;
-  }
+.grid-blog-listing {
+  grid-row: 2; // never collapses onto a row with the header
+  grid-column: primary;
 }
 
 .blog-post-link,

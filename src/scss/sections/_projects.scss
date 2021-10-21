@@ -1,10 +1,9 @@
 @use "../base/sizing";
 
 .grid-projects-head-text {
-  grid-column: outer-left / primary-end;
+  grid-column: secondary-full;
 
   @media (min-width: sizing.$screen-md-min) {
-    grid-column: span 1 / primary-start;
     margin-right: sizing.$margin-xs;
     justify-self: end;
   }
@@ -36,6 +35,11 @@
 .grid-ddmal-image {
   grid-row: ddmal-image;
   grid-column: primary-start / outer-right;
+
+  img {
+    max-width: 100%;
+    object-fit: contain;
+  }
 }
 
 .grid-ddmal-text {
@@ -50,21 +54,11 @@
 
   .grid-ddmal-text {
     grid-column: primary-start / primary-inner 1;
-  }
-
-  .grid-ddmal-image {
-    grid-column: primary-inner 1 / primary-end;
-  }
-}
-
-.grid-ddmal-image {
-  @media (min-width: sizing.$screen-lg-min) {
     margin-top: 1em; // Match paragraph margin
     margin-left: sizing.$sixteenth-grid;
   }
 
-  img {
-    max-width: 100%;
-    object-fit: contain;
+  .grid-ddmal-image {
+    grid-column: primary-inner 1 / primary-end;
   }
 }

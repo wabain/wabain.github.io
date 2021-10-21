@@ -5,38 +5,48 @@
 
 $xs-main-margin: sizing.$margin-sm;
 
-@function named-grid-columns($sizes, $primary) {
+// grid definition; see .grid-base for usage
+@function named-grid-columns(
+  $sizes,
+  $primary,
+  $primary-full: (),
+  $secondary: (),
+  $secondary-full: ()
+) {
   @if list.length($sizes) != 6 {
     @error "expected 6 column sizes, got #{list.length($sizes)}: #{$sizes}";
   }
 
-  @if list.length($primary) != 2 {
-    @error "expected primary column indices, got #{$primary}";
-  }
-
   $tracks: [outer-left] [] [] [] [] [] [outer-right];
 
-  $p-start: list.nth($primary, 1);
-  $p-end: list.nth($primary, 2);
+  // primary
+  $tracks: add-track-range($tracks, $primary, primary);
 
-  $tracks: list.set-nth(
-    $tracks,
-    $p-start,
-    list.append(list.nth($tracks, $p-start), primary-start)
-  );
-  $tracks: list.set-nth(
-    $tracks,
-    $p-end,
-    list.append(list.nth($tracks, $p-end), primary-end)
-  );
-
-  @for $i from $p-start + 1 to $p-end {
-    $tracks: list.set-nth(
-      $tracks,
-      $i,
-      list.join([primary-inner], list.nth($tracks, $i))
-    );
+  @for $i from list.nth($primary, 1) + 1 to list.nth($primary, 2) {
+    $tracks: add-track-name($tracks, $i, primary-inner);
   }
+
+  // primary-full
+  @if list.length($primary-full) == 0 {
+    $primary-full: $primary;
+  }
+
+  $tracks: add-track-range($tracks, $primary-full, primary-full);
+
+  // secondary
+  @if list.length($secondary) == 0 {
+    $p: list.nth($primary, 1);
+    $secondary: ($p - 1) $p;
+  }
+
+  $tracks: add-track-range($tracks, $secondary, secondary);
+
+  // secondary-full
+  @if list.length($secondary-full) == 0 {
+    $secondary-full: $secondary;
+  }
+
+  $tracks: add-track-range($tracks, $secondary-full, secondary-full);
 
   $out: ();
   @each $pair in list.zip($tracks, $sizes) {
@@ -45,6 +55,25 @@ $xs-main-margin: sizing.$margin-sm;
 
   $out: list.append($out, list.nth($tracks, list.length($tracks)));
   @return $out;
+}
+
+@function add-track-name($tracks, $index, $name) {
+  @return list.set-nth(
+    $tracks,
+    $index,
+    list.append(list.nth($tracks, $index), $name)
+  );
+}
+
+@function add-track-range($tracks, $range, $name) {
+  @if list.length($range) != 2 {
+    @error "expected #{$name} column indices, got #{$range}";
+  }
+
+  $tracks: add-track-name($tracks, list.nth($range, 1), #{$name}-start);
+  $tracks: add-track-name($tracks, list.nth($range, 2), #{$name}-end);
+
+  @return $tracks;
 }
 
 @mixin content-longform {
@@ -69,26 +98,37 @@ $xs-main-margin: sizing.$margin-sm;
 //
 // In the `xs` layout all space is allocated to a single column, with margins
 // excepted. In the `sm` layout two fixed-sized columns are available. On larger
-// screens, where there are at least three columns available, column to the left
-// of centre is allocated for secondary content, followed by two to three
-// columns for primary content. The outer tracks around the primary area are
-// named `primary-start` and `primary-end`, while any tracks between primary
-// columns are named `primary-inner`.
+// screens, where there are at least three columns available, a column to the
+// left of centre is allocated for secondary content, followed by two to three
+// columns for primary content.
 //
 // Given longform content, in the `md` layout, where there are between 3 and 4
 // columns available, the rightmost two complete columns, which contain the
 // longform content, are centred.
+//
+// There are four named track ranges: `primary`, `secondary`, `primary-full`,
+// and `secondary-full`. The `secondary` area has the same value as `primary` up
+// to the `md` breakpoint. Below the `md` breakpoint the `-full` areas are
+// full-bleed; above that point they are the same as primary and secondary.
+//
+// Any tracks between primary columns are named `primary-inner`.
 .grid-base {
   display: grid;
   grid-template-columns: named-grid-columns(
     $sizes: 0 $xs-main-margin minmax(150px, auto) $xs-main-margin 0 0,
-    $primary: 3 4
+    $primary: 3 4,
+    $secondary: 3 4,
+    $primary-full: 2 5,
+    $secondary-full: 2 5
   );
 
   @media (min-width: sizing.$screen-sm-min) {
     grid-template-columns: named-grid-columns(
       $sizes: 0 1fr sizing.$grid sizing.$grid 1fr 0,
-      $primary: 3 5
+      $primary: 3 5,
+      $secondary: 3 5,
+      $primary-full: 2 6,
+      $secondary-full: 2 6
     );
   }
 
