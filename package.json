@@ -35,7 +35,7 @@
     "prettier": "^2.4.1",
     "sass": "^1.43.2",
     "sass-loader": "^12.1.0",
-    "selenium-webdriver": "^3.6.0",
+    "selenium-webdriver": "^4.0.0",
     "style-loader": "^3.3.0",
     "stylelint": "^13.13.1",
     "stylelint-config-prettier": "^9.0.3",
