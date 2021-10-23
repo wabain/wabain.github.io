@@ -3,6 +3,7 @@
 @use "text-formatting";
 @use "utils";
 @use "layout-scaffolding";
+
 // Sections
 @use "sections/header";
 @use "sections/about";
@@ -10,5 +11,6 @@
 @use "sections/legacy-page";
 @use "sections/blog";
 @use "sections/posts";
+
 // Utilities
 @use "loading-effects";
