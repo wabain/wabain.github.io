@@ -1,31 +1,7 @@
 module.exports = {
-    extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
-    plugins: ['stylelint-order', 'stylelint-scss'],
+    extends: ['stylelint-config-standard-scss', 'stylelint-config-prettier'],
+    plugins: ['stylelint-order'],
     rules: {
-        'at-rule-no-unknown': [
-            true,
-            {
-                ignoreAtRules: [
-                    'use',
-                    'forward',
-                    'import',
-                    'mixin',
-                    'include',
-                    'function',
-                    'return',
-                    'extend',
-                    'error',
-                    'warn',
-                    'debug',
-                    'at-root',
-                    'if',
-                    'else',
-                    'each',
-                    'for',
-                    'while',
-                ],
-            },
-        ],
         'declaration-empty-line-before': [
             'always',
             {
@@ -46,6 +22,14 @@ module.exports = {
             },
         ],
         'string-quotes': 'double',
+        'selector-class-pattern': [
+            '^([a-z][a-z0-9]*)((--?|__)[a-z0-9]+)*$',
+            {
+                message:
+                    'Expected class selector to be kebab-case or BEM-style with ' +
+                    'doubled dashes and underscores',
+            },
+        ],
         ...stylelintConfigSassRules(),
     },
     ignoreFiles: ['src/scss/vendor/**/*'],
@@ -78,16 +62,16 @@ function stylelintConfigSassRules() {
             ],
         ],
         'scss/at-extend-no-missing-placeholder': true,
-        'scss/at-function-pattern': '^[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
         'scss/at-import-no-partial-leading-underscore': true,
         'scss/at-import-partial-extension-blacklist': ['scss'],
-        'scss/at-mixin-pattern': '^[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
         'scss/at-rule-no-unknown': true,
-        'scss/dollar-variable-colon-space-after': 'always',
-        'scss/dollar-variable-colon-space-before': 'never',
-        'scss/dollar-variable-pattern': '^[_]?[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
-        'scss/percent-placeholder-pattern': '^[a-z]+([a-z0-9-]+[a-z0-9]+)?$',
         'scss/selector-no-redundant-nesting-selector': true,
+
+        // disable because ignore: after-dollar-variable doesn't currently exist
+        'scss/dollar-variable-empty-line-before': null,
+
+        // disable because it only allows /* … */ to contain blank lines
+        'scss/comment-no-empty': null,
     }
 }
 

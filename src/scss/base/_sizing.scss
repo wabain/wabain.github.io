@@ -1,13 +1,16 @@
+// grid fractions
 $grid: 352px;
 $half-grid: 176px;
 $quart-grid: 88px;
 $eighth-grid: 44px;
 $sixteenth-grid: 22px;
 
+// breakpoints
 $screen-lg-min: $grid * 4 + $quart-grid;
 $screen-md-min: $grid * 3 + $quart-grid;
 $screen-sm-min: $grid * 2 + $quart-grid;
 
+// margins
 $margin-xs: 7px;
 $margin-sm: 15px;
 $margin-md: 20px;
