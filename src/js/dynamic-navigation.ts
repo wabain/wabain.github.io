@@ -16,7 +16,10 @@ export type ContentAttributes = {
     isLongform: boolean
 }
 
-export type ContentTrigger = (contentElem: HTMLElement) => void
+export type ContentTrigger = (
+    contentElem: HTMLElement,
+    analytics: Analytics,
+) => void
 
 export type DynamicNavParameters = {
     analytics: Analytics
@@ -51,7 +54,7 @@ export function initializeDynamicNavigation(
             location.href,
         )
         analytics.onError({
-            context: 'initialization',
+            context: { when: 'initialization' },
             category: 'dynamic nav',
             exception: exc,
         })
@@ -280,7 +283,10 @@ class ContentLoader {
                 return this.analytics
                     .onFatalError({
                         category: 'dynamic nav',
-                        context: `failed to load ${href}`,
+                        context: {
+                            when: 'transition.fetch',
+                            transitionTo: href,
+                        },
                         exception: err,
                     })
                     .then<never>(() => {
@@ -523,7 +529,7 @@ class PageTransformer {
             return this.analytics
                 .onFatalError({
                     category: 'dynamic nav',
-                    context: `transition to ${href}`,
+                    context: { transitionTo: href },
                     exception: err,
                 })
                 .then(() => {
@@ -558,13 +564,13 @@ class PageTransformer {
     private _runContentTriggers(): void {
         for (const trigger of this.contentTriggers) {
             try {
-                trigger(this.contentElem)
+                trigger(this.contentElem, this.analytics)
             } catch (e) {
                 this.analytics.onError({
                     category: 'dynamic nav',
-                    context: `content trigger ${
-                        trigger ? trigger.name : 'unknown'
-                    }`,
+                    context: {
+                        contentTrigger: trigger ? trigger.name : 'unknown',
+                    },
                     exception: e,
                 })
             }
