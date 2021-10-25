@@ -158,13 +158,6 @@ jobs:
           bundle install --jobs=4 --retry=3
           yarn install --frozen-lockfile
 
-      - name: Lint and build
-        run: |
-          yarn run lint-build-infra
-          JEKYLL_ENV=production yarn run pre-jekyll
-          JEKYLL_ENV=production yarn run jekyll-build
-          JEKYLL_ENV=production yarn run jekyll-lint
-
       - name: Create revisions file
         env:
           EVENT: ${{ steps.resolve.outputs.effective_event }}
@@ -227,6 +220,16 @@ jobs:
                 jq --raw-output '"ref \(.ref) at \(.sha)"'
               )"
           fi
+
+      - name: Lint and build
+        run: |
+          export WB_RELEASE_VERSION="$(jq --raw-output -f ci/release-name.jq site.revisions.json)"
+          echo "::notice ::Release $WB_RELEASE_VERSION"
+
+          yarn run lint-build-infra
+          JEKYLL_ENV=production yarn run pre-jekyll
+          JEKYLL_ENV=production yarn run jekyll-build
+          JEKYLL_ENV=production yarn run jekyll-lint
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile

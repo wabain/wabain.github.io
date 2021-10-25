@@ -17,6 +17,7 @@ sitemap: false
 {% assign pageIdx = 0 -%}
 {% assign lastPageIdx = interestingPages | size | minus: 1 -%}
 {
+    "release_version": {{ site.env.version | jsonify }},
     "pages": [
 {%- for page in interestingPages %}
         {

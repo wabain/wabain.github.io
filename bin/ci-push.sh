@@ -9,6 +9,7 @@ set -euo pipefail
 
 CHECKOUT_DIR="$PWD"
 JEKYLL_BUILD_DIR="$BASE_DIR/site"
+REVISIONS_JSON="$BASE_DIR/site.revisions.json"
 DEPLOY_DIR="$BASE_DIR/deploy"
 
 RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
@@ -101,6 +102,14 @@ main() {
     echo "(PR merge: $PUSH_PR_MERGE, Pages deploy: $PUSH_PAGES_DEPLOY)"
 
     git push "${PUSH_ARGS[@]}"
+
+    if [[ "$PUSH_PAGES_DEPLOY" == "true" ]]; then
+        local release_version="$(get_release_version)"
+
+        sentry_cli releases deploys "$release_version" new \
+            --env production \
+            --url "$RUN_URL"
+    fi
 }
 
 start_group() {
@@ -290,6 +299,19 @@ evaluate_pages_deploy() {
 
     summarize_push origin/master master "$deploy_tag"
 
+    local release_version="$(get_release_version)"
+
+    sentry_cli releases new \
+        -p wabain-github-io \
+        --finalize \
+        --url "$RUN_URL" \
+        "$release_version"
+
+    sentry_cli releases files "$release_version" \
+        upload-sourcemaps --ignore "$CHECKOUT_DIR/.deploy-gitignore" \
+        --url-prefix /home-assets \
+        "$DEPLOY_DIR/home-assets"
+
     # If we are not simultaneously pushing a merge commit, re-push our source
     # commit for this deployment. This should be a no-op; if it fails, then it
     # indicates there was a more recent push to the source branch, and the
@@ -314,6 +336,22 @@ describe_deploy() {
     else
         echo "$deploy_number"
     fi
+}
+
+get_release_version() {
+    echo "$PR_EVAL" | jq -r -f "$CHECKOUT_DIR"/ci/release-name.jq
+}
+
+sentry_cli() {
+    local sentry_pfx
+
+    if [[ "${CI_DRY_RUN:-}" != "false" ]]
+        sentry_pfx="echo yarn run sentry-cli"
+    else
+        sentry_pfx="yarn run sentry-cli"
+    fi
+
+    $sentry_pfx "$@"
 }
 
 summarize_push() {

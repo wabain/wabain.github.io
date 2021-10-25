@@ -171,6 +171,15 @@ jobs:
             exit
           fi
 
+          eval_release="$(echo "$pr" | jq -r -f ci/release-name.jq)"
+          effective_release="$(jq -r -f '.release_version' site/.test-meta.json)"
+
+          if [[ "$eval_release" != "$effective_release" ]]; then
+            echo "Unexpected release version; treating PR data as stale (got '$effective_release', expected '$eval_release')"
+            echo '::set-output name=stale::true'
+            exit
+          fi
+
           echo '::set-output name=stale::false'
 
       - name: Push eligible refs
@@ -180,7 +189,8 @@ jobs:
             steps.resolve.outputs.conclusion == 'success' &&
             (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false')
         env:
-          CI_DRY_RUN: "false"
+          # Pending test of Sentry versioning
+          # CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
           EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
@@ -189,6 +199,7 @@ jobs:
           PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: bin/ci-push.sh
 
       - name: "Post-push: Clear pull request merge-pending label"

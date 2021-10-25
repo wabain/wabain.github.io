@@ -3,6 +3,7 @@
  */
 
 const {
+    RELEASE_VERSION,
     SENTRY_BROWSER_ROOT,
     SENTRY_SDK_VERSION,
     computeSentryHash,
@@ -16,6 +17,7 @@ async function main() {
         data = {
             sentry_dist_url: `${SENTRY_BROWSER_ROOT}/${SENTRY_SDK_VERSION}/bundle.min.js`,
             sentry_dist_hash: await computeSentryHash(),
+            version: RELEASE_VERSION,
         }
     } catch (e) {
         console.error(e)
