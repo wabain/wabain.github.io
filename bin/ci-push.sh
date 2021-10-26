@@ -105,7 +105,7 @@ main() {
     git push "${PUSH_ARGS[@]}"
 
     if [[ "$PUSH_PAGES_DEPLOY" == "true" ]]; then
-        begin_group 'Finalize sentry release and deploy'
+        start_group 'Finalize sentry release and deploy'
 
         sentry_cli releases finalize "$RELEASE_VERSION"
 
