@@ -95,7 +95,7 @@ function transitionIn(contentElem: Element): Promise<void> {
  * Get difference of the offset of the start of primary content from the left
  * of the screen between longform to non-longform modes.
  *
- * See the style definition for a description of `grid-layout-meta`.
+ * See the style definition for a description of `grid-base`.
  */
 function getLongformBodyOffset(): number {
     const body = document.body

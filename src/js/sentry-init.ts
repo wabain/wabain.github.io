@@ -47,6 +47,17 @@ function postInit(Sentry: SentryClient): void {
         Sentry.captureMessage(msg, Sentry.Severity.Warning)
     }
 
+    const RELEASE_VERSION = document
+        .querySelector('meta[name="version"]')
+        ?.getAttribute('content')
+
+    if (process.env.RELEASE_VERSION !== RELEASE_VERSION) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        const msg = `Release version mismatch: want ${process.env.RELEASE_VERSION}, got ${RELEASE_VERSION}`
+        debug(msg)
+        Sentry.captureMessage(msg, Sentry.Severity.Warning)
+    }
+
     const { dataLayer } = window as {
         dataLayer?: { length: number; [key: number]: unknown }[]
     }

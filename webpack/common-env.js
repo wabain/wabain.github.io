@@ -1,10 +1,19 @@
 const crypto = require('crypto')
 const fs = require('fs')
 
+const JEKYLL_ENV = process.env.JEKYLL_ENV ?? 'development'
+const RELEASE_VERSION = process.env.WB_RELEASE_VERSION ?? undefined
+
 const SENTRY_BROWSER_ROOT = 'https://browser.sentry-cdn.com'
 const SENTRY_SDK_VERSION = require('@sentry/browser/package.json').version
 
-module.exports = { SENTRY_BROWSER_ROOT, SENTRY_SDK_VERSION, computeSentryHash }
+module.exports = {
+    JEKYLL_ENV,
+    RELEASE_VERSION,
+    SENTRY_BROWSER_ROOT,
+    SENTRY_SDK_VERSION,
+    computeSentryHash,
+}
 
 async function computeSentryHash() {
     const sentryHash = await computeHash(

@@ -14,8 +14,20 @@ export type EventParams = {
 
 export type ErrorParams = {
     exception: unknown
-    context: string
+    context: ErrorContext
     category: EventCategory
+}
+
+export type ErrorContext = {
+    when?:
+        | 'initialization'
+        | 'transition'
+        | 'transition.fetch'
+        | 'transition.embeds'
+        | 'transition.embeds.init'
+
+    transitionTo?: string
+    contentTrigger?: string
 }
 
 type IfVoid<T, V, U> = void extends T ? V : U
@@ -61,7 +73,8 @@ export default class Analytics {
 
         for (const backend of this._backends) {
             const fn = backend[method] as (
-                ...a: typeof args
+                this: AnalyticsBackend,
+                ...a: Parameters<AnalyticsBackend[M]>
             ) => ReturnType<AnalyticsBackend[M]>
 
             try {
@@ -116,14 +129,16 @@ export class SentryBackend implements AnalyticsBackend {
     }
 
     onError({ exception, context }: ErrorParams): void {
-        this.S.withScope((scope) => {
-            scope.setContext('reported', { context })
-            this.S.captureException(exception)
-        })
+        this.S.captureException(exception, (scope) =>
+            scope.setContext('wabain:reported', context),
+        )
     }
 
     onFatalError(params: ErrorParams): Promise<void> {
-        this.onError(params)
+        this.S.withScope((scope) => {
+            scope.setContext('wabain:reportMeta', { fatal: true })
+            this.onError(params)
+        })
         return Promise.resolve(this.S.close()).then(noop)
     }
 }
@@ -162,14 +177,14 @@ export const GtagBackend: AnalyticsBackend = {
 
     onError({ exception, context }) {
         const params: Gtag.EventParams = {
-            description: `${context}: ${String(exception)}`,
+            description: `${String(exception)} ${JSON.stringify(context)}`,
             fatal: false,
         }
 
         gtag('event', 'exception', params)
     },
 
-    onFatalError({ exception, context }) {
+    onFatalError({ exception, context }): Promise<void> {
         let resolve: () => void
 
         const callback = new Promise<void>((_res) => {
@@ -187,7 +202,7 @@ export const GtagBackend: AnalyticsBackend = {
 
         // prettier-ignore
         const params: Gtag.ControlParams & Gtag.EventParams = {
-            'description': `${context}: ${String(exception)}`,
+            'description': `${JSON.stringify(context)}: ${String(exception)}`,
             'fatal': true,
             'event_callback': resolve,
         }

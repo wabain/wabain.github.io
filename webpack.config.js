@@ -1,6 +1,6 @@
 const path = require('path')
 
-const { DefinePlugin } = require('webpack')
+const webpack = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CssExtractPlugin = require('mini-css-extract-plugin')
@@ -10,7 +10,7 @@ const { optimize: optimizeSvg } = require('svgo')
 
 const commonEnv = require('./webpack/common-env')
 
-const IS_PROD = process.env.JEKYLL_ENV === 'production'
+const IS_PROD = commonEnv.JEKYLL_ENV === 'production'
 const DIST_PATH = local('content/home-assets')
 
 const prodOutput = {
@@ -104,15 +104,10 @@ module.exports = {
                 },
             ],
         }),
-        new DefinePlugin({
+        new webpack.DefinePlugin({
             'process.env': {
-                JEKYLL_ENV: JSON.stringify(
-                    IS_PROD ? 'production' : 'development',
-                ),
-                // TODO(wabain): Generate version in CI
-                RELEASE_VERSION: JSON.stringify(
-                    process.env.RELEASE_VERSION || '',
-                ),
+                JEKYLL_ENV: JSON.stringify(commonEnv.JEKYLL_ENV),
+                RELEASE_VERSION: JSON.stringify(commonEnv.RELEASE_VERSION),
                 SENTRY_SDK_VERSION: JSON.stringify(
                     commonEnv.SENTRY_SDK_VERSION,
                 ),
