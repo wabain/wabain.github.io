@@ -1,6 +1,7 @@
 # USAGE: jq --slurp -f ci/pull-request/pull-request.jq $pr_file $review_file
 
 def by_owner: .author_association == "OWNER";
+def by_collaborator: by_owner or .author_association == "COLLABORATOR";
 
 # Store the second input as $reviews then operate on the first
 .[1] as $reviews |
@@ -11,6 +12,7 @@ def by_owner: .author_association == "OWNER";
     automerge_label_present: .labels | any(.name == "automerge"),
     author_is_owner: by_owner,
     approver_is_owner: $reviews | any(.state == "APPROVED" and by_owner),
+    approver_is_collaborator: $reviews | any(.state == "APPROVED" and by_collaborator),
     mergeable,
     non_draft: .draft | not,
 } as $pr_eligibility |

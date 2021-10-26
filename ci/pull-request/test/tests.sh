@@ -71,6 +71,7 @@ run-test "First party: Eligible" \
             "automerge_label_present": true,
             "author_is_owner": true,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": true,
             "non_draft": true
         }
@@ -94,6 +95,7 @@ run-test "No automerge label" \
             "automerge_label_present": false,
             "author_is_owner": true,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": true,
             "non_draft": true
         }
@@ -117,6 +119,7 @@ run-test "Not mergeable" \
             "automerge_label_present": true,
             "author_is_owner": true,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": false,
             "non_draft": true
         }
@@ -140,6 +143,7 @@ run-test "Null mergeability" \
             "automerge_label_present": true,
             "author_is_owner": true,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": null,
             "non_draft": true
         }
@@ -163,6 +167,7 @@ run-test "Draft" \
             "automerge_label_present": true,
             "author_is_owner": true,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": true,
             "non_draft": false
         }
@@ -184,6 +189,7 @@ run-test "Third-party: Approved by owner" \
             "automerge_label_present": true,
             "author_is_owner": false,
             "approver_is_owner": true,
+            "approver_is_collaborator": true,
             "mergeable": true,
             "non_draft": true
         }
@@ -205,6 +211,7 @@ run-test "Third-party: Unapproved" \
             "automerge_label_present": true,
             "author_is_owner": false,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": true,
             "non_draft": true
         }
@@ -228,6 +235,7 @@ run-test "Third-party: Approved by other" \
             "automerge_label_present": true,
             "author_is_owner": false,
             "approver_is_owner": false,
+            "approver_is_collaborator": false,
             "mergeable": true,
             "non_draft": true
         }
