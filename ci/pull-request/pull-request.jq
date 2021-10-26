@@ -25,10 +25,16 @@ def by_owner: .author_association == "OWNER";
 # Collate output
 {
     head_ref: .head.ref,
-    head_commit: .head.sha,
+    head_sha: .head.sha,
+    head_commit: .head.sha, # Aliased
+
     base_ref: .base.ref,
-    base_commit: .base.sha,
-    merge_commit: .merge_commit_sha,
+    base_sha: .base.sha,
+    base_commit: .base.sha, # Aliased
+
+    merge_sha: .merge_commit_sha,
+    merge_commit: .merge_commit_sha, # Aliased
+
     merge_pending_label_present: .labels | any(.name == "merge-pending"),
     pr_is_eligible: ($eligible_up_to_mergeability and $pr_eligibility.mergeable),
     pr_may_be_eligible: ($eligible_up_to_mergeability and $pr_eligibility.mergeable != false),

@@ -8,6 +8,7 @@ inputs:
       jq
       bundler
       geckodriver
+      sentry-cli
       unzip
 
   github-token:
@@ -36,7 +37,7 @@ runs:
               gsub("^\\s+|\\s+$"; "") |
               # Filter empty entries
               select(. != "") |
-              if test("^(tree|jq|bundler|geckodriver|unzip)$") then
+              if test("^(tree|jq|bundler|geckodriver|sentry-cli|unzip)$") then
                 .
               else
                 error("::error ::Unknown dependency: \(.)")
@@ -108,6 +109,23 @@ runs:
         bin/ci-install-geckodriver.sh
         echo "::endgroup::"
 
+    - name: Install sentry-cli
+      shell: bash -e {0}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'sentry-cli') }}
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        if [ -z "$GH_TOKEN" ]; then
+          echo '::error ::github-token input is required to install sentry-cli'
+          exit 1
+        fi
+
+        echo "::group::Install sentry-cli"
+        bin/ci-install-sentry-cli.sh
+        echo "::endgroup::"
+
     - name: List dependency executable versions
       shell: bash -e {0}
       run: |
@@ -138,5 +156,6 @@ runs:
         print-version ruby
         print-version bundler
         print-version tree
+        print-version sentry-cli
         print-version unzip -v
         print-version yarn

@@ -59,9 +59,12 @@ run-test "First party: Eligible" \
     jq -s -f pull-request.jq test/first-party.pr.json test/none.pr-reviews.json \
     '{
         "head_ref": "ci-statuses",
+        "head_sha": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "head_commit": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": true,
@@ -81,9 +84,12 @@ run-test "No automerge label" \
         test/none.pr-reviews.json \
     '{
         "head_ref": "ci-statuses",
+        "head_sha": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "head_commit": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
@@ -103,9 +109,12 @@ run-test "Not mergeable" \
         test/none.pr-reviews.json \
     '{
         "head_ref": "ci-statuses",
+        "head_sha": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "head_commit": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
@@ -125,9 +134,12 @@ run-test "Null mergeability" \
         test/none.pr-reviews.json \
     '{
         "head_ref": "ci-statuses",
+        "head_sha": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "head_commit": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
@@ -147,9 +159,12 @@ run-test "Draft" \
         test/none.pr-reviews.json \
     '{
         "head_ref": "ci-statuses",
+        "head_sha": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "head_commit": "cfed5c2a3dd2e301a29000c511ae3feb0507c381",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
@@ -167,9 +182,12 @@ run-test "Third-party: Approved by owner" \
     jq -s -f pull-request.jq test/third-party.pr.json test/third-party.pr-reviews.json \
     '{
         "head_ref": "dependabot/npm_and_yarn/lodash-4.17.19",
+        "head_sha": "9d3b5c3b9d0bc29341e71d1a19100173b5a82edb",
         "head_commit": "9d3b5c3b9d0bc29341e71d1a19100173b5a82edb",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
         "pr_is_eligible": true,
@@ -187,9 +205,12 @@ run-test "Third-party: Unapproved" \
     jq -s -f pull-request.jq test/third-party.pr.json test/none.pr-reviews.json \
     '{
         "head_ref": "dependabot/npm_and_yarn/lodash-4.17.19",
+        "head_sha": "9d3b5c3b9d0bc29341e71d1a19100173b5a82edb",
         "head_commit": "9d3b5c3b9d0bc29341e71d1a19100173b5a82edb",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
@@ -209,9 +230,12 @@ run-test "Third-party: Approved by other" \
         <(jq '.[].author_association = "NONE"' test/third-party.pr-reviews.json) \
     '{
         "head_ref": "dependabot/npm_and_yarn/lodash-4.17.19",
+        "head_sha": "9d3b5c3b9d0bc29341e71d1a19100173b5a82edb",
         "head_commit": "9d3b5c3b9d0bc29341e71d1a19100173b5a82edb",
         "base_ref": "develop",
+        "base_sha": "288a69f3eacef2a774eadf86e936988ec3814ff4",
         "base_commit": "288a69f3eacef2a774eadf86e936988ec3814ff4",
+        "merge_sha": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
         "pr_is_eligible": false,
