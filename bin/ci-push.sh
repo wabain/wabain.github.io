@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Expected variables: BASE_DIR, GH_BOT_TOKEN, HEAD_REF, BASE_REF,
-# EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, GITHUB_*
+# EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, RELEASE_VERSION, GITHUB_*
 
 CHECKOUT_DIR="$PWD"
 JEKYLL_BUILD_DIR="$BASE_DIR/site"
@@ -16,6 +16,7 @@ RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
 # Mutable globals
 HAS_DEPLOY_TREE=false
+DEPLOY_NUMBER=
 PUSH_PR_MERGE=false
 PUSH_PAGES_DEPLOY=false
 PUSH_ARGS=(--follow-tags --atomic origin)
@@ -105,6 +106,7 @@ main() {
 
     if [[ "$PUSH_PAGES_DEPLOY" == "true" ]]; then
         sentry_cli releases deploys "$RELEASE_VERSION" new \
+            --name "$DEPLOY_NUMBER" \
             --env production \
             --url "$RUN_URL"
     fi
@@ -225,7 +227,7 @@ git_deploy_tree() {
 evaluate_pages_deploy() {
     local deploy_src_ref
     local deploy_src_sha
-    local deploy_number
+    local prior_deploys
     local deploy_description
     local deploy_tag
 
@@ -276,17 +278,17 @@ evaluate_pages_deploy() {
     # and deploy branch changes).
     #
     # Note that we do a non-shallow fetch of master in update_refs to ensure this works.
-    deploy_number="$(git rev-list origin/master | wc -l)"
-    deploy_number="$(( $deploy_number+1 ))"
+    prior_deploys="$(git rev-list origin/master | wc -l)"
+    DEPLOY_NUMBER="$(( $prior_deploys+1 ))"
 
-    deploy_description="$(describe_deploy "$deploy_number")"
+    deploy_description="$(describe_deploy "$DEPLOY_NUMBER")"
 
     git_deploy_tree commit --quiet --allow-empty \
         -m "Deploy to GitHub Pages [$deploy_description]" \
         -m "Source commit for this deployment:" \
         -m "$(git show --no-patch --format=fuller "$deploy_src_sha")"
 
-    deploy_tag="deploy/master/$deploy_number-$deploy_src_sha"
+    deploy_tag="deploy/master/$DEPLOY_NUMBER-$deploy_src_sha"
 
     git tag -a "$deploy_tag" master \
         -m "Deploy $deploy_description triggered by ${EFFECTIVE_EVENT/_/ }" \
