@@ -104,9 +104,7 @@ main() {
     git push "${PUSH_ARGS[@]}"
 
     if [[ "$PUSH_PAGES_DEPLOY" == "true" ]]; then
-        local release_version="$(get_release_version)"
-
-        sentry_cli releases deploys "$release_version" new \
+        sentry_cli releases deploys "$RELEASE_VERSION" new \
             --env production \
             --url "$RUN_URL"
     fi
@@ -299,16 +297,12 @@ evaluate_pages_deploy() {
 
     summarize_push origin/master master "$deploy_tag"
 
-    local release_version="$(get_release_version)"
-
     sentry_cli releases new \
-        -p wabain-github-io \
-        --finalize \
-        --url "$RUN_URL" \
-        "$release_version"
+        -p wabain-github-io --finalize --url "$RUN_URL" \
+        "$RELEASE_VERSION"
 
-    sentry_cli releases files "$release_version" \
-        upload-sourcemaps --ignore "$CHECKOUT_DIR/.deploy-gitignore" \
+    sentry_cli releases files "$RELEASE_VERSION" upload-sourcemaps \
+        --ignore "$CHECKOUT_DIR/.deploy-gitignore" \
         --url-prefix /home-assets \
         "$DEPLOY_DIR/home-assets"
 
@@ -338,22 +332,6 @@ describe_deploy() {
     fi
 }
 
-get_release_version() {
-    echo "$PR_EVAL" | jq -r -f "$CHECKOUT_DIR"/ci/release-name.jq
-}
-
-sentry_cli() {
-    local sentry_pfx
-
-    if [[ "${CI_DRY_RUN:-}" != "false" ]]; then
-        sentry_pfx="echo yarn run sentry-cli"
-    else
-        sentry_pfx="yarn run sentry-cli"
-    fi
-
-    $sentry_pfx "$@"
-}
-
 summarize_push() {
     echo "Intending to push to $1"
 
@@ -365,6 +343,14 @@ summarize_push() {
 
     git -c color.ui=always log --decorate --graph --summary --stat "$1..$2"
     echo
+}
+
+sentry_cli() {
+    if [[ "${CI_DRY_RUN:-}" != "false" ]]; then
+        echo "[dry-run] yarn run sentry-cli $@"
+    else
+        yarn run sentry-cli "$@"
+    fi
 }
 
 main

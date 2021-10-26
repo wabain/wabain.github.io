@@ -85,13 +85,21 @@ jobs:
 
           tree "$BASE_DIR"
 
-      - name: Fetch merge ref
+      - name: Fetch refs
         if: steps.resolve.outputs.effective_event == 'pull_request'
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          REF: ${{ steps.resolve.outputs.ref }}
         run: |
-          git fetch --no-tags --depth=2 origin \
-            "+refs/pull/$PR_NUMBER/merge:refs/remotes/origin/pull/$PR_NUMBER/merge"
+          if [ ! -z "$PR_NUMBER" ]; then
+            git fetch --no-tags --depth=2 origin \
+              "+refs/pull/$PR_NUMBER/merge:refs/remotes/origin/pull/$PR_NUMBER/merge"
+          fi
+
+          if [ ! -z "$REF" ]; then
+            git fetch --no-tags --depth=2 origin \
+              "+$REF:refs/remotes/origin/${REF/refs\//}"
+          fi
 
       - name: Evaluate pull request merge eligibility
         id: pr-eval
@@ -149,8 +157,9 @@ jobs:
             '
           )"
 
-          echo "Revision comparison:"
+          echo "::group::Revision comparison"
           echo "$rev_comparison" | jq -C .
+          echo "::endgroup::"
 
           stale_records="$(
             jq \
@@ -185,23 +194,48 @@ jobs:
             exit
           fi
 
-          tree="$(git rev-parse "$(echo "$pr" | jq --raw-output .head_sha)^{tree}")"
+          echo '::set-output name=stale::false'
 
-          eval_release="$(
-            echo "$pr" |
-            jq --arg tree "$tree" '{head_sha: .head_sha, base_sha: .base_sha, tree: $tree}' |
-            jq -r -f ci/release-name.jq
-          )"
+      - name: Resolve release version name
+        id: release-version
+        env:
+          PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
+          SHA: ${{ steps.resolve.outputs.sha }}
+        run: |
+          if [ ! -z "$PR_EVAL" ]; then
+            tree="$(git rev-parse "$(echo "$PR_EVAL" | jq --raw-output .head_sha)^{tree}")"
 
-          effective_release="$(jq -r '.release_version' site/.test-meta.json)"
-
-          if [[ "$eval_release" != "$effective_release" ]]; then
-            echo "Unexpected release version; treating PR data as stale (got '$effective_release', expected '$eval_release')"
-            echo '::set-output name=stale::true'
-            exit
+            name="$(
+              echo "$PR_EVAL" |
+              jq --arg tree "$tree" '{head_sha: .head_sha, base_sha: .base_sha, tree: $tree}' |
+              jq -r -f ci/release-name.jq
+            )"
+          elif [ ! -z "$SHA" ]; then
+            name="$(
+              jq \
+                --null-input \
+                --arg sha "$SHA" \
+                --arg tree "$(git rev-parse "$SHA^{tree}")" \
+                '{sha: $sha, tree: $tree}' | \
+              jq --raw-output -f ci/release-name.jq
+            )"
+            echo "::set-output name=name::$name"
+          else
+            echo "::error ::Missing expected inputs"
+            exit 1
           fi
 
-          echo '::set-output name=stale::false'
+          echo "::set-output name=name::$name"
+
+          run_name=
+          if [ -f site/.test-meta.json ]; then
+            run_name="$(jq -r '.release_version' site/.test-meta.json)"
+          fi
+
+          if [[ "$name" != "$run_name" ]]; then
+            echo "::error ::Unexpected release version from run (got '$run_name', expected '$name')"
+            exit 1
+          fi
 
       - name: Push eligible refs
         id: push-refs
@@ -220,6 +254,7 @@ jobs:
           PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          RELEASE_VERSION: ${{ steps.release-version.outputs.name }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: bin/ci-push.sh
 
