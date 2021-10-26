@@ -5,6 +5,8 @@ import type { Breadcrumb, SentryClient } from './sentry-shim'
 const dsn =
     'https://fff9e84f915d461d8d0347e42f2b07c1@o376549.ingest.sentry.io/5197459'
 
+const onProdHost = location.hostname === 'wabain.github.io'
+
 const debug = debugFactory('init:sentry')
 
 export default function init(): SentryClient | null {
@@ -13,11 +15,14 @@ export default function init(): SentryClient | null {
         return null
     }
 
+    const enabled = onProdHost || localStorage.FORCE_SENTRY_ENABLE === 'true'
+
     try {
         Sentry.init({
             dsn,
             environment: process.env.JEKYLL_ENV,
             release: process.env.RELEASE_VERSION || undefined,
+            enabled,
         })
     } catch (e) {
         debug('init failed: %o', e)
@@ -26,7 +31,7 @@ export default function init(): SentryClient | null {
 
     try {
         postInit(Sentry)
-        debug('complete')
+        debug('complete, enabled=%s', enabled)
     } catch (e) {
         debug('post-init failed: %o', e)
 
