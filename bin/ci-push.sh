@@ -345,7 +345,7 @@ get_release_version() {
 sentry_cli() {
     local sentry_pfx
 
-    if [[ "${CI_DRY_RUN:-}" != "false" ]]
+    if [[ "${CI_DRY_RUN:-}" != "false" ]]; then
         sentry_pfx="echo yarn run sentry-cli"
     else
         sentry_pfx="yarn run sentry-cli"
