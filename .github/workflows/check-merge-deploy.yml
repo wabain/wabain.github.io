@@ -244,8 +244,7 @@ jobs:
             steps.resolve.outputs.conclusion == 'success' &&
             (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false')
         env:
-          # Pending test of Sentry versioning
-          # CI_DRY_RUN: "false"
+          CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
           EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
