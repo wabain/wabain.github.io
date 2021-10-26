@@ -105,10 +105,16 @@ main() {
     git push "${PUSH_ARGS[@]}"
 
     if [[ "$PUSH_PAGES_DEPLOY" == "true" ]]; then
+        begin_group 'Finalize sentry release and deploy'
+
+        sentry_cli releases finalize "$RELEASE_VERSION"
+
         sentry_cli releases deploys "$RELEASE_VERSION" new \
             --name "$DEPLOY_NUMBER" \
             --env production \
             --url "$RUN_URL"
+
+        end_group
     fi
 }
 
@@ -299,12 +305,19 @@ evaluate_pages_deploy() {
 
     summarize_push origin/master master "$deploy_tag"
 
-    sentry_cli releases new --finalize --url "$RUN_URL" "$RELEASE_VERSION"
+    start_group "Initialize sentry release"
+
+    sentry_cli releases new "$RELEASE_VERSION" --url "$RUN_URL"
+
+    sentry_cli releases set-commits "$RELEASE_VERSION" \
+        --commit "wabain/wabain.github.io@$deploy_src_sha"
 
     sentry_cli releases files "$RELEASE_VERSION" upload-sourcemaps \
         --ignore "$CHECKOUT_DIR/.deploy-gitignore" \
         --url-prefix /home-assets \
         "$DEPLOY_DIR/home-assets"
+
+    end_group
 
     # If we are not simultaneously pushing a merge commit, re-push our source
     # commit for this deployment. This should be a no-op; if it fails, then it

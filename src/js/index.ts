@@ -10,7 +10,22 @@ import debugFactory from 'debug'
 const Sentry = initSentry()
 
 const debug = debugFactory('index')
-debug('%s, environment: %s', location.href, process.env.JEKYLL_ENV)
+
+{
+    const {
+        JEKYLL_ENV: env,
+        RELEASE_VERSION: releaseVersion,
+        ...envKeys
+    } = process.env
+
+    debug(
+        '%s, environment: %s, version: %s, etc: %o',
+        location.href,
+        env,
+        releaseVersion,
+        envKeys,
+    )
+}
 
 window.__nav = initializeDynamicNavigation({
     analytics: new Analytics({
