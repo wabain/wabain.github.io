@@ -128,10 +128,9 @@ jobs:
             exit
           fi
 
-          stale_records="$(
+          rev_comparison="$(
             jq \
             --null-input \
-            --raw-output \
             --argjson pr_eval "$pr" \
             --slurpfile run_entries site.revisions.json \
             '
@@ -144,8 +143,23 @@ jobs:
               ) as $run |
               ["head_ref", "base_ref", "head_sha", "base_sha"] as $fields |
               [
-                $fields |
-                  { field: ., run: $run[.]?, current: $pr_eval[.] } |
+                $fields[] |
+                  { field: ., run: $run[.], current: $pr_eval[.] }
+              ]
+            '
+          )"
+
+          echo "Revision comparison:"
+          echo "$rev_comparison" | jq -C .
+
+          stale_records="$(
+            jq \
+            --null-input \
+            --raw-output \
+            --argjson cmp "$rev_comparison" \
+            '
+              [
+                $cmp[] |
                   select(.run != .current) |
                   @json "\(.field) has changed since run (was \(.run), now \(.current))"
               ] |
@@ -171,7 +185,14 @@ jobs:
             exit
           fi
 
-          eval_release="$(echo "$pr" | jq -r -f ci/release-name.jq)"
+          tree="$(git rev-parse "$(echo "$pr" | jq --raw-output .head_sha)^{tree}")"
+
+          eval_release="$(
+            echo "$pr" |
+            jq --arg tree "$tree" '{head_sha: .head_sha, base_sha: .base_sha, tree: $tree}' |
+            jq -r -f ci/release-name.jq
+          )"
+
           effective_release="$(jq -r '.release_version' site/.test-meta.json)"
 
           if [[ "$eval_release" != "$effective_release" ]]; then
