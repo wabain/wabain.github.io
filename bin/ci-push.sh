@@ -347,9 +347,9 @@ summarize_push() {
 
 sentry_cli() {
     if [[ "${CI_DRY_RUN:-}" != "false" ]]; then
-        echo "[dry-run] yarn run sentry-cli $@"
+        echo "[dry-run] sentry-cli $@"
     else
-        yarn run sentry-cli "$@"
+        sentry-cli "$@"
     fi
 }
 
