@@ -172,7 +172,7 @@ jobs:
           fi
 
           eval_release="$(echo "$pr" | jq -r -f ci/release-name.jq)"
-          effective_release="$(jq -r -f '.release_version' site/.test-meta.json)"
+          effective_release="$(jq -r '.release_version' site/.test-meta.json)"
 
           if [[ "$eval_release" != "$effective_release" ]]; then
             echo "Unexpected release version; treating PR data as stale (got '$effective_release', expected '$eval_release')"
