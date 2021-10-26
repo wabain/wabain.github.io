@@ -203,6 +203,7 @@ jobs:
         env:
           PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
           SHA: ${{ steps.resolve.outputs.sha }}
+        continue-on-error: true
         run: |
           if [ ! -z "$PR_EVAL" ]; then
             tree="$(git rev-parse "$(echo "$PR_EVAL" | jq --raw-output .head_sha)^{tree}")"
@@ -244,7 +245,8 @@ jobs:
         if: >
           steps.resolve.outputs.workflow_run != null &&
             steps.resolve.outputs.conclusion == 'success' &&
-            (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false')
+            (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') &&
+            steps.release-version.outcome == 'success'
         env:
           CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
