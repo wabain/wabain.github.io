@@ -297,9 +297,7 @@ evaluate_pages_deploy() {
 
     summarize_push origin/master master "$deploy_tag"
 
-    sentry_cli releases new \
-        -p wabain-github-io --finalize --url "$RUN_URL" \
-        "$RELEASE_VERSION"
+    sentry_cli releases new --finalize --url "$RUN_URL" "$RELEASE_VERSION"
 
     sentry_cli releases files "$RELEASE_VERSION" upload-sourcemaps \
         --ignore "$CHECKOUT_DIR/.deploy-gitignore" \
