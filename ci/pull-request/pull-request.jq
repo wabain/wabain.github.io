@@ -29,8 +29,6 @@ def by_owner: .author_association == "OWNER";
     head_commit: .head.sha, # Aliased
 
     base_ref: .base.ref,
-    base_sha: .base.sha,
-    base_commit: .base.sha, # Aliased
 
     merge_sha: .merge_commit_sha,
     merge_commit: .merge_commit_sha, # Aliased
