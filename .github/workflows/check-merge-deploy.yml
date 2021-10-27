@@ -15,10 +15,11 @@ jobs:
     name: Check merge and deploy eligibility
     runs-on: ubuntu-18.04
 
+    # Run on push only when the push is to the develop branch
     if: >
       github.event_name != 'workflow_run' ||
-        github.event.workflow_run.event == 'pull_request' ||
-        (github.event.workflow_run.event == 'push' && github.ref == 'refs/heads/develop')
+        github.event.workflow_run.event != 'push' ||
+        github.ref == 'refs/heads/develop'
 
     env:
       # See comment in validate.yml
