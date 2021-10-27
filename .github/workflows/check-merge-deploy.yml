@@ -149,6 +149,9 @@ jobs:
             exit
           fi
 
+          echo "Site revisions:"
+          jq -C . site.revisions.json
+
           base_ref_sha="$(git rev-parse "$BASE_REF")"
 
           rev_comparison="$(
