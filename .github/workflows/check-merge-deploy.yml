@@ -94,18 +94,20 @@ jobs:
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
           REF: ${{ steps.resolves.outputs.ref }}
         run: |
+          ensure-ref() {
+            local ref="$1"
+
+            if [ ! -z "$ref" ] && ! git rev-parse "$ref" &> /dev/null; then
+              git fetch --no-tags --depth=2 origin "+$ref:$ref"
+            fi
+          }
+
           if [ ! -z "$PR_NUMBER" ]; then
-            git fetch --no-tags --depth=2 origin \
-              "+refs/pull/$PR_NUMBER/merge:refs/remotes/origin/pull/$PR_NUMBER/merge"
+            ensure-ref "refs/pull/$PR_NUMBER/merge"
           fi
 
-          if [ ! -z "$BASE_REF" ]; then
-            git fetch --no-tags --depth=2 origin "+$BASE_REF:$BASE_REF"
-          fi
-
-          if [ ! -z "$REF" ]; then
-            git fetch --no-tags --depth=2 origin "+$REF:$REF"
-          fi
+          ensure-ref "$BASE_REF"
+          ensure-ref "$REF"
 
           echo "Branches:"
           git branch --list -vv
