@@ -193,7 +193,7 @@ jobs:
                   head_sha: $parent_list[1],
 
                   base_ref: env.BASE_REF,
-                  base_sha: $parent_list[0],
+                  base_ref_sha: $parent_list[0],
                 }
               ' \
               > site.revisions.json
@@ -203,7 +203,7 @@ jobs:
                 cat site.revisions.json |
                 jq --raw-output '
                   "Ref \(.ref) [1] merges \(.head_ref) [2] into \(.base_ref) [3]. " +
-                  "[1]: \(.sha) [2]: \(.head_sha) [3]: \(.base_sha)"
+                  "[1]: \(.sha) [2]: \(.head_sha) [3]: \(.base_ref_sha)"
                 '
               )"
           else

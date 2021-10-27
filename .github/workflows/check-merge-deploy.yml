@@ -91,17 +91,24 @@ jobs:
         if: steps.resolve.outputs.effective_event == 'pull_request'
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          REF: ${{ steps.resolve.outputs.ref }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          REF: ${{ steps.resolves.outputs.ref }}
         run: |
           if [ ! -z "$PR_NUMBER" ]; then
             git fetch --no-tags --depth=2 origin \
               "+refs/pull/$PR_NUMBER/merge:refs/remotes/origin/pull/$PR_NUMBER/merge"
           fi
 
-          if [ ! -z "$REF" ]; then
-            git fetch --no-tags --depth=2 origin \
-              "+$REF:refs/remotes/origin/${REF/refs\//}"
+          if [ ! -z "$BASE_REF" ]; then
+            git fetch --no-tags --depth=2 origin "+$BASE_REF:$BASE_REF"
           fi
+
+          if [ ! -z "$REF" ]; then
+            git fetch --no-tags --depth=2 origin "+$REF:$REF"
+          fi
+
+          echo "Branches:"
+          git branch --list -vv
 
       - name: Evaluate pull request merge eligibility
         id: pr-eval
@@ -109,6 +116,7 @@ jobs:
         env:
           CONCLUSION: ${{ steps.resolve.outputs.conclusion }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pr="$(bin/ci-evaluate-pr.sh)"
@@ -138,10 +146,13 @@ jobs:
             exit
           fi
 
+          base_ref_sha="$(git rev-parse "$BASE_REF")"
+
           rev_comparison="$(
             jq \
             --null-input \
             --argjson pr_eval "$pr" \
+            --arg base_ref_sha "$base_ref_sha" \
             --slurpfile run_entries site.revisions.json \
             '
               (
@@ -151,10 +162,12 @@ jobs:
                   error("revisions file contains multiple JSON records")
                 end
               ) as $run |
-              ["head_ref", "base_ref", "head_sha", "base_sha"] as $fields |
               [
-                $fields[] |
-                  { field: ., run: $run[.], current: $pr_eval[.] }
+                { field: "head_ref", run: $run.head_ref, current: $pr_eval.head_ref },
+                { field: "base_ref", run: $run.base_ref, current: $pr_eval.base_ref },
+                { field: "head_sha", run: $run.head_sha, current: $pr_eval.head_sha },
+                { field: "base_ref_sha", run: $run.base_ref_sha, current: $base_ref_sha },
+                { field: "merge sha", run: $run.sha, current: $pr_eval.merge_sha }
               ]
             '
           )"
@@ -191,6 +204,7 @@ jobs:
           effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/merge)"
 
           if [[ "$eval_merge_commit" != "$effective_merge_commit" ]]; then
+            head_ref="$(echo "$pr" | jq -r '.head_ref')"
             echo "PR data is stale (got merge $effective_merge_commit, expected $head_ref merge $merge_commit)"
             echo '::set-output name=stale::true'
             exit
@@ -206,28 +220,25 @@ jobs:
         continue-on-error: true
         run: |
           if [ ! -z "$PR_EVAL" ]; then
-            tree="$(git rev-parse "$(echo "$PR_EVAL" | jq --raw-output .head_sha)^{tree}")"
+            base_ref_sha="$(git rev-parse "$(echo "$PR_EVAL" | jq --raw-output .base_ref)")"
+            tree="$(git rev-parse "$(echo "$PR_EVAL" | jq --raw-output .merge_sha)^{tree}")"
 
-            name="$(
+            params="$(
               echo "$PR_EVAL" |
-              jq --arg tree "$tree" '{head_sha: .head_sha, base_sha: .base_sha, tree: $tree}' |
-              jq -r -f ci/release-name.jq
+              jq --arg base_ref_sha "$base_ref_sha" --arg tree "$tree" '{ head_sha, $base_ref_sha, $tree }'
             )"
           elif [ ! -z "$SHA" ]; then
-            name="$(
-              jq \
-                --null-input \
-                --arg sha "$SHA" \
-                --arg tree "$(git rev-parse "$SHA^{tree}")" \
-                '{sha: $sha, tree: $tree}' | \
-              jq --raw-output -f ci/release-name.jq
+            tree="$(git rev-parse "$SHA^{tree}")"
+
+            params="$(
+              jq --null-input --arg sha "$SHA" --arg tree "$tree" '{ $sha, $tree }'
             )"
-            echo "::set-output name=name::$name"
           else
             echo "::error ::Missing expected inputs"
             exit 1
           fi
 
+          name="$(echo $params | jq --raw-output -f ci/release-name.jq)"
           echo "::set-output name=name::$name"
 
           run_name=
