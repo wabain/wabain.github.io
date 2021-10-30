@@ -5,7 +5,11 @@
 set -euo pipefail
 
 # Expected variables: BASE_DIR, GH_BOT_TOKEN, HEAD_REF, BASE_REF,
-# EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, RELEASE_VERSION, GITHUB_*
+# EFFECTIVE_EVENT, PR_NUMBER, PR_EVAL, RELEASE_VERSION, GITHUB_*,
+# SENTRY_{ORG,PROJECT,AUTH_TOKEN}
+#
+# The pull request merge commit is assumed to be at `refs/pull/$PR_NUMBER/merge`
+# in the local repo.
 
 CHECKOUT_DIR="$PWD"
 JEKYLL_BUILD_DIR="$BASE_DIR/site"
@@ -192,7 +196,7 @@ evaluate_pr_merge() {
     head_ref="$(echo "$PR_EVAL" | jq -r '.head_ref')"
     head_commit="$(echo "$PR_EVAL" | jq -r '.head_commit')"
 
-    git checkout "refs/remotes/origin/pull/$PR_NUMBER/merge"
+    git checkout "refs/pull/$PR_NUMBER/merge"
 
     git commit --quiet --amend --no-edit \
         -m "Merge pull request #$PR_NUMBER from $head_ref"
