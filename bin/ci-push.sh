@@ -60,9 +60,9 @@ main() {
         PUSH_ARGS=(--dry-run "${PUSH_ARGS[@]}")
     fi
 
-    # If the owner approval criterion wasn't met then attach a review to satisfy
-    # the branch protection rules
-    if [[ "$PUSH_PR_MERGE" == "true" && "$(echo "$PR_EVAL" | jq '.pr_eligibility.approver_is_owner')" == "false" ]]; then
+    # If the collaborator approval criterion isn't met then attach a review to
+    # satisfy the branch protection rules
+    if [[ "$PUSH_PR_MERGE" == "true" && "$(echo "$PR_EVAL" | jq '.pr_eligibility.approver_is_collaborator')" == "false" ]]; then
         start_group "Attach review approval to PR"
 
         local review_params="$(echo "$PR_EVAL" | jq --arg run_url "$RUN_URL" '{
