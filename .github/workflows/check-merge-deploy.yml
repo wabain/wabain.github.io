@@ -204,7 +204,7 @@ jobs:
           # PR evaluation
 
           eval_merge_commit="$(echo "$pr" | jq -r '.merge_commit')"
-          effective_merge_commit="$(git rev-parse refs/remotes/origin/pull/$PR_NUMBER/merge)"
+          effective_merge_commit="$(git rev-parse refs/pull/$PR_NUMBER/merge)"
 
           if [[ "$eval_merge_commit" != "$effective_merge_commit" ]]; then
             head_ref="$(echo "$pr" | jq -r '.head_ref')"
