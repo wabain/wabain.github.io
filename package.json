@@ -18,7 +18,7 @@
     "@types/twitter-for-web": "^0.0.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
-    "autoprefixer": "^10.3.7",
+    "autoprefixer": "^10.4.0",
     "babel-eslint": "^10.1.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^9.0.1",
