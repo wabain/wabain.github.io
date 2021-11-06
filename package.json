@@ -6,9 +6,9 @@
     "name": "William Bain"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.8",
-    "@babel/plugin-transform-modules-commonjs": "^7.15.0",
-    "@babel/preset-typescript": "^7.15.0",
+    "@babel/core": "^7.16.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
     "@types/animejs": "^3.1.4",
     "@types/debug": "^4.1.7",
     "@types/gtag.js": "^0.0.7",
