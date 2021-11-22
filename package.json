@@ -39,7 +39,7 @@
     "style-loader": "^3.3.1",
     "stylelint": "^14.1.0",
     "stylelint-config-prettier": "^9.0.3",
-    "stylelint-config-standard-scss": "^2.0.1",
+    "stylelint-config-standard-scss": "^3.0.0",
     "stylelint-order": "^5.0.0",
     "svgo": "^2.8.0",
     "ts-loader": "^9.2.5",
