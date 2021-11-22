@@ -12,7 +12,7 @@
     "@types/animejs": "^3.1.4",
     "@types/debug": "^4.1.7",
     "@types/gtag.js": "^0.0.8",
-    "@types/jest": "^27.0.2",
+    "@types/jest": "^27.0.3",
     "@types/node": "^16.11.9",
     "@types/selenium-webdriver": "^4.0.15",
     "@types/twitter-for-web": "^0.0.2",
