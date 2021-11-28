@@ -32,7 +32,7 @@
     "mini-svg-data-uri": "^1.4.3",
     "postcss": "^8.4.1",
     "postcss-loader": "^6.2.1",
-    "prettier": "^2.4.1",
+    "prettier": "^2.5.0",
     "sass": "^1.43.4",
     "sass-loader": "^12.3.0",
     "selenium-webdriver": "^4.1.0",
