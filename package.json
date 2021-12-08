@@ -63,7 +63,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@sentry/browser": "^6.15.0",
+    "@sentry/browser": "^6.16.0",
     "animejs": "^3.2.1",
     "debug": "^4.3.3",
     "normalize.css": "^8.0.0"
