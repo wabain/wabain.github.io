@@ -1,9 +1,9 @@
 .fading {
   transition: opacity 0.5s ease;
-  opacity: 100%;
+  opacity: 1;
 
   &.faded-out {
-    opacity: 0%;
+    opacity: 0;
   }
 }
 
