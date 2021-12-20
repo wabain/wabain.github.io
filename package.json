@@ -6,7 +6,7 @@
     "name": "William Bain"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.0",
+    "@babel/core": "^7.16.5",
     "@babel/plugin-transform-modules-commonjs": "^7.16.0",
     "@babel/preset-typescript": "^7.16.5",
     "@types/animejs": "^3.1.4",
