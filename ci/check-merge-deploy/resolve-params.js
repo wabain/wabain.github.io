@@ -11,7 +11,8 @@ module.exports = async function resolveMergeCheckParameters({
 
             switch (run.event) {
                 case 'pull_request':
-                case 'workflow_dispatch': {
+                case 'workflow_dispatch':
+                case 'workflow_call': {
                     const prs = run.pull_requests
 
                     if (prs.length !== 1) {

@@ -4,7 +4,7 @@
 # Invoked from a GitHub Action on a cron schedule to poll for whether an
 # automergeable PR exists for which merge should now be triggered
 #
-# Expected variables: as used by bin/ci-update-pr-label.sh and bin/ci-rerun-pr-workflow.sh
+# Expected variables: as used by bin/ci-update-pr-label.sh
 #
 
 set -euo pipefail
@@ -56,7 +56,7 @@ echo
 
 echo "::endgroup::"
 
-rerun_triggered=0
+candidate_selected=0
 
 while IFS= read -r candidate; do
     if [ -z "$candidate" ]; then
@@ -79,10 +79,11 @@ while IFS= read -r candidate; do
         continue
     fi
 
-    if [ $rerun_triggered -eq 0 ]; then
-        echo "Retriggering execution for PR $pr_number"
-        bin/ci-rerun-pr-workflow.sh "$pr_number" "$pr_eval"
+    if [ $candidate_selected -eq 0 ]; then
+        echo "Select re-execution for PR $pr_number"
+        echo "::set-output name=pr_number::$pr_number"
+        echo "::set-output name=pr_eval::$pr_eval"
 
-        rerun_triggered=1
+        candidate_selected=1
     fi
 done <<< "$(echo "$candidates" | jq -c '.[]')"

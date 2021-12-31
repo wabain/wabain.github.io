@@ -4,6 +4,7 @@ on:
     - cron: "*/15 * * * *"
 
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   poll-mergeable:
@@ -22,9 +23,19 @@ jobs:
           dependencies: jq
 
       - name: Evaluate if pull request automerge required
+        id: eval-rerun
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bin/ci-update-pending-prs.sh
+
+      - name: Trigger rerun
+        if: steps.eval-rerun.outputs.pr_number != null
+        env:
+          PR: ${{ steps.eval-rerun.outputs.pr_number }}
+          EVAL: ${{ steps.eval-rerun.outputs.pr_eval }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Token with repo access and without the builtin GITHUB_TOKEN restrictions
           GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
-          bin/ci-trigger-next-pr.sh
+          bin/ci-rerun-pr-workflow.sh "$PR" "$EVAL"

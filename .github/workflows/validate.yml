@@ -3,10 +3,19 @@ name: Build and test
 on:
   push:
     branches-ignore: master
-  pull_request: {}
+
+  pull_request:
+
   workflow_dispatch:
     inputs:
       pull_request_number:
+        description: Number of the pull request targeted by a workflow dispatch job
+        default: ""
+
+  workflow_call:
+    inputs:
+      pull_request_number:
+        type: string
         description: Number of the pull request targeted by a workflow dispatch job
         default: ""
 
@@ -26,7 +35,9 @@ jobs:
     steps:
       - name: Resolve dispatched pull request
         id: dispatched-pr
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.pull_request_number != ''
+        if: >
+          (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
+            github.event.inputs.pull_request_number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
@@ -55,12 +66,12 @@ jobs:
 
       # Currently it isn't possible to trigger a rerun of a pull request job
       # through the API, so we implement some manual indirection over the
-      # workflow_dispatch event.
+      # workflow_dispatch or workflow_call event.
       #
       # Use the outputs of this step as follows:
       #
       # - effective_event: replaces github.event_name, will be 'pull_request' for
-      #   for workflow_dispatch jobs which trigger pull request logic
+      #   for workflow_dispatch/call jobs which trigger pull request logic
       #
       # - ref: replaces github.ref / $GITHUB_REF
       #
@@ -259,13 +270,13 @@ jobs:
             site.tgz
             site.revisions.json
 
-      # For workflow_dispatch events there's no obvious indicator of a failure
+      # For workflow_dispatch/call events there's no obvious indicator of a failure
       # within the pull request, so add a comment
       - name: "Post-run: Add pull request comment if dispatched rerun failed"
         if: >
           failure() &&
             steps.resolve.outputs.effective_event == 'pull_request' &&
-            github.event_name == 'workflow_dispatch'
+            (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call')
         continue-on-error: true
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
