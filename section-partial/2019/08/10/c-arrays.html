@@ -104,7 +104,7 @@
 <span class="p">}</span>
 
 <span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="c">// structs: copy by value</span>
+    <span class="c1">// structs: copy by value</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">a1</span><span class="p">:</span> <span class="n">Aggregate</span> <span class="o">=</span> <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">();</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">a2</span><span class="p">:</span> <span class="n">Aggregate</span> <span class="o">=</span> <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">();</span>
 
@@ -113,9 +113,9 @@
     <span class="n">a1</span><span class="py">.i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
 
     <span class="nd">println!</span><span class="p">(</span><span class="s">"{:?}; {:?}"</span><span class="p">,</span> <span class="n">a1</span><span class="py">.i</span><span class="p">,</span> <span class="n">a2</span><span class="py">.i</span><span class="p">);</span>
-    <span class="c">// ↪ [10, 0, 0, 0]; [5, 0, 0, 0]</span>
+    <span class="c1">// ↪ [10, 0, 0, 0]; [5, 0, 0, 0]</span>
 
-    <span class="c">// arrays: copy by value</span>
+    <span class="c1">// arrays: copy by value</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">t1</span><span class="p">:</span> <span class="p">[</span><span class="nb">u8</span><span class="p">;</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">();</span>
     <span class="k">let</span> <span class="n">t2</span><span class="p">:</span> <span class="p">[</span><span class="nb">u8</span><span class="p">;</span> <span class="mi">4</span><span class="p">];</span>
 
@@ -124,17 +124,17 @@
     <span class="n">t1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
 
     <span class="nd">println!</span><span class="p">(</span><span class="s">"{:?}; {:?}"</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">);</span>
-    <span class="c">// ↪ [10, 0, 0, 0]; [5, 0, 0, 0]</span>
+    <span class="c1">// ↪ [10, 0, 0, 0]; [5, 0, 0, 0]</span>
 
-    <span class="c">// slices: borrowed reference</span>
+    <span class="c1">// slices: borrowed reference</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">s1</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span><span class="p">[</span><span class="nb">u8</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">a1</span><span class="py">.i</span><span class="p">;</span>
     <span class="k">let</span> <span class="n">s2</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span><span class="p">[</span><span class="nb">u8</span><span class="p">];</span>
 
     <span class="n">s1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span><span class="p">;</span>
     <span class="n">s2</span> <span class="o">=</span> <span class="n">s1</span><span class="p">;</span>
-<span class="c">//  ------- borrow of `*s1` occurs here</span>
+<span class="c1">//  ------- borrow of `*s1` occurs here</span>
     <span class="n">s1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
-<span class="c">//  cannot use `*s1` because it was mutably borrowed</span>
+<span class="c1">//  cannot use `*s1` because it was mutably borrowed</span>
 
     <span class="nd">println!</span><span class="p">(</span><span class="s">"{:?}, {:?}"</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">);</span>
 <span class="p">}</span>
