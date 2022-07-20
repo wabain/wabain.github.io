@@ -38,10 +38,8 @@ options = parse_options!
 
 # Current directory should be forced by invoking through yarn
 proofer = HTMLProofer.check_directory("_site", {
-  :assume_extension => true,
   :disable_external => !options[:external],
-  :check_html => true,
-  :file_ignore => [/^_site\/section-partial/],
+  :ignore_files => [/^_site\/section-partial/],
   :link_target_ignore_domains => [options[:origin]],
 })
 
