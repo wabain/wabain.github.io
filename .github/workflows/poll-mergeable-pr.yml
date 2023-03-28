@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: "*/15 * * * *"
 
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -15,11 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-deps
-        with:
-          dependencies: jq
 
       - name: Evaluate if pull request automerge required
         env:
