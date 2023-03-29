@@ -31,11 +31,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
         run: |
-          # Note: here we use stock jq and not the updated version installed below
+          set -euo pipefail
+
           curl --silent --show-error --fail \
               -H "Authorization: token $GH_TOKEN" \
               -H 'Accept: application/vnd.github.v3+json' \
-              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$(jq -nr '@uri "\(env.PR_NUMBER)"')" | \
+              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$(jq -nr '@uri "\(env.PR_NUMBER)"')" |
               jq -r '
                 if .head.ref != (env.GITHUB_REF | sub("^refs/heads/"; "")) then
                   error("Ref mismatch: dispatched with \(env.GITHUB_REF), PR has \(.head.ref)")
@@ -46,12 +47,13 @@ jobs:
                   error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
                 else
                   [
-                    "::set-output name=ref::refs/pull/\(env.PR_NUMBER)/merge",
-                    "::set-output name=head_ref::\(.head.ref)",
-                    "::set-output name=base_ref::\(.base.ref)"
+                    "ref=refs/pull/\(env.PR_NUMBER)/merge",
+                    "head_ref=\(.head.ref)",
+                    "base_ref=\(.base.ref)"
                   ] | join("\n")
                 end
-              '
+              ' |
+              tee -a "$GITHUB_OUTPUT"
 
       # Currently it isn't possible to trigger a rerun of a pull request job
       # through the API, so we implement some manual indirection over the
@@ -86,20 +88,22 @@ jobs:
           DISPATCHED_BASE_REF: ${{ steps.dispatched-pr.outputs.base_ref }}
           DISPATCHED_PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
         run: |
+          set -euo pipefail
+
           case "$DISPATCHED_PR_OUTCOME" in
           success)
-            echo "::set-output name=effective_event::pull_request"
-            echo "::set-output name=ref::$DISPATCHED_REF"
-            echo "::set-output name=head_ref::$DISPATCHED_HEAD_REF"
-            echo "::set-output name=base_ref::$DISPATCHED_BASE_REF"
-            echo "::set-output name=pr_number::$DISPATCHED_PR_NUMBER"
+            echo "effective_event=pull_request" | tee -a "$GITHUB_OUTPUT"
+            echo "ref=$DISPATCHED_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "head_ref=$DISPATCHED_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "base_ref=$DISPATCHED_BASE_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "pr_number=$DISPATCHED_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
             ;;
           skipped)
-            echo "::set-output name=effective_event::$EVENT_NAME"
-            echo "::set-output name=ref::$GITHUB_REF"
-            echo "::set-output name=head_ref::$GH_HEAD_REF"
-            echo "::set-output name=base_ref::$GH_BASE_REF"
-            echo "::set-output name=pr_number::$GH_PR_NUMBER"
+            echo "effective_event=$EVENT_NAME" | tee -a "$GITHUB_OUTPUT"
+            echo "ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "head_ref=$GH_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "base_ref=$GH_BASE_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "pr_number=$GH_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
             ;;
           *)
             echo "::error ::Unexpected prereq outcome: $DISPATCHED_PR_OUTCOME"
@@ -115,7 +119,8 @@ jobs:
 
       - name: Get target ruby version
         id: ruby-version
-        run: echo "::set-output name=version::$(cat .ruby-version)"
+        run: |
+          set -euo pipefail && echo "version=$(head -n1 .ruby-version)" | tee -a "$GITHUB_OUTPUT"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -140,7 +145,7 @@ jobs:
 
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+        run: set -euo pipefail && echo "dir=$(yarn cache dir | head -n1)" | tee -a "$GITHUB_OUTPUT"
 
       - name: Repopulate Yarn package cache
         uses: actions/cache@v3

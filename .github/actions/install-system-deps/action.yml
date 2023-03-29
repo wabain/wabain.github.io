@@ -28,6 +28,8 @@ runs:
       env:
         INPUT_DEPENDENCIES: ${{ inputs.dependencies }}
       run: |
+        set -euo pipefail
+
         jq --null-input --raw-output '
           env.INPUT_DEPENDENCIES |
             split("\n") |
@@ -43,12 +45,9 @@ runs:
                 error("::error ::Unknown dependency: \(.)")
               end
             ] |
-            [
-              "Requested dependencies: \(. | join(", "))",
-              "::set-output name=dependencies::\(. | tojson)"
-            ] |
-            join("\n")
-        '
+            "dependencies=\(. | tojson)"
+        ' |
+        tee -a "$GITHUB_OUTPUT"
 
     - name: Create user install dir
       shell: bash -e {0}
