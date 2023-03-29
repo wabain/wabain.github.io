@@ -106,7 +106,7 @@ jobs:
             exit 1
           esac
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ steps.resolve.outputs.ref }}
           # Fetch parents so that we can record their hashes in
