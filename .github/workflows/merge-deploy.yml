@@ -50,7 +50,7 @@ jobs:
           head_ref: ${{ inputs.head_ref }}
           base_ref: ${{ inputs.base_ref }}
           push_commit: ${{ inputs.push_commit }}
-          TARGET_REF: refs/heads/develop
+          TARGET_REF: develop
         run: |
           set -euo pipefail
 
