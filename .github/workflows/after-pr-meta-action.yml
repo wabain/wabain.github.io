@@ -55,6 +55,7 @@ jobs:
     if: needs.workflow-state.outputs.workflow_run_conclusion == 'success'
 
     uses: ./.github/workflows/merge-deploy.yml
+    secrets: inherit
 
     with:
       workflow_run_id: ${{ fromJSON(needs.workflow-state.outputs.workflow_run_id) }}

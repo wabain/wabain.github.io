@@ -128,7 +128,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dependencies: |
             tree
-            jq
             bundler
             geckodriver
 
