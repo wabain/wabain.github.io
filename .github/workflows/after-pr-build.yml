@@ -19,6 +19,7 @@ jobs:
       github.event.workflow_run.pull_requests[1] == null
 
     uses: ./.github/workflows/merge-deploy.yml
+    secrets: inherit
 
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
@@ -60,6 +61,7 @@ jobs:
       github.event.workflow_run.head_branch == 'refs/heads/develop'
 
     uses: ./.github/workflows/merge-deploy.yml
+    secrets: inherit
 
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
