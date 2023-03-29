@@ -57,7 +57,7 @@ jobs:
     uses: ./.github/workflows/merge-deploy.yml
 
     with:
-      workflow_run_id: ${{ needs.workflow-state.outputs.workflow_run_id }}
+      workflow_run_id: ${{ fromJSON(needs.workflow-state.outputs.workflow_run_id) }}
       effective_event: pull_request
       pull_request_number: ${{ github.event.pull_request.number }}
       head_ref: ${{ github.event.pull_request.head.ref }}
