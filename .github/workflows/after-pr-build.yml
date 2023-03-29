@@ -1,4 +1,5 @@
 name: Check merge and deploy after PR build or push to develop
+run-name: Check merge and deploy eligibility after run ${{ github.event.workflow_run.html_url }}
 on:
   workflow_run:
     workflows: ["Build and test"]
@@ -8,7 +9,6 @@ jobs:
   # When triggered by pull request build
   check-pr-merge-deploy:
     name: Check merge and deploy eligibility for pull request workflow run
-    run-name: Check merge and deploy eligibility for pull request run ${{ github.event.workflow_run.html_url }}
 
     # Assert there is a single pull request associated with the payload—I think that should be
     # the case for the pull_request event type
@@ -51,7 +51,6 @@ jobs:
   # When triggered by push to develop branch
   check-post-push-deploy:
     name: Check deploy eligibility for develop build
-    run-name: Check deploy eligibility for develop build ${{ github.event.workflow_run.html_url }}
 
     # Assert there is a single pull request associated with the payload—I think that should be
     # the case for the pull_request event type

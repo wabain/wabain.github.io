@@ -1,4 +1,5 @@
 name: Check merge and deploy on PR update
+run-name: "Check  merge and deploy on PR update (#${{ github.event.pull_request.number }})"
 on:
   pull_request_target:
     types: [labeled, ready_for_review]
@@ -9,7 +10,6 @@ on:
 jobs:
   workflow-state:
     name: Check validation state for pull request
-    run-name: "Check validation state for pull request #${{ github.event.pull_request.number }}"
     runs-on: ubuntu-22.04
 
     # Run on push only when the push is to the develop branch
@@ -49,7 +49,6 @@ jobs:
 
   check-merge-deploy:
     name: Check merge and deploy eligibility
-    run-name: "Check merge and deploy eligibility for #${{ github.event.pull_request.number }}"
 
     needs: [workflow-state]
 
