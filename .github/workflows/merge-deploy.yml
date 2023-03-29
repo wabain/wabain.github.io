@@ -318,7 +318,7 @@ jobs:
         id: push-refs
         if: steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false'
         env:
-          CI_DRY_RUN: "true"
+          CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
           EFFECTIVE_EVENT: ${{ inputs.effective_event }}
           PR_NUMBER: ${{ inputs.pull_request_number }}
