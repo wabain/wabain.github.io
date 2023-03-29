@@ -1,31 +1,100 @@
-name: Check merge and deploy
+name: Merge and deploy if eligible
+run-name: Merge and deploy ${{ inputs.head_ref }} on ${{ inputs.effective_event }} (${{ inputs.pull_request_number }}${{ inputs.push_commit }})
 on:
-  workflow_run:
-    workflows: ["Build and test"]
-    types: [completed]
+  workflow_call:
+    inputs:
+      workflow_run_id:
+        description: "The ID of the workflow run whose output should be deployed"
+        type: number
+        required: true
 
-  pull_request_target:
-    types: [labeled, ready_for_review]
+      effective_event:
+        description: "The type of event associated with the deployment (one of push or pull_request)"
+        required: true
+        type: string
 
-  pull_request_review:
-    types: [submitted, edited]
+      pull_request_number:
+        description: "The number of the pull request, if and only if effective_event is pull_request"
+        required: false
+        type: number
+
+      head_ref:
+        description: "The branch to be merged, or the branch which was pushed to for push events"
+        required: true
+        type: string
+
+      base_ref:
+        description: "The branch to merge into, or the branch which was pushed to for push events"
+        required: true
+        type: string
+
+      push_commit:
+        description: "The SHA of the pushed commit for push events"
+        required: false
+        type: string
 
 jobs:
   check-merge-deploy:
-    name: Check merge and deploy eligibility
+    name: Merge and deploy using artifact
     runs-on: ubuntu-22.04
-
-    # Run on push only when the push is to the develop branch
-    if: >
-      github.event_name != 'workflow_run' ||
-        github.event.workflow_run.event != 'push' ||
-        github.ref == 'refs/heads/develop'
 
     env:
       # See comment in validate.yml
       BASH_ENV: ci/env.sh
 
     steps:
+      - name: Validate inputs
+        env:
+          effective_event: ${{ inputs.effective_event }}
+          pull_request_number: ${{ inputs.pull_request_number }}
+          head_ref: ${{ inputs.head_ref }}
+          base_ref: ${{ inputs.base_ref }}
+          TARGET_REF: refs/heads/develop
+        run: |
+          set -euo pipefail
+
+          case "$effective_event" in
+          pull_request)
+            if [ -z "$pull_request_number" ]; then
+              echo '::error ::Missing pull_request_number input'
+              exit 1
+            fi
+
+            if ! [ -z "$push_commit" ]; then
+              echo "::error ::Unexpected push_commit input for pull_request event ($push_commit)"
+              exit 1
+            fi
+
+            ;;
+          push)
+            if [[ "$head_ref" != "$TARGET_REF" ]]; then
+              echo "::error ::Can only deploy on push when targeting $TARGET_REF (got $head_ref)"
+              exit 1
+            fi
+
+            if ! [ -z "$pull_request_number" ]; then
+              echo "::error ::Unexpected pull_request_number input for push event ($pull_request_number)"
+              exit 1
+            fi
+
+            if [ -z "$push_commit" ]; then
+              echo "::error ::Missing push_commit input"
+              exit 1
+            fi
+
+            ;;
+          *)
+            if ! [ -z "$pull_request_number" ]; then
+              echo "::error ::Unexpected effective_event input ($effective_event)"
+              exit 1
+            fi
+          esac
+
+          if [[ "$base_ref" != "$TARGET_REF" ]]; then
+            echo "::error ::Can only deploy changes targeting $TARGET_REF (got $base_ref)"
+            exit 1
+          fi
+
       - name: Configure git
         run: |
           git config --global user.email "bain.william.a+ci@gmail.com"
@@ -43,30 +112,20 @@ jobs:
             sentry-cli
             unzip
 
-      - name: Resolve inputs
-        id: resolve-impl
-        uses: actions/github-script@v4
-        with:
-          script: return await require('./ci/check-merge-deploy/resolve-params.js')({ context, github, core })
-
-      - name: Unpack resolved parameters
-        id: resolve
-        env:
-          VALUES: ${{ steps.resolve-impl.outputs.result }}
-        run: |
-          jq --null-input --raw-output '
-            env.VALUES | fromjson | to_entries[] | "::set-output name=\(.key)::\(.value)"
-          '
-
       - name: Download workflow artifacts
         id: artifact-download
-        uses: actions/github-script@v4
-        if: steps.resolve.outputs.workflow_run != null
+        uses: actions/github-script@v6
         env:
           WORKSPACE: ${{ github.workspace }}
-          WORKFLOW_RUN_ID: ${{ steps.resolve.outputs.workflow_run }}
+          WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
         with:
-          script: return await require('./ci/check-merge-deploy/download.js')({ context, github, core })
+          script: |
+            const workflowRunId = JSON.parse(process.env.WORKFLOW_RUN_ID)
+            const workspace = process.env.WORKSPACE
+            return await require('./ci/check-merge-deploy/download.js')(
+              { workflowRunId, workspace },
+              { context, github, core },
+            )
 
       - name: Extract
         if: >
@@ -89,11 +148,10 @@ jobs:
           tree "$BASE_DIR"
 
       - name: Fetch refs
-        if: steps.resolve.outputs.effective_event == 'pull_request'
         env:
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
-          REF: ${{ steps.resolves.outputs.ref }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+          BASE_REF: ${{ inputs.base_ref }}
+          HEAD_REF: ${{ inputs.head_ref }}
         run: |
           ensure-ref() {
             local ref="$1"
@@ -108,18 +166,17 @@ jobs:
           fi
 
           ensure-ref "$BASE_REF"
-          ensure-ref "$REF"
+          ensure-ref "$HEAD_REF"
 
           echo "Branches:"
           git branch --list -vv
 
       - name: Evaluate pull request merge eligibility
         id: pr-eval
-        if: steps.resolve.outputs.effective_event == 'pull_request'
+        if: inputs.effective_event == 'pull_request'
         env:
-          CONCLUSION: ${{ steps.resolve.outputs.conclusion }}
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+          BASE_REF: ${{ inputs.base_ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pr="$(bin/ci-evaluate-pr.sh)"
@@ -127,12 +184,12 @@ jobs:
           echo "PR attributes:"
           echo "$pr" | jq -C
 
-          echo "::set-output name=eval::$pr"
+          echo "eval=$pr" >> "$GITHUB_OUTPUT"
 
           # Add labels before checking for staleness in order to ensure the PR
           # shows up in the maintenance cron job's check
 
-          if [[ "$(echo "$pr" | jq '.pr_may_be_eligible')" == "true" && "$CONCLUSION" == success ]]; then
+          if [[ "$(echo "$pr" | jq '.pr_may_be_eligible')" == "true" ]]; then
             if [[ "$(echo "$pr" | jq '.merge_pending_label_present')" == "false" ]]; then
               bin/ci-update-pr-label.sh "$PR_NUMBER" add merge-pending
             fi
@@ -145,7 +202,7 @@ jobs:
 
           if [ ! -f "site.revisions.json" ]; then
             echo "No site.revisions.json: treating workflow run as stale"
-            echo '::set-output name=stale::true'
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
             exit
           fi
 
@@ -199,7 +256,7 @@ jobs:
 
           if [ ! -z "$stale_records" ]; then
             echo "$stale_records"
-            echo '::set-output name=stale::true'
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
             exit
           fi
 
@@ -212,18 +269,17 @@ jobs:
           if [[ "$eval_merge_commit" != "$effective_merge_commit" ]]; then
             head_ref="$(echo "$pr" | jq -r '.head_ref')"
             echo "PR data is stale (got merge $effective_merge_commit, expected $head_ref merge $merge_commit)"
-            echo '::set-output name=stale::true'
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
             exit
           fi
 
-          echo '::set-output name=stale::false'
+          echo 'stale=false' >> "$GITHUB_OUTPUT"
 
       - name: Resolve release version name
         id: release-version
         env:
           PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
-          SHA: ${{ steps.resolve.outputs.sha }}
-        continue-on-error: true
+          SHA: ${{ inputs.push_commit }}
         run: |
           if [ ! -z "$PR_EVAL" ]; then
             base_ref_sha="$(git rev-parse "$(echo "$PR_EVAL" | jq --raw-output .base_ref)")"
@@ -245,7 +301,7 @@ jobs:
           fi
 
           name="$(echo $params | jq --raw-output -f ci/release-name.jq)"
-          echo "::set-output name=name::$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
 
           run_name=
           if [ -f site/.test-meta.json ]; then
@@ -259,18 +315,14 @@ jobs:
 
       - name: Push eligible refs
         id: push-refs
-        if: >
-          steps.resolve.outputs.workflow_run != null &&
-            steps.resolve.outputs.conclusion == 'success' &&
-            (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') &&
-            steps.release-version.outcome == 'success'
+        if: steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false'
         env:
-          CI_DRY_RUN: "false"
+          CI_DRY_RUN: "true"
           BASE_DIR: ${{ github.workspace }}
-          EFFECTIVE_EVENT: ${{ steps.resolve.outputs.effective_event }}
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
-          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          EFFECTIVE_EVENT: ${{ inputs.effective_event }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+          HEAD_REF: ${{ inputs.head_ref }}
+          BASE_REF: ${{ inputs.base_ref }}
           PR_EVAL: ${{ steps.pr-eval.outputs.eval }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
@@ -283,31 +335,11 @@ jobs:
       - name: "Post-push: Clear pull request merge-pending label"
         if: >
           always() &&
-            steps.resolve.outputs.effective_event == 'pull_request' &&
+            inputs.effective_event == 'pull_request' &&
             steps.push-refs.outcome == 'success' &&
             fromJSON(steps.pr-eval.outputs.eval).pr_is_eligible
         continue-on-error: true
         env:
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
-
-      # For workflow_run events there's no obvious indicator of a failure
-      # within the pull request, so add a comment
-      - name: "Post-run: Add pull request comment on failure"
-        if: >
-          failure() &&
-            steps.resolve.outputs.effective_event == 'pull_request' &&
-            github.event_name == 'workflow_run'
-        continue-on-error: true
-        env:
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-
-          curl --silent --show-error --fail -XPOST \
-            -H "Authorization: token $GH_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            -d "$(jq -n '{ body: "A [merge/deploy check job] dispatched for this pull request failed.\n\n[merge/deploy check job]: \(env.URL)" }')"

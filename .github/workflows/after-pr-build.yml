@@ -1,0 +1,70 @@
+name: Check merge and deploy after PR build or push to develop
+on:
+  workflow_run:
+    workflows: ["Build and test"]
+    types: [completed]
+
+jobs:
+  # When triggered by pull request build
+  check-pr-merge-deploy:
+    name: Check merge and deploy eligibility for pull request workflow run
+    run-name: Check merge and deploy eligibility for pull request run ${{ github.event.workflow_run.html_url }}
+
+    # Assert there is a single pull request associated with the payload—I think that should be
+    # the case for the pull_request event type
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.pull_requests[0] != null &&
+      github.event.workflow_run.pull_requests[1] == null
+
+    uses: ./.github/workflows/merge-deploy.yml
+
+    with:
+      workflow_run_id: ${{ github.event.workflow_run.id }}
+      effective_event: pull_request
+      pull_request_number: ${{ github.event.workflow_run.pull_requests[0].number }}
+      head_ref: ${{ github.event.workflow_run.pull_requests[0].head.ref }}
+      base_ref: ${{ github.event.workflow_run.pull_requests[0].base.ref }}
+
+  add-comment-on-failure:
+    needs: [check-pr-merge-deploy]
+    if: failure()
+    runs-on: ubuntu-22.04
+    steps:
+      # For workflow_run events there's no obvious indicator of a failure
+      # within the pull request, so add a comment
+      - name: "Post-run: Add pull request comment on failure"
+        continue-on-error: true
+        env:
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          curl --silent --show-error --fail -XPOST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            -d "$(jq -n '{ body: "A [merge/deploy check job] dispatched for this pull request failed.\n\n[merge/deploy check job]: \(env.URL)" }')"
+
+  # When triggered by push to develop branch
+  check-post-push-deploy:
+    name: Check deploy eligibility for develop build
+    run-name: Check deploy eligibility for develop build ${{ github.event.workflow_run.html_url }}
+
+    # Assert there is a single pull request associated with the payload—I think that should be
+    # the case for the pull_request event type
+    if: >
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'refs/heads/develop'
+
+    uses: ./.github/workflows/merge-deploy.yml
+
+    with:
+      workflow_run_id: ${{ github.event.workflow_run.id }}
+      effective_event: push
+      head_ref: ${{ github.event.workflow_run.head_branch }}
+      base_ref: ${{ github.event.workflow_run.head_branch }}
+      push_commit: ${{ github.event.workflow_run.head_sha }}
