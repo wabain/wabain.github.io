@@ -1,0 +1,65 @@
+name: Check merge and deploy on PR update
+on:
+  pull_request_target:
+    types: [labeled, ready_for_review]
+
+  pull_request_review:
+    types: [submitted, edited]
+
+jobs:
+  workflow-state:
+    name: Check validation state for pull request
+    run-name: "Check validation state for pull request #${{ github.event.pull_request.number }}"
+    runs-on: ubuntu-22.04
+
+    # Run on push only when the push is to the develop branch
+    if: >
+      github.event.pull_request.state == 'open' &&
+      github.event.pull_request.mergeable != false &&
+      (github.event.action != 'labeled' || github.event.label.name == 'automerge')
+
+    outputs:
+      workflow_run_id: ${{ fromJSON(steps.workflow-run-lookup.outputs.result).id }}
+      workflow_run_conclusion: ${{ fromJSON(steps.workflow-run-lookup.outputs.result).conclusion }}
+
+    env:
+      # See comment in validate.yml
+      BASH_ENV: ci/env.sh
+
+    steps:
+      - uses: actions/github-script@v6
+        id: workflow-run-lookup
+        with:
+          script: |
+            const runs = await github.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'validate.yml',
+              event: 'pull_request',
+              branch: context.payload.pull_request.head.ref,
+            })
+
+            core.group('Listed runs', () => core.info(JSON.stringify(runs, undefined, '    ')))
+
+            const relevantRuns = runs.data.workflow_runs.filter((run) =>
+              run.pull_requests.some((pr) => pr.number === context.payload.pull_request.number),
+            )
+
+            return relevantRuns?.reduce((r1, r2) => r1.created_at < r2.created_at ? r2 : r1)
+
+  check-merge-deploy:
+    name: Check merge and deploy eligibility
+    run-name: "Check merge and deploy eligibility for #${{ github.event.pull_request.number }}"
+
+    needs: [workflow-state]
+
+    if: jobs.workflow-state.outputs.workflow_run_conclusion == 'success'
+
+    uses: ./.github/workflows/merge-deploy.yml
+
+    with:
+      workflow_run_id: ${{ jobs.workflow-state.outputs.workflow_run_id }}
+      effective_event: pull_request
+      pull_request_number: ${{ github.event.pull_request.number }}
+      head_ref: ${{ github.event.pull_request.head.ref }}
+      base_ref: ${{ github.event.pull_request.base.ref }}
