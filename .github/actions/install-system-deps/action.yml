@@ -37,7 +37,7 @@ runs:
               gsub("^\\s+|\\s+$"; "") |
               # Filter empty entries
               select(. != "") |
-              if test("^(tree|jq|bundler|geckodriver|sentry-cli|unzip)$") then
+              if test("^(tree|jq|geckodriver|sentry-cli|unzip)$") then
                 .
               else
                 error("::error ::Unknown dependency: \(.)")
@@ -79,17 +79,6 @@ runs:
 
         echo "::group::Install jq"
         bin/ci-install-jq.sh
-        echo "::endgroup::"
-
-    - name: Install bundler
-      shell: bash -e {0}
-      env:
-        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'bundler') }}
-      run: |
-        [[ "$NEEDED" == true ]] || exit 0
-
-        echo "::group::Install bundler"
-        gem install bundler
         echo "::endgroup::"
 
     - name: Install geckodriver
@@ -145,7 +134,7 @@ runs:
             return
           fi
 
-          echo "$cmd: $("$cmd" $args 2>&1 | head -n1)"
+          echo "$cmd ($(which "$cmd")): $("$cmd" $args 2>&1 | head -n1)"
         }
 
         print-version firefox
@@ -153,9 +142,11 @@ runs:
         print-version git
         print-version jq
         print-version node
-        print-version ruby
-        print-version bundler
         print-version tree
         print-version sentry-cli
         print-version unzip -v
         print-version yarn
+
+        # Not handled by this action:
+        print-version ruby
+        print-version bundler

@@ -128,7 +128,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dependencies: |
             tree
-            bundler
             geckodriver
 
       - name: Repopulate Ruby gem cache
@@ -155,6 +154,7 @@ jobs:
         run: |
           bundle config set deployment 'true'
           bundle install --jobs=4 --retry=3
+          bundle info --path --verbose jekyll
           yarn install --frozen-lockfile
 
       - name: Create revisions file
