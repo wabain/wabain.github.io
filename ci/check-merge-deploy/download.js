@@ -27,7 +27,7 @@ module.exports = async function download(
 ) {
     const PATH = `${workspace}/${NAME}.zip`
 
-    const artifacts = await github.actions.listWorkflowRunArtifacts({
+    const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
         owner: context.repo.owner,
         repo: context.repo.repo,
         run_id: workflowRunId,
