@@ -52,12 +52,12 @@ jobs:
 
     needs: [workflow-state]
 
-    if: jobs.workflow-state.outputs.workflow_run_conclusion == 'success'
+    if: needs.workflow-state.outputs.workflow_run_conclusion == 'success'
 
     uses: ./.github/workflows/merge-deploy.yml
 
     with:
-      workflow_run_id: ${{ jobs.workflow-state.outputs.workflow_run_id }}
+      workflow_run_id: ${{ needs.workflow-state.outputs.workflow_run_id }}
       effective_event: pull_request
       pull_request_number: ${{ github.event.pull_request.number }}
       head_ref: ${{ github.event.pull_request.head.ref }}
