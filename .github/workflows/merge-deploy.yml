@@ -49,6 +49,7 @@ jobs:
           pull_request_number: ${{ inputs.pull_request_number }}
           head_ref: ${{ inputs.head_ref }}
           base_ref: ${{ inputs.base_ref }}
+          push_commit: ${{ inputs.push_commit }}
           TARGET_REF: refs/heads/develop
         run: |
           set -euo pipefail
