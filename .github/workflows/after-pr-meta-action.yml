@@ -15,7 +15,7 @@ jobs:
     # Run on push only when the push is to the develop branch
     if: >
       github.event.pull_request.state == 'open' &&
-      github.event.pull_request.mergeable != false &&
+      (github.event_name != 'pull_request_target' || github.event.pull_request.mergeable != false) &&
       (github.event.action != 'labeled' || github.event.label.name == 'automerge')
 
     outputs:
