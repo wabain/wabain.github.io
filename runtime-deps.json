@@ -1,0 +1,9 @@
+{
+  "integrity": {
+    "@sentry/browser": {
+      "url": "https://browser.sentry-cdn.com/7.53.1/bundle.min.js",
+      "checksum": "sha384-TAmKuSiw9ilvCDimDNU3n2p9B/TsFLCCBI3zYYxaAwv34hXzH8ghBq/M0SYU/eY9",
+      "via": "https://docs.sentry.io/platforms/javascript/install/loader/#errors-only-bundle"
+    }
+  }
+}

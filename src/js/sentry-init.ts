@@ -1,6 +1,6 @@
 import debugFactory from 'debug'
 import Sentry from './sentry-shim'
-import type { Breadcrumb, SentryClient } from './sentry-shim'
+import type { Breadcrumb, SeverityLevel, SentryClient } from './sentry-shim'
 
 const dsn =
     'https://fff9e84f915d461d8d0347e42f2b07c1@o376549.ingest.sentry.io/5197459'
@@ -8,6 +8,9 @@ const dsn =
 const onProdHost = location.hostname === 'wabain.github.io'
 
 const debug = debugFactory('init:sentry')
+
+const WARNING: SeverityLevel = 'warning'
+const INFO: SeverityLevel = 'info'
 
 export default function init(): SentryClient | null {
     if (!Sentry) {
@@ -49,7 +52,7 @@ function postInit(Sentry: SentryClient): void {
     if (process.env.SENTRY_SDK_VERSION !== Sentry.SDK_VERSION) {
         const msg = `Sentry version mismatch: want ${process.env.SENTRY_SDK_VERSION}, got ${Sentry.SDK_VERSION}`
         debug(msg)
-        Sentry.captureMessage(msg, Sentry.Severity.Warning)
+        Sentry.captureMessage(msg, WARNING)
     }
 
     const RELEASE_VERSION = document
@@ -60,7 +63,7 @@ function postInit(Sentry: SentryClient): void {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const msg = `Release version mismatch: want ${process.env.RELEASE_VERSION}, got ${RELEASE_VERSION}`
         debug(msg)
-        Sentry.captureMessage(msg, Sentry.Severity.Warning)
+        Sentry.captureMessage(msg, WARNING)
     }
 
     const { dataLayer } = window as {
@@ -77,7 +80,7 @@ function postInit(Sentry: SentryClient): void {
 
             Sentry.addBreadcrumb({
                 category: 'initial-gtag',
-                level: Sentry.Severity.Info,
+                level: INFO,
                 data,
             })
         }
