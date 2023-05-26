@@ -7,7 +7,6 @@ require_relative 'htmlproof_link_target'
 def parse_options!
   options = {
     :external => false,
-    :origin => "wabain.github.io",
   }
 
   parser = OptionParser.new do |opts|
@@ -15,10 +14,6 @@ def parse_options!
 
     opts.on("-x", "--[no-]external", "Check reachability of external links") do |x|
       options[:external] = x
-    end
-
-    opts.on("-oORIGIN", "--origin=ORIGIN", "Set origin (domain and optional port) of the site") do |d|
-      options[:origin] = d
     end
   end
 
@@ -38,11 +33,9 @@ options = parse_options!
 
 # Current directory should be forced by invoking through yarn
 proofer = HTMLProofer.check_directory("_site", {
-  :assume_extension => true,
   :disable_external => !options[:external],
-  :check_html => true,
-  :file_ignore => [/^_site\/section-partial/],
-  :link_target_ignore_domains => [options[:origin]],
+  :ignore_files => [/^_site\/section-partial/],
+  :enforce_https => false,  # FIXME: would be good in general, but need a way to allowlist external http links
 })
 
 begin
