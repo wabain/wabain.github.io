@@ -9,6 +9,7 @@ module.exports = {
     parserOptions: {
         ecmaVersion: 6,
     },
+    plugins: ['@typescript-eslint'],
     env: {
         browser: true,
     },

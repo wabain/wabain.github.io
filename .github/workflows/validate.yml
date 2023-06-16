@@ -133,6 +133,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dependencies: |
             tree
+            pnpm
             geckodriver
 
       - name: Repopulate Ruby gem cache
@@ -143,24 +144,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bundle-
 
-      - name: Get Yarn cache directory path
-        id: yarn-cache-dir-path
-        run: set -euo pipefail && echo "dir=$(yarn cache dir | head -n1)" | tee -a "$GITHUB_OUTPUT"
+      - name: Get pnpm cache directory path
+        id: pnpm-store-path
+        run: set -euo pipefail && echo "dir=$(pnpm store path)" | tee -a "$GITHUB_OUTPUT"
 
-      - name: Repopulate Yarn package cache
+      - name: Repopulate pnpm package cache
         uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          path: ${{ steps.pnpm-store-path.outputs.dir }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-pnpm-
 
       - name: Install packages
         run: |
           bundle config set deployment 'true'
           bundle install --jobs=4 --retry=3
           bundle info --path --verbose jekyll
-          yarn install --frozen-lockfile
+          pnpm install --frozen-lockfile
 
       - name: Create revisions file
         env:
@@ -230,10 +231,10 @@ jobs:
           export WB_RELEASE_VERSION="$(jq --raw-output -f ci/release-name.jq site.revisions.json)"
           echo "::notice ::Release $WB_RELEASE_VERSION"
 
-          yarn run lint-build-infra
-          JEKYLL_ENV=production yarn run pre-jekyll
-          JEKYLL_ENV=production yarn run jekyll-build
-          JEKYLL_ENV=production yarn run jekyll-lint
+          pnpm run lint-build-infra
+          JEKYLL_ENV=production pnpm run pre-jekyll
+          JEKYLL_ENV=production pnpm run jekyll-build
+          JEKYLL_ENV=production pnpm run jekyll-lint
 
       - name: Create deploy tarfile
         id: create-deploy-tarfile

@@ -6,7 +6,7 @@ inputs:
     default: |
       tree
       jq
-      bundler
+      pnpm
       geckodriver
       sentry-cli
       unzip
@@ -39,7 +39,7 @@ runs:
               gsub("^\\s+|\\s+$"; "") |
               # Filter empty entries
               select(. != "") |
-              if test("^(tree|jq|geckodriver|sentry-cli|unzip)$") then
+              if test("^(tree|jq|pnpm|geckodriver|sentry-cli|unzip)$") then
                 .
               else
                 error("::error ::Unknown dependency: \(.)")
@@ -67,6 +67,18 @@ runs:
         echo "::group::Install apt dependencies ($apt_deps)"
         sudo apt-get update
         sudo apt-get -yq --no-install-suggests --no-install-recommends install $apt_deps
+        echo "::endgroup::"
+
+    - name: Install pnpm
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'pnpm') }}
+        VERSION: "8.6.2"
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install pnpm"
+        npm install --global "pnpm@$VERSION"
         echo "::endgroup::"
 
     - name: Install jq
@@ -144,7 +156,7 @@ runs:
         print-version tree
         print-version sentry-cli
         print-version unzip -v
-        print-version yarn
+        print-version pnpm
 
         # Not handled by this action:
         print-version ruby

@@ -51,7 +51,7 @@
     "clean": "rm -rf content/home-assets/ content/section-partial/ _site/",
     "fmt": "prettier --write . && stylelint --fix src/scss && eslint --fix .  --ext .js,.ts",
     "lint": "eslint . --ext .js,.ts && stylelint src/scss && prettier --check .",
-    "pre-jekyll": "yarn run lint-pre-jekyll && yarn run build-pre-jekyll && yarn run verify-bundled",
+    "pre-jekyll": "pnpm run lint-pre-jekyll && pnpm run build-pre-jekyll && pnpm run verify-bundled",
     "lint-pre-jekyll": "prettier --check . && stylelint src/scss",
     "build-pre-jekyll": "webpack --stats=verbose",
     "verify-bundled": "eslint --no-eslintrc --no-ignore --config .eslintrc.bundled.js content/home-assets",
@@ -69,6 +69,6 @@
     "normalize.css": "^8.0.0"
   },
   "engines": {
-    "yarn": ">= 1.0.0"
+    "pnpm": ">= 8.6.0"
   }
 }

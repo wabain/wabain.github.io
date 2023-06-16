@@ -31,11 +31,11 @@ export JEKYLL_ENV TEST_BROWSER
 
 echo "Starting Jekyll server..."
 
-yarn run jekyll-serve \
+pnpm run jekyll-serve \
     --skip-initial-build \
     --no-watch \
     --detach \
     > .jekyll-out \
     2> .jekyll-err
 
-yarn test
+pnpm test
