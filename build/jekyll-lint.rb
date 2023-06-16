@@ -1,4 +1,4 @@
-# To be invoked using `yarn run jekyll-lint [...]`
+# To be invoked using `pnpm run jekyll-lint [...]`
 
 require 'optparse'
 require 'html-proofer'
@@ -10,7 +10,7 @@ def parse_options!
   }
 
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: yarn run jekyll-lint [options]"
+    opts.banner = "Usage: pnpm run jekyll-lint [options]"
 
     opts.on("-x", "--[no-]external", "Check reachability of external links") do |x|
       options[:external] = x
@@ -31,7 +31,7 @@ end
 
 options = parse_options!
 
-# Current directory should be forced by invoking through yarn
+# Current directory should be forced by invoking through pnpm
 proofer = HTMLProofer.check_directory("_site", {
   :disable_external => !options[:external],
   :ignore_files => [/^_site\/section-partial/],

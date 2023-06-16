@@ -20,6 +20,7 @@
 
 # Non-source files
 
+/pnpm-lock.yaml
 /.vscode/
 /_site/
 /content/home-assets/
