@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 dependencies:
   '@sentry/browser':
     specifier: ^7.53.1
@@ -29,8 +25,8 @@ devDependencies:
     specifier: ^7.16.7
     version: 7.16.7(@babel/core@7.16.12)
   '@types/animejs':
-    specifier: ^3.1.5
-    version: 3.1.5
+    specifier: ^3.1.7
+    version: 3.1.7
   '@types/debug':
     specifier: ^4.1.8
     version: 4.1.8
@@ -958,8 +954,8 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /@types/animejs@3.1.5:
-    resolution: {integrity: sha512-4i3i1YuNaNEPoHBJY78uzYu8qKIwyx96G04tnVtNhRMQC9I1Xhg6fY9GeWmZAzudaesKKrPkQgTCthT1zSGYyg==}
+  /@types/animejs@3.1.7:
+    resolution: {integrity: sha512-kFSyjM+fLo3oE9noWEtUvF82ttN8fTrKohiEMIrSzEzEjnsCmtO0rBCUQBlSPEb2w8vfN+v4/Zo0tK21Bgmq4g==}
     dev: true
 
   /@types/babel__core@7.1.16:
@@ -5702,3 +5698,7 @@ packages:
       y18n: 5.0.8
       yargs-parser: 20.2.9
     dev: true
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
