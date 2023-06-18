@@ -1,5 +1,4 @@
 @use "sass:list";
-
 @use "base/sizing";
 @use "base/colors";
 
@@ -49,11 +48,13 @@ $xs-main-margin: sizing.$margin-sm;
   $tracks: add-track-range($tracks, $secondary-full, secondary-full);
 
   $out: ();
+
   @each $pair in list.zip($tracks, $sizes) {
     $out: list.join($out, $pair, $separator: space);
   }
 
   $out: list.append($out, list.nth($tracks, list.length($tracks)));
+
   @return $out;
 }
 
@@ -161,11 +162,7 @@ $xs-main-margin: sizing.$margin-sm;
 // background cover the primary area.
 .container-underlay {
   position: fixed;
-
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
 
   // Safari seems to require fixed size (not 1fr, 100%, etc.) in order to occupy
   // the full space pinned between top and bottom

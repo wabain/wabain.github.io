@@ -1,5 +1,5 @@
 module.exports = {
-    extends: ['stylelint-config-standard-scss', 'stylelint-config-prettier'],
+    extends: ['stylelint-config-standard-scss'],
     plugins: ['stylelint-order'],
     rules: {
         'declaration-empty-line-before': [
@@ -21,7 +21,6 @@ module.exports = {
                 emptyLineMinimumPropertyThreshold: 5,
             },
         ],
-        'string-quotes': 'double',
         'selector-class-pattern': [
             '^([a-z][a-z0-9]*)((--?|__)[a-z0-9]+)*$',
             {
@@ -77,7 +76,7 @@ function stylelintConfigSassRules() {
 
 function concentricPropertyOrder(extra) {
     return [
-        ['display', 'position', 'top', 'right', 'bottom', 'left'],
+        ['display', 'position', 'inset', 'top', 'right', 'bottom', 'left'],
         [
             'grid',
             'grid-area',
