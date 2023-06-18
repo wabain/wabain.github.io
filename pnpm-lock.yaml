@@ -85,8 +85,8 @@ devDependencies:
     specifier: ^2.7.6
     version: 2.7.6(webpack@5.87.0)
   mini-svg-data-uri:
-    specifier: ^1.4.3
-    version: 1.4.3
+    specifier: ^1.4.4
+    version: 1.4.4
   postcss:
     specifier: ^8.4.24
     version: 8.4.24
@@ -3875,8 +3875,8 @@ packages:
       webpack: 5.87.0(webpack-cli@5.1.4)
     dev: true
 
-  /mini-svg-data-uri@1.4.3:
-    resolution: {integrity: sha512-gSfqpMRC8IxghvMcxzzmMnWpXAChSA+vy4cia33RgerMS8Fex95akUyQZPbxJJmeBGiGmK7n/1OpUX8ksRjIdA==}
+  /mini-svg-data-uri@1.4.4:
+    resolution: {integrity: sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg==}
     hasBin: true
     dev: true
 
