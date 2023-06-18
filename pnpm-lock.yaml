@@ -31,8 +31,8 @@ devDependencies:
     specifier: ^4.1.8
     version: 4.1.8
   '@types/gtag.js':
-    specifier: ^0.0.8
-    version: 0.0.8
+    specifier: ^0.0.12
+    version: 0.0.12
   '@types/jest':
     specifier: ^27.4.0
     version: 27.4.0
@@ -1028,8 +1028,8 @@ packages:
       '@types/node': 20.3.0
     dev: true
 
-  /@types/gtag.js@0.0.8:
-    resolution: {integrity: sha512-xKDygydxruSUNkVbZWjiEbMijz9+xZCLb2yiTiQT88pm5EhIAUhaCo05IZF1HcQc90u4W7cp+7OZNpcJxpyL5g==}
+  /@types/gtag.js@0.0.12:
+    resolution: {integrity: sha512-YQV9bUsemkzG81Ea295/nF/5GijnD2Af7QhEofh7xu+kvCN6RdodgNwwGWXB5GMI3NoyvQo0odNctoH/qLMIpg==}
     dev: true
 
   /@types/istanbul-lib-coverage@2.0.3:
