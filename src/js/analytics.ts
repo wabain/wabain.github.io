@@ -66,7 +66,7 @@ export default class Analytics {
         gatherResults: IfVoid<ReturnType<AnalyticsBackend[M]>, false, true>,
         ...args: Parameters<AnalyticsBackend[M]>
     ): VoidOrArray<ReturnType<AnalyticsBackend[M]>> {
-        let out: ReturnType<AnalyticsBackend[M]>[] | void
+        let out: ReturnType<AnalyticsBackend[M]>[] | void = undefined
         if (gatherResults) {
             out = []
         }
