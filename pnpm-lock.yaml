@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 dependencies:
   '@sentry/browser':
     specifier: ^7.53.1
@@ -116,8 +112,8 @@ devDependencies:
     specifier: ^14.16.1
     version: 14.16.1
   stylelint-config-prettier:
-    specifier: ^9.0.3
-    version: 9.0.3(stylelint@14.16.1)
+    specifier: ^9.0.5
+    version: 9.0.5(stylelint@14.16.1)
   stylelint-config-standard-scss:
     specifier: ^3.0.0
     version: 3.0.0(postcss@8.4.24)(stylelint@14.16.1)
@@ -5017,12 +5013,12 @@ packages:
       postcss-selector-parser: 6.0.13
     dev: true
 
-  /stylelint-config-prettier@9.0.3(stylelint@14.16.1):
-    resolution: {integrity: sha512-5n9gUDp/n5tTMCq1GLqSpA30w2sqWITSSEiAWQlpxkKGAUbjcemQ0nbkRvRUa0B1LgD3+hCvdL7B1eTxy1QHJg==}
+  /stylelint-config-prettier@9.0.5(stylelint@14.16.1):
+    resolution: {integrity: sha512-U44lELgLZhbAD/xy/vncZ2Pq8sh2TnpiPvo38Ifg9+zeioR+LAkHu0i6YORIOxFafZoVg0xqQwex6e6F25S5XA==}
     engines: {node: '>= 12'}
     hasBin: true
     peerDependencies:
-      stylelint: '>=11.0.0'
+      stylelint: '>= 11.x < 15'
     dependencies:
       stylelint: 14.16.1
     dev: true
@@ -5702,3 +5698,7 @@ packages:
       y18n: 5.0.8
       yargs-parser: 20.2.9
     dev: true
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
