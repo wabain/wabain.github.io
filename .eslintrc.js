@@ -1,10 +1,13 @@
 module.exports = {
     extends: ['eslint:recommended', 'prettier'],
-    parser: 'babel-eslint',
+    parser: '@babel/eslint-parser',
     root: true,
     env: {
         node: true,
         es6: true,
+    },
+    parserOptions: {
+        requireConfigFile: false,
     },
     reportUnusedDisableDirectives: true,
     overrides: [
