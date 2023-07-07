@@ -6,7 +6,7 @@
     "name": "William Bain"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.8",
+    "@babel/eslint-parser": "^7.22.7",
     "@babel/plugin-transform-modules-commonjs": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
     "@types/animejs": "^3.1.7",
@@ -19,7 +19,6 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "autoprefixer": "^10.4.14",
-    "babel-eslint": "^10.1.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
