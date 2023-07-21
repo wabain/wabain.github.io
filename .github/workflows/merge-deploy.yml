@@ -227,11 +227,11 @@ jobs:
                 end
               ) as $run |
               [
-                { field: "head_ref", run: $run.head_ref, current: $pr_eval.head_ref },
-                { field: "base_ref", run: $run.base_ref, current: $pr_eval.base_ref },
-                { field: "head_sha", run: $run.head_sha, current: $pr_eval.head_sha },
-                { field: "base_ref_sha", run: $run.base_ref_sha, current: $base_ref_sha },
-                { field: "merge sha", run: $run.sha, current: $pr_eval.merge_sha }
+                { field: "head_ref", run: $run.head_ref, now: $pr_eval.head_ref },
+                { field: "base_ref", run: $run.base_ref, now: $pr_eval.base_ref },
+                { field: "head_sha", run: $run.head_sha, now: $pr_eval.head_sha },
+                { field: "base_ref_sha", run: $run.base_ref_sha, now: $base_ref_sha },
+                { field: "merge sha", run: $run.sha, now: $pr_eval.merge_sha }
               ]
             '
           )"
@@ -248,8 +248,8 @@ jobs:
             '
               [
                 $cmp[] |
-                  select(.run != .current) |
-                  @json "\(.field) has changed since run (was \(.run), now \(.current))"
+                  select(.run != .now) |
+                  @json "::warning ::\(.field) has changed since run (was \(.run), now \(.now))"
               ] |
               join("\n")
             '
@@ -309,14 +309,18 @@ jobs:
             run_name="$(jq -r '.release_version' site/.test-meta.json)"
           fi
 
-          if [[ "$name" != "$run_name" ]]; then
-            echo "::error ::Unexpected release version from run (got '$run_name', expected '$name')"
-            exit 1
+          if [[ "$name" == "$run_name" ]]; then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning ::Unexpected release version from run"
+            echo "::warning ::Expected '$name'"
+            echo "::warning ::Run has  '$run_name'"
+            echo "stale=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Push eligible refs
         id: push-refs
-        if: steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false'
+        if: (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') && steps.release-version.stale == 'false'
         env:
           CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
