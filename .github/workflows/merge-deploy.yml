@@ -320,7 +320,7 @@ jobs:
 
       - name: Push eligible refs
         id: push-refs
-        if: (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') && steps.release-version.stale == 'false'
+        if: (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') && steps.release-version.outputs.stale == 'false'
         env:
           CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
