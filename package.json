@@ -11,7 +11,7 @@
     "@babel/preset-typescript": "^7.22.5",
     "@types/animejs": "^3.1.7",
     "@types/debug": "^4.1.8",
-    "@types/gtag.js": "^0.0.12",
+    "@types/gtag.js": "^0.0.13",
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.9",
     "@types/selenium-webdriver": "^4.1.15",
