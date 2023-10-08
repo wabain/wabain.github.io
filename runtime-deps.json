@@ -1,8 +1,8 @@
 {
   "integrity": {
     "@sentry/browser": {
-      "url": "https://browser.sentry-cdn.com/7.53.1/bundle.min.js",
-      "checksum": "sha384-TAmKuSiw9ilvCDimDNU3n2p9B/TsFLCCBI3zYYxaAwv34hXzH8ghBq/M0SYU/eY9",
+      "url": "https://browser.sentry-cdn.com/7.73.0/bundle.min.js",
+      "checksum": "sha384-C45U7AY6hmJsQ76zCJs2IenO/jXNPLI9C9O2yA5Nqp0RvK1wxlS3fOIXDInSbl4w",
       "via": "https://docs.sentry.io/platforms/javascript/install/loader/#errors-only-bundle"
     }
   }
