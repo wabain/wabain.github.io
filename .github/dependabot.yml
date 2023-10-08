@@ -26,6 +26,9 @@ updates:
           - "@types/jest"
           - "postcss-loader"
           - "stylelint*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "bundler"
     directory: "/"
