@@ -8,6 +8,24 @@ updates:
       - "automerge"
       - "dependencies"
       - "javascript"
+    groups:
+      # Try to group everything that uses Babel together to avoid
+      # ending up with stray outdated transitive Babel dependencies
+      # that need to be manually updated.
+      #
+      # Patterns generated based on the output of:
+      #
+      #     pnpm why --json '@babel/*' | jq '[.[].devDependencies | keys[]]'
+      dev-babel-dependents:
+        dependency-type: "development"
+        patterns:
+          - "@babel/*"
+          - "@typescript-eslint/*"
+          - "eslint*"
+          - "jest"
+          - "@types/jest"
+          - "postcss-loader"
+          - "stylelint*"
 
   - package-ecosystem: "bundler"
     directory: "/"
