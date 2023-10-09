@@ -13,7 +13,7 @@
     "@types/debug": "^4.1.9",
     "@types/gtag.js": "^0.0.16",
     "@types/jest": "^29.5.5",
-    "@types/node": "^20.8.3",
+    "@types/node": "^20.8.4",
     "@types/selenium-webdriver": "^4.1.17",
     "@types/twitter-for-web": "^0.0.3",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
