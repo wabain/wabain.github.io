@@ -44,8 +44,8 @@ devDependencies:
     specifier: ^20.8.7
     version: 20.8.7
   '@types/selenium-webdriver':
-    specifier: ^4.1.17
-    version: 4.1.17
+    specifier: ^4.1.19
+    version: 4.1.19
   '@types/twitter-for-web':
     specifier: ^0.0.3
     version: 0.0.3
@@ -1181,8 +1181,8 @@ packages:
     resolution: {integrity: sha512-lqa4UEhhv/2sjjIQgjX8B+RBjj47eo0mzGasklVJ78UKGQY1r0VpB9XHDaZZO9qzEFDdy4MrXLuEaSmPrPSe/A==}
     dev: true
 
-  /@types/selenium-webdriver@4.1.17:
-    resolution: {integrity: sha512-vtoMYktN2XcSlXwSmZq6H+25CiQMPCuGP7RUulfSmRmyI6wCerZPmNyMMrvcCcyDE/ofeWD1COLfux5plsVizw==}
+  /@types/selenium-webdriver@4.1.19:
+    resolution: {integrity: sha512-9/vdyC3KeFQ7/vtt0H5RR0fnlrtc4dF9ssRBnh+yerua9O2Sst4nuPL4eHyKlR1/ZVV/5XPMLaJuVgv+7CDCAw==}
     dependencies:
       '@types/ws': 8.5.4
     dev: true
