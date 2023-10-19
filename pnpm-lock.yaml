@@ -47,8 +47,8 @@ devDependencies:
     specifier: ^4.1.19
     version: 4.1.19
   '@types/twitter-for-web':
-    specifier: ^0.0.3
-    version: 0.0.3
+    specifier: ^0.0.4
+    version: 0.0.4
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.7.4
     version: 6.7.4(@typescript-eslint/parser@6.7.4)(eslint@8.51.0)(typescript@5.2.2)
@@ -1195,8 +1195,8 @@ packages:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
     dev: true
 
-  /@types/twitter-for-web@0.0.3:
-    resolution: {integrity: sha512-ty80ZBqE5B5+Jyre2tAdfBDrurLwWYlg1oqyKV91GpxU6e3rjHo2bxZb7ivgfZAOPDYsgzHfg/cbHgsx6ruhmg==}
+  /@types/twitter-for-web@0.0.4:
+    resolution: {integrity: sha512-vo8sSFsFvw+M9O46tl2vebdLX2c5GOUePDUbjGaM9BNkGJDqJ7CEVFaGA39fg9sSxoAtk/D0dUFiOB69aQ6mfQ==}
     dev: true
 
   /@types/ws@8.5.4:
