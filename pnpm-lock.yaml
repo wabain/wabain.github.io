@@ -32,8 +32,8 @@ devDependencies:
     specifier: ^3.1.10
     version: 3.1.10
   '@types/debug':
-    specifier: ^4.1.9
-    version: 4.1.9
+    specifier: ^4.1.10
+    version: 4.1.10
   '@types/gtag.js':
     specifier: ^0.0.17
     version: 0.0.17
@@ -1091,8 +1091,8 @@ packages:
       '@babel/types': 7.23.0
     dev: true
 
-  /@types/debug@4.1.9:
-    resolution: {integrity: sha512-8Hz50m2eoS56ldRlepxSBa6PWEVCtzUo/92HgLc2qTMnotJNIm7xP+UZhyWoYsyOdd5dxZ+NZLb24rsKyFs2ow==}
+  /@types/debug@4.1.10:
+    resolution: {integrity: sha512-tOSCru6s732pofZ+sMv9o4o3Zc+Sa8l3bxd/tweTQudFn06vAzb13ZX46Zi6m6EJ+RUbRTHvgQJ1gBtSgkaUYA==}
     dependencies:
       '@types/ms': 0.7.31
     dev: true
