@@ -23,8 +23,7 @@ $header-v-padding: 0.67rem;
   // with development
   font-family: "Josefin Sans", Helvetica, Arial, sans-serif;
 
-  justify-self: end;
-  align-self: end;
+  place-self: end;
 
   a,
   a:hover {
@@ -56,8 +55,7 @@ $header-v-padding: 0.67rem;
 
 .grid-header-navbar {
   grid-column: primary-full;
-  align-self: end;
-  justify-self: end;
+  place-self: end;
 
   > ul {
     padding: 0;
