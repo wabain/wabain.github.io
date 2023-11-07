@@ -44,8 +44,8 @@ devDependencies:
     specifier: ^20.9.0
     version: 20.9.0
   '@types/selenium-webdriver':
-    specifier: ^4.1.19
-    version: 4.1.19
+    specifier: ^4.1.20
+    version: 4.1.20
   '@types/twitter-for-web':
     specifier: ^0.0.4
     version: 0.0.4
@@ -104,8 +104,8 @@ devDependencies:
     specifier: ^13.3.2
     version: 13.3.2(sass@1.69.5)(webpack@5.89.0)
   selenium-webdriver:
-    specifier: ^4.14.0
-    version: 4.14.0
+    specifier: ^4.15.0
+    version: 4.15.0
   style-loader:
     specifier: ^3.3.3
     version: 3.3.3(webpack@5.89.0)
@@ -1185,8 +1185,8 @@ packages:
     resolution: {integrity: sha512-lqa4UEhhv/2sjjIQgjX8B+RBjj47eo0mzGasklVJ78UKGQY1r0VpB9XHDaZZO9qzEFDdy4MrXLuEaSmPrPSe/A==}
     dev: true
 
-  /@types/selenium-webdriver@4.1.19:
-    resolution: {integrity: sha512-9/vdyC3KeFQ7/vtt0H5RR0fnlrtc4dF9ssRBnh+yerua9O2Sst4nuPL4eHyKlR1/ZVV/5XPMLaJuVgv+7CDCAw==}
+  /@types/selenium-webdriver@4.1.20:
+    resolution: {integrity: sha512-WxzARWDZVTbXlJgwYGhNoiV4OuHDabctSQmK5V88LqjW9TJiLETcknxRZ2xB1toecQnu0T2jt1pPXnSYkaWYiw==}
     dependencies:
       '@types/ws': 8.5.4
     dev: true
@@ -4639,8 +4639,8 @@ packages:
       ajv-keywords: 5.0.0(ajv@8.12.0)
     dev: true
 
-  /selenium-webdriver@4.14.0:
-    resolution: {integrity: sha512-637rs8anqMKHbWxcBZpyG3Gcs+rBUtAUiqk0O/knUqH4Paj3MFUZrz88/pVGOLNryEVy2z92fZomT8p1ENl1gA==}
+  /selenium-webdriver@4.15.0:
+    resolution: {integrity: sha512-BNG1bq+KWiBGHcJ/wULi0eKY0yaDqFIbEmtbsYJmfaEghdCkXBsx1akgOorhNwjBipOr0uwpvNXqT6/nzl+zjg==}
     engines: {node: '>= 14.20.0'}
     dependencies:
       jszip: 3.10.1
