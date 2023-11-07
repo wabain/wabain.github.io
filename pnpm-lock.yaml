@@ -29,8 +29,8 @@ devDependencies:
     specifier: ^7.23.2
     version: 7.23.2(@babel/core@7.23.2)
   '@types/animejs':
-    specifier: ^3.1.10
-    version: 3.1.10
+    specifier: ^3.1.11
+    version: 3.1.11
   '@types/debug':
     specifier: ^4.1.10
     version: 4.1.10
@@ -1058,8 +1058,8 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /@types/animejs@3.1.10:
-    resolution: {integrity: sha512-nCCSfdw7Ut/XwGSmkfh3nQJXKTnGe5wAhXoTBjMoGkBszbS7RYCxjggmZCAVf8mZJI4LEDTwQ7R6r7krFqPBFA==}
+  /@types/animejs@3.1.11:
+    resolution: {integrity: sha512-BIVx60G/eflyqdeKBL4+gZ3L+A0afeo11wo6FpX66bpSUQuI6roei5gYbFaGjbzawOo6hrUVPoDSfS6lwsgn8A==}
     dev: true
 
   /@types/babel__core@7.20.2:
