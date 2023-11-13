@@ -16,7 +16,7 @@
     "@types/node": "^20.9.0",
     "@types/selenium-webdriver": "^4.1.20",
     "@types/twitter-for-web": "^0.0.4",
-    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.10.0",
     "autoprefixer": "^10.4.16",
     "clean-webpack-plugin": "^4.0.0",
