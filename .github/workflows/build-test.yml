@@ -1,0 +1,182 @@
+name: Perform build and test
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "The ref for which validation should be run"
+        required: true
+        type: string
+
+      archive_artifacts:
+        description: "Whether a tarfile of artifacts from the build should be saved"
+        required: true
+        type: boolean
+
+      # Used only for debugging
+      base_ref:
+        description: "The branch to merge into, or the branch which was pushed to for push events"
+        required: true
+        type: string
+
+jobs:
+  validate:
+    name: Validate commit
+    runs-on: ubuntu-22.04
+
+    env:
+      # Use a default rcfile. GitHub Actions prefers an incremental update model
+      # to environment setup where environment changes are written to $GITHUB_ENV
+      # or $GITHUB_PATH, but unless dynamic variables really need to be propagated
+      # everywhere a fixed rcfile provides more flexibility without the incidental
+      # lock-in.
+      BASH_ENV: ci/env.sh
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+          # Fetch parents so that we can record their hashes in
+          # site.revisions.json if this is a PR merge commit
+          fetch-depth: 2
+
+      - name: Get target ruby version
+        id: ruby-version
+        run: |
+          set -euo pipefail && echo "version=$(head -n1 .ruby-version)" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.ruby-version.outputs.version }}
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dependencies: |
+            tree
+            pnpm
+            geckodriver
+
+      - name: Repopulate Ruby gem cache
+        uses: actions/cache@v3
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-bundle-${{ hashFiles('Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bundle-
+
+      - name: Get pnpm cache directory path
+        id: pnpm-store-path
+        run: set -euo pipefail && echo "dir=$(pnpm store path)" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Repopulate pnpm package cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-store-path.outputs.dir }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install packages
+        run: |
+          bundle config set deployment 'true'
+          bundle install --jobs=4 --retry=3
+          bundle info --path --verbose jekyll
+          pnpm install --frozen-lockfile
+
+      - name: Create revisions file
+        env:
+          REF: ${{ inputs.ref }}
+          BASE_REF: ${{ inputs.base_ref }}
+        run: |
+          sha="$(git rev-parse 'HEAD')"
+          tree="$(git rev-parse 'HEAD^{tree}')"
+
+          readarray -t parents <<< "$(git rev-parse "$REF^@")"
+
+          case "${#parents[@]}" in
+          1)
+            jq \
+              --null-input \
+              --arg sha "$sha" \
+              --arg tree "$tree" \
+              '{ ref: env.REF, sha: $sha, tree: $tree }' \
+              > site.revisions.json
+
+            jq -C . site.revisions.json
+            echo "::notice ::Building: $(
+              jq --raw-output '"ref \(.ref) at \(.sha)"' site.revisions.json
+            )"
+            ;;
+
+          2)
+            jq \
+              --null-input \
+              --arg sha "$sha" \
+              --arg tree "$tree" \
+              --arg base_sha "${parents[0]}" \
+              --arg head_sha "${parents[1]}" \
+              '
+                {
+                  ref: env.REF,
+                  sha: $sha,
+                  tree: $tree,
+
+                  head_ref: $head_sha,  # FIXME
+                  head_sha: $head_sha,
+
+                  base_ref: env.BASE_REF,
+                  base_ref_sha: $base_sha,
+                }
+              ' \
+              > site.revisions.json
+
+            jq -C . site.revisions.json
+            echo "::notice ::Building: $(
+              jq --raw-output '
+                "Ref \(.ref) [1] merges \(.head_ref) [2] into \(.base_ref) [3]. " +
+                "[1]: \(.sha) [2]: \(.head_sha) [3]: \(.base_ref_sha)"
+              ' site.revisions.json
+            )"
+            ;;
+
+          *)
+            echo >&2 "Unexpected parents shas: ${parents[@]}"
+            exit 1
+          esac
+
+      - name: Lint and build
+        run: |
+          export WB_RELEASE_VERSION="$(jq --raw-output -f ci/release-name.jq site.revisions.json)"
+          echo "::notice ::Release $WB_RELEASE_VERSION"
+
+          pnpm run lint-build-infra
+          JEKYLL_ENV=production pnpm run pre-jekyll
+          JEKYLL_ENV=production pnpm run jekyll-build
+          JEKYLL_ENV=production pnpm run jekyll-lint
+
+      - name: Create deploy tarfile
+        id: create-deploy-tarfile
+        if: inputs.archive_artifacts
+        run: |
+          tar -c -z --null --verbatim-files-from \
+            --verbose --show-transformed-names \
+            --transform='s,^_site/,site/,' \
+            --files-from=<(git ls-files -z --others --exclude-from=.deploy-gitignore _site) \
+            -f site.tgz
+
+      - name: Test
+        run: bin/ci-run-integration-tests.sh
+
+      - name: Test CI infra
+        run: ci/pull-request/test/tests.sh
+
+      - name: Upload deploy artifact
+        if: steps.create-deploy-tarfile.outcome == 'success'
+        uses: actions/upload-artifact@v3
+        with:
+          name: site.tgz
+          path: |
+            site.tgz
+            site.revisions.json

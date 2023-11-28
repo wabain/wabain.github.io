@@ -11,8 +11,8 @@ on:
         default: ""
 
 jobs:
-  validate:
-    name: Validate commit
+  params:
+    name: Resolve run parameters
     runs-on: ubuntu-22.04
 
     env:
@@ -22,6 +22,13 @@ jobs:
       # everywhere a fixed rcfile provides more flexibility without the incidental
       # lock-in.
       BASH_ENV: ci/env.sh
+
+    outputs:
+      effective_event: ${{ steps.resolve.outputs.effective_event }}
+      ref: ${{ steps.resolve.outputs.ref }}
+      head_ref: ${{ steps.resolve.outputs.head_ref }}
+      base_ref: ${{ steps.resolve.outputs.base_ref }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
 
     steps:
       - name: Resolve dispatched pull request
@@ -110,170 +117,34 @@ jobs:
             exit 1
           esac
 
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.resolve.outputs.ref }}
-          # Fetch parents so that we can record their hashes in
-          # site.revisions.json if this is a PR merge commit
-          fetch-depth: 2
+  build:
+    needs: params
+    uses: ./.github/workflows/build-test.yml
 
-      - name: Get target ruby version
-        id: ruby-version
-        run: |
-          set -euo pipefail && echo "version=$(head -n1 .ruby-version)" | tee -a "$GITHUB_OUTPUT"
+    with:
+      ref: ${{ needs.params.outputs.ref }}
+      base_ref: ${{ needs.params.outputs.base_ref }}
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ steps.ruby-version.outputs.version }}
+      archive_artifacts: ${{
+        needs.params.outputs.effective_event == 'pull_request' ||
+        (needs.params.outputs.effective_event == 'push' &&
+        needs.params.outputs.ref == 'refs/heads/develop')
+        }}
 
-      - name: Install system dependencies
-        uses: ./.github/actions/install-system-deps
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          dependencies: |
-            tree
-            pnpm
-            geckodriver
-
-      - name: Repopulate Ruby gem cache
-        uses: actions/cache@v3
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-bundle-${{ hashFiles('Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bundle-
-
-      - name: Get pnpm cache directory path
-        id: pnpm-store-path
-        run: set -euo pipefail && echo "dir=$(pnpm store path)" | tee -a "$GITHUB_OUTPUT"
-
-      - name: Repopulate pnpm package cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-store-path.outputs.dir }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install packages
-        run: |
-          bundle config set deployment 'true'
-          bundle install --jobs=4 --retry=3
-          bundle info --path --verbose jekyll
-          pnpm install --frozen-lockfile
-
-      - name: Create revisions file
-        env:
-          EVENT: ${{ steps.resolve.outputs.effective_event }}
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          REF: ${{ steps.resolve.outputs.ref }}
-          HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
-          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
-        run: |
-          sha="$(git rev-parse 'HEAD')"
-          tree="$(git rev-parse 'HEAD^{tree}')"
-
-          if [[ "$EVENT" == pull_request ]]; then
-            parents="$(git rev-parse 'HEAD^@')"
-
-            jq \
-              --null-input \
-              --arg sha "$sha" \
-              --arg tree "$tree" \
-              --arg parents "$parents" \
-              '
-                ($parents | split("\n")) as $parent_list |
-                if ($parent_list | length) != 2 then
-                  error("expected PR merge commit to have two parents, got \($parent_list)")
-                else
-                  null
-                end |
-                {
-                  ref: env.REF,
-                  sha: $sha,
-                  tree: $tree,
-
-                  head_ref: env.HEAD_REF,
-                  head_sha: $parent_list[1],
-
-                  base_ref: env.BASE_REF,
-                  base_ref_sha: $parent_list[0],
-                }
-              ' \
-              > site.revisions.json
-
-            cat site.revisions.json | jq -C .
-            echo "::notice ::Pull request #$PR_NUMBER: $(
-                cat site.revisions.json |
-                jq --raw-output '
-                  "Ref \(.ref) [1] merges \(.head_ref) [2] into \(.base_ref) [3]. " +
-                  "[1]: \(.sha) [2]: \(.head_sha) [3]: \(.base_ref_sha)"
-                '
-              )"
-          else
-            jq \
-              --null-input \
-              --arg sha "$sha" \
-              --arg tree "$tree" \
-              '{ ref: env.REF, sha: $sha, tree: $tree }' \
-              > site.revisions.json
-
-            cat site.revisions.json | jq -C .
-            echo "::notice ::$EVENT event: $(
-                cat site.revisions.json |
-                jq --raw-output '"ref \(.ref) at \(.sha)"'
-              )"
-          fi
-
-      - name: Lint and build
-        run: |
-          export WB_RELEASE_VERSION="$(jq --raw-output -f ci/release-name.jq site.revisions.json)"
-          echo "::notice ::Release $WB_RELEASE_VERSION"
-
-          pnpm run lint-build-infra
-          JEKYLL_ENV=production pnpm run pre-jekyll
-          JEKYLL_ENV=production pnpm run jekyll-build
-          JEKYLL_ENV=production pnpm run jekyll-lint
-
-      - name: Create deploy tarfile
-        id: create-deploy-tarfile
-        if: >
-          steps.resolve.outputs.effective_event == 'pull_request' ||
-            (steps.resolve.outputs.effective_event == 'push' &&
-             steps.resolve.outputs.ref == 'refs/heads/develop')
-        run: |
-          tar -c -z --null --verbatim-files-from \
-            --verbose --show-transformed-names \
-            --transform='s,^_site/,site/,' \
-            --files-from=<(git ls-files -z --others --exclude-from=.deploy-gitignore _site) \
-            -f site.tgz
-
-      - name: Test
-        run: bin/ci-run-integration-tests.sh
-
-      - name: Test CI infra
-        run: ci/pull-request/test/tests.sh
-
-      - name: Upload deploy artifact
-        if: steps.create-deploy-tarfile.outcome == 'success'
-        uses: actions/upload-artifact@v3
-        with:
-          name: site.tgz
-          path: |
-            site.tgz
-            site.revisions.json
-
+  workflow-dispatch-notify:
+    needs: [params, build]
+    if: >
+      failure() &&
+        needs.params.outputs.effective_event == 'pull_request' &&
+        github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    steps:
       # For workflow_dispatch events there's no obvious indicator of a failure
       # within the pull request, so add a comment
-      - name: "Post-run: Add pull request comment if dispatched rerun failed"
-        if: >
-          failure() &&
-            steps.resolve.outputs.effective_event == 'pull_request' &&
-            github.event_name == 'workflow_dispatch'
+      - name: "Post-run: Add pull request comment on failure"
         continue-on-error: true
         env:
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          PR_NUMBER: ${{ needs.params.outputs.pr_number }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
@@ -282,4 +153,4 @@ jobs:
             -H "Authorization: token $GH_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            -d "$(jq -n '{ body: "A [job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"
+            -d "$(jq -n '{ body: "A [build/test job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"

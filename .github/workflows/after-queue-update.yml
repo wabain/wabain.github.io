@@ -1,0 +1,17 @@
+name: Merge and deploy queue
+run-name: Merge and deploy queued updates (${{ github.sha }})
+on:
+  push:
+    tags:
+      - inbound-head-develop
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-test.yml
+
+    with:
+      ref: refs/inbound/develop
+      base_ref: refs/heads/develop
+      archive_artifacts: true
