@@ -9,7 +9,7 @@ on:
         required: true
 
       effective_event:
-        description: "The type of event associated with the deployment (one of push or pull_request)"
+        description: "The type of event associated with the deployment (one of push, pull_request or queue_publish)"
         required: true
         type: string
 
@@ -29,7 +29,7 @@ on:
         type: string
 
       push_commit:
-        description: "The SHA of the pushed commit for push events"
+        description: "The SHA of the pushed commit for push or queue_publish events"
         required: false
         type: string
 
@@ -75,6 +75,18 @@ jobs:
 
             if ! [ -z "$pull_request_number" ]; then
               echo "::error ::Unexpected pull_request_number input for push event ($pull_request_number)"
+              exit 1
+            fi
+
+            if [ -z "$push_commit" ]; then
+              echo "::error ::Missing push_commit input"
+              exit 1
+            fi
+
+            ;;
+          queue_publish)
+            if ! [ -z "$pull_request_number" ]; then
+              echo "::error ::Unexpected pull_request_number input for queue publish event ($pull_request_number)"
               exit 1
             fi
 
