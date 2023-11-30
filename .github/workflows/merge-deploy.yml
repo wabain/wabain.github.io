@@ -33,6 +33,38 @@ on:
         required: false
         type: string
 
+  workflow_dispatch:
+    inputs:
+      workflow_run_id:
+        description: "The ID of the workflow run whose output should be deployed"
+        type: number
+        required: true
+
+      effective_event:
+        description: "The type of event associated with the deployment (one of push or pull_request)"
+        required: true
+        type: string
+
+      pull_request_number:
+        description: "The number of the pull request, if and only if effective_event is pull_request"
+        required: false
+        type: number
+
+      head_ref:
+        description: "The branch to be merged, or the branch which was pushed to for push events"
+        required: true
+        type: string
+
+      base_ref:
+        description: "The branch to merge into, or the branch which was pushed to for push events"
+        required: true
+        type: string
+
+      push_commit:
+        description: "The SHA of the pushed commit for push events"
+        required: false
+        type: string
+
 jobs:
   check-merge-deploy:
     name: Merge and deploy using artifact
@@ -322,7 +354,7 @@ jobs:
         id: push-refs
         if: (steps.pr-eval.outcome == 'skipped' || steps.pr-eval.outputs.stale == 'false') && steps.release-version.outputs.stale == 'false'
         env:
-          CI_DRY_RUN: "false"
+          CI_DRY_RUN: "true"
           BASE_DIR: ${{ github.workspace }}
           EFFECTIVE_EVENT: ${{ inputs.effective_event }}
           PR_NUMBER: ${{ inputs.pull_request_number }}
