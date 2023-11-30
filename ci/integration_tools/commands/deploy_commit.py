@@ -216,15 +216,15 @@ def run_command(**kwargs) -> None:
     elif base_ref == "develop":
         print(f"::warning::Event targeting {base_ref} is not deployable: {params}", file=sys.stderr)
 
+    if (
+        params.effective_event == "pull_request"
+        and not pr_eval.pr_eligibility["approver_is_collaborator"]
+    ):
+        approve_pull_request(params, pr_eval)
+
     with sentry_deploy(
         params, push_sha=push_sha, release_version=release_version, deploy_number=deploy_number
     ):
-        if (
-            params.effective_event == "pull_request"
-            and not pr_eval.pr_eligibility["approver_is_collaborator"]
-        ):
-            approve_pull_request(params, pr_eval)
-
         push_args = ["--atomic", remote]
 
         if params.dry_run:
