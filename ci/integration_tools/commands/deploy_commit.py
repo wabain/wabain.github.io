@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 from contextlib import contextmanager
 from dataclasses import dataclass
-import dataclasses
 from datetime import datetime
 import json
 import os
@@ -14,7 +13,9 @@ import shlex
 import sys
 from typing import Any, Literal
 
-from .. import merge_prep
+from ..merge_deploy import merge_prep, revision_info
+from ..merge_deploy.revision_info import RevisionInfo
+
 from ..gh_state import (
     REPO,
     PullRequestEvaluation,
@@ -187,11 +188,10 @@ def run_command(**kwargs) -> None:
                 push_sha = resolve_commit(push_ref)
 
         case "push":
-            push_ref = head_ref
-            push_sha = resolve_commit(push_ref)
+            push_ref, push_sha = head_ref, resolve_commit(head_ref)
 
             stale = not push_deploy_revisions_up_to_date(
-                params, RevisionInfo(head_ref=head_ref, head_sha=push_sha, base_ref=head_ref)
+                params, RevisionInfo.for_push(ref=push_ref, sha=push_sha)
             )
             params.record_output("stale", json.dumps(stale))
 
@@ -348,21 +348,6 @@ def find_prior_deploy(params: DeployParams, push_sha: str) -> tuple[str, str] | 
     return None
 
 
-@dataclass(kw_only=True)
-class RevisionInfo:
-    head_ref: str
-    head_sha: str
-    base_ref: str
-    base_sha: str | None = dataclasses.field(default=None)
-    merge_sha: str | None = dataclasses.field(default=None)
-
-    def as_dict(self) -> dict[str, str | None]:
-        d = dataclasses.asdict(self)
-        if self.base_sha is None:
-            del d["base_sha"]
-        return d
-
-
 def pull_request_revisions_up_to_date(
     params: DeployParams,
     pr_eval: PullRequestEvaluation,
@@ -370,101 +355,27 @@ def pull_request_revisions_up_to_date(
 ) -> bool:
     assert params.effective_event == "pull_request", params
 
-    sources = [
-        ("current", current.as_dict()),
-        ("evaluated", revision_info_from_pr_eval(pr_eval).as_dict()),
+    sources: list[tuple[str, RevisionInfo]] = [
+        ("current", current),
+        ("evaluated", RevisionInfo.from_pr_eval(pr_eval)),
     ]
 
     if params.deploy_revision_info is not None:
-        sources.append(("built", load_deploy_revision_info(params.deploy_revision_info).as_dict()))
+        sources.append(("built", RevisionInfo.load_deploy_json(params.deploy_revision_info)))
 
-    return are_revisions_consistent(sources)
+    return revision_info.verify_revision_consistency(sources)
 
 
 def push_deploy_revisions_up_to_date(params: DeployParams, current: RevisionInfo) -> bool:
     assert params.effective_event == "push", params
     assert params.deploy_revision_info is not None, params
 
-    return are_revisions_consistent(
+    return revision_info.verify_revision_consistency(
         [
-            ("current", current.as_dict()),
-            ("built", load_deploy_revision_info(params.deploy_revision_info).as_dict()),
+            ("current", current),
+            ("built", RevisionInfo.load_deploy_json(params.deploy_revision_info)),
         ]
     )
-
-
-def are_revisions_consistent(revs: list[tuple[str, dict[str, Any]]]) -> bool:
-    consistent = True
-
-    for key in RevisionInfo.__dataclass_fields__.keys():
-        match [(src_name, src[key]) for src_name, src in revs if key in src]:
-            case [(_, first), *rest] as items:
-                if any(first != other for _, other in rest):
-                    print_info_line(
-                        "stale",
-                        key,
-                        "changed:",
-                        *(f"{src_name} {value!r}" for src_name, value in items),
-                    )
-                    consistent = False
-
-            case []:
-                pass
-
-            case other:
-                raise RuntimeError(f"unreachable: {other!r}")
-
-    return consistent
-
-
-def revision_info_from_pr_eval(pr_eval: PullRequestEvaluation) -> RevisionInfo:
-    return RevisionInfo(
-        head_ref=pr_eval.head_ref,
-        head_sha=pr_eval.head_sha,
-        base_ref=pr_eval.base_ref,
-        merge_sha=pr_eval.merge_sha,
-    )
-
-
-def load_deploy_revision_info(src: Path) -> RevisionInfo:
-    try:
-        info = json.loads(src.read_text())
-    except Exception as e:
-        e.add_note(f"failed to load revision info from {src}")
-        raise
-
-    match info:
-        case {
-            "head_ref": str(head_ref),
-            "head_sha": str(head_sha),
-            "base_ref": str(base_ref),
-            "base_ref_sha": str(base_sha),
-            "sha": str(merge_sha),
-            "tree": str(),
-        }:
-            return RevisionInfo(
-                head_ref=head_ref,
-                head_sha=head_sha,
-                base_ref=base_ref,
-                base_sha=base_sha,
-                merge_sha=merge_sha,
-            )
-
-        case {
-            "ref": str(ref),
-            "sha": str(sha),
-            "tree": str(),
-            **other,
-        } if not {
-            "head_ref",
-            "head_sha",
-            "base_ref",
-            "base_ref_sha",
-        }.intersection(other):
-            return RevisionInfo(head_ref=ref, head_sha=sha, base_ref=ref)
-
-        case _:
-            raise ValueError(f"unexpected deploy revision content: {json.dumps(info, indent=2)}")
 
 
 @log_group("Prepare deploy")

@@ -4,8 +4,8 @@ import itertools
 import os
 from typing import Sequence
 
-from .gh_state import PullRequestEvaluation
-from .utils import run
+from ..gh_state import PullRequestEvaluation
+from ..utils import run
 
 
 def pull_request_merge_ref(pr_number: int) -> str:
