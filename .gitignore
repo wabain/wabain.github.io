@@ -39,6 +39,43 @@ npm-debug.log*
 # build-iPhoneOS/
 # build-iPhoneSimulator/
 
+#### joe made this: http://goel.io/joe
+
+#### python ####
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
 ## Documentation cache and generated files:
 /.yardoc/
 /_yardoc/
@@ -49,3 +86,5 @@ npm-debug.log*
 /.bundle/
 /vendor/bundle
 /lib/bundler/man/
+
+.venv/
