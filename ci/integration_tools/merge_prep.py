@@ -12,12 +12,26 @@ def pull_request_merge_ref(pr_number: int) -> str:
     return f"refs/pull/{pr_number}/merge"
 
 
-def set_pull_request_merge_commit_message(
-    pr_number: int, pr_eval: PullRequestEvaluation, global_git_args: Sequence[str] = ()
+def rewrite_pull_request_merge_commit_message(
+    pr_number: int,
+    pr_eval: PullRequestEvaluation,
+    global_git_args: Sequence[str] = (),
 ) -> None:
-    existing_date = run(
-        ["git", *global_git_args, "show", "--format=%cD", "--no-patch", "HEAD"]
+    head_data = run(
+        ["git", *global_git_args, "show", "--format=%H %cD", "--no-patch", "HEAD"]
     ).removesuffix("\n")
+
+    match head_data.split(" ", maxsplit=1):
+        case [sha, existing_date] if sha == pr_eval.merge_sha:
+            pass
+
+        case [sha, _]:
+            raise ValueError(
+                f"unexpected HEAD commit: expected to be at merge SHA for PR {pr_number} ({pr_eval.merge_sha}) but got {sha}"
+            )
+
+        case _:
+            raise ValueError(f"unexpected HEAD data: {head_data!r}")
 
     amend_env = os.environ.copy()
     for role, value_type in itertools.product(["AUTHOR", "COMMITTER"], ["NAME", "EMAIL", "DATE"]):

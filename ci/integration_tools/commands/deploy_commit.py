@@ -175,7 +175,7 @@ def run_command(**kwargs) -> None:
                 push_ref = f'merge.{pr_number}.{head_ref.replace("/", "-")}.{datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S")}'
 
                 with temporary_worktree(merge_ref, args=["-b", push_ref]) as worktree_dir:
-                    merge_prep.set_pull_request_merge_commit_message(
+                    merge_prep.rewrite_pull_request_merge_commit_message(
                         pr_number,
                         pr_eval,
                         global_git_args=[
