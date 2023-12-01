@@ -8,6 +8,7 @@ import sys
 import traceback
 
 from . import commands
+from .output import AnsiStyle, emit_error, print_info_line
 
 
 def main():
@@ -43,10 +44,10 @@ def main():
         impl.run_command(**subcmd_args)
 
     except subprocess.CalledProcessError as exc:
-        print("fatal: unsuccessful internal command", file=sys.stderr)
+        emit_error("fatal: unsuccessful internal command")
         if exc.stderr:
             for line in exc.stderr.splitlines():
-                print("stderr:", line, file=sys.stderr)
+                print_info_line("stderr:", line, header_style=AnsiStyle.DimWhite)
 
         traceback.print_exception(exc, file=sys.stderr)
         sys.exit(1)

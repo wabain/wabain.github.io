@@ -14,7 +14,8 @@ from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
 import os
 
-from .utils import print_info_line, print_info_multi, run
+from .utils import run
+from .output import print_info_line, print_info_multi
 
 
 REPO = "wabain/wabain.github.io"

@@ -24,15 +24,17 @@ from ..gh_state import (
     get_github_api,
     remove_label,
 )
-from ..utils import (
+from ..output import (
+    emit_error,
+    emit_notice,
+    emit_summary,
+    emit_warning,
     enter_log_group,
     log_group,
     print_info_line,
     print_info_multi,
-    run,
-    temporary_worktree,
-    validate_branch_ref,
 )
+from ..utils import resolve_commit, run, temporary_worktree, validate_branch_ref
 
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
@@ -120,16 +122,16 @@ def run_command(**kwargs) -> None:
                 )
 
             if not params.allows_pages_deploy():
-                print("nothing to do for push to", params.base_ref, file=sys.stderr)
+                emit_summary("Nothing to do for push to", params.base_ref)
                 return
 
-    print_info_line("allows-pages-deploy", json.dumps(params.allows_pages_deploy()))
+    emit_notice("allows-pages-deploy", json.dumps(params.allows_pages_deploy()))
 
     release_version = None
     if params.allows_pages_deploy():
         release_version = get_release_version(params)
 
-        print_info_line("release", release_version)
+        emit_summary("release", release_version)
 
         if not has_consistent_release_version(params, release_version=release_version):
             params.record_output("stale", "true")
@@ -146,9 +148,8 @@ def run_command(**kwargs) -> None:
                 update_pull_request_merge_pending_label(params, pr_eval.pr_may_be_eligible)
 
             if not pr_eval.pr_is_eligible:
-                print(
-                    "Pull request", pr_number, "is not currently eligible to merge", file=sys.stderr
-                )
+                params.record_output("stale", "true")
+                emit_summary("Pull request", pr_number, "is not currently eligible to merge")
                 return
 
             fetch_deploy_refs(params)
@@ -200,7 +201,9 @@ def run_command(**kwargs) -> None:
 
             match find_prior_deploy(params, push_sha=push_sha):
                 case (commit, tag):
-                    print(f"Source commit already deployed via {commit} ({tag})", file=sys.stderr)
+                    emit_summary(
+                        f"Source commit for {head_ref} ({push_sha}) already deployed via {commit} ({tag})"
+                    )
                     return
                 case other:
                     assert other is None, repr(other)
@@ -214,7 +217,7 @@ def run_command(**kwargs) -> None:
     if params.allows_pages_deploy():
         deploy_number, deploy_tag = prepare_deploy_commit(params, push_sha=push_sha)
     elif base_ref == "develop":
-        print(f"::warning::Event targeting {base_ref} is not deployable: {params}", file=sys.stderr)
+        emit_warning("Event targeting", base_ref, "is not deployable:", params)
 
     if (
         params.effective_event == "pull_request"
@@ -257,6 +260,8 @@ def run_command(**kwargs) -> None:
             )
 
         run(["git", "push", *push_args])
+
+    emit_summary("Successfully handled push")
 
 
 def update_pull_request_merge_pending_label(params: DeployParams, pending: bool) -> None:
@@ -329,12 +334,6 @@ def fetch_deploy_refs(params: DeployParams) -> None:
                 f"+refs/heads/{head_ref}:refs/remotes/{remote}/{head_ref}",
             ]
         )
-
-
-def resolve_commit(rev: str) -> str:
-    return run(
-        ["git", "rev-parse", "--verify", "--end-of-options", rev + "^{commit}"]
-    ).removesuffix("\n")
 
 
 def find_prior_deploy(params: DeployParams, push_sha: str) -> tuple[str, str] | None:
@@ -595,18 +594,14 @@ def has_consistent_release_version(params: DeployParams, release_version: str) -
             pass
 
         case _:
-            print(
-                "::error ::Unexpected .test-meta.json content:",
-                json.dumps(test_meta),
-                file=sys.stderr,
-            )
+            emit_error("Unexpected .test-meta.json content:", json.dumps(test_meta))
             return False
 
     consistent = built_version == release_version
 
     if not consistent:
-        print(f"::warning ::Unexpected release version from run", file=sys.stderr)
-        print(f"::warning ::Expected {built_version!r}", file=sys.stderr)
-        print(f"::warning ::Run has  {release_version!r}", file=sys.stderr)
+        emit_warning(f"Unexpected release version from run")
+        emit_warning(f"Expected {built_version!r}")
+        emit_warning(f"Run has  {release_version!r}")
 
     return consistent

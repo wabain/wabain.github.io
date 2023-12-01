@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 from ..gh_state import PullRequestEvaluation
-from ..utils import print_info_line
+from ..output import print_info_line
 
 
 @dataclass(kw_only=True)
