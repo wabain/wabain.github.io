@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@sentry/browser':
-    specifier: ^7.73.0
-    version: 7.73.0
+    specifier: ^7.86.0
+    version: 7.86.0
   animejs:
     specifier: ^3.2.1
     version: 3.2.1
@@ -984,57 +984,64 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@sentry-internal/tracing@7.73.0:
-    resolution: {integrity: sha512-ig3WL/Nqp8nRQ52P205NaypGKNfIl/G+cIqge9xPW6zfRb5kJdM1YParw9GSJ1SPjEZBkBORGAML0on5H2FILw==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/core': 7.73.0
-      '@sentry/types': 7.73.0
-      '@sentry/utils': 7.73.0
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/browser@7.73.0:
-    resolution: {integrity: sha512-e301hUixcJ5+HNKCJwajFF5smF4opXEFSclyWsJuFNufv5J/1C1SDhbwG2JjBt5zzdSoKWJKT1ewR6vpICyoDw==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry-internal/tracing': 7.73.0
-      '@sentry/core': 7.73.0
-      '@sentry/replay': 7.73.0
-      '@sentry/types': 7.73.0
-      '@sentry/utils': 7.73.0
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/core@7.73.0:
-    resolution: {integrity: sha512-9FEz4Gq848LOgVN2OxJGYuQqxv7cIVw69VlAzWHEm3njt8mjvlTq+7UiFsGRo84+59V2FQuHxzA7vVjl90WfSg==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry/types': 7.73.0
-      '@sentry/utils': 7.73.0
-      tslib: 1.14.1
-    dev: false
-
-  /@sentry/replay@7.73.0:
-    resolution: {integrity: sha512-a8IC9SowBisLYD2IdLkXzx7gN4iVwHDJhQvLp2B8ARs1PyPjJ7gCxSMHeGrYp94V0gOXtorNYkrxvuX8ayPROA==}
+  /@sentry-internal/feedback@7.86.0:
+    resolution: {integrity: sha512-6rl0JYjmAKnhm4/fuFaROh4Ht8oi9f6ZeIcViCuGJcrGICZJJY0s+R77XJI78rNa82PYFrSCcnWXcGji4T8E7g==}
     engines: {node: '>=12'}
     dependencies:
-      '@sentry/core': 7.73.0
-      '@sentry/types': 7.73.0
-      '@sentry/utils': 7.73.0
+      '@sentry/core': 7.86.0
+      '@sentry/types': 7.86.0
+      '@sentry/utils': 7.86.0
     dev: false
 
-  /@sentry/types@7.73.0:
-    resolution: {integrity: sha512-/v8++bly8jW7r4cP2wswYiiVpn7eLLcqwnfPUMeCQze4zj3F3nTRIKc9BGHzU0V+fhHa3RwRC2ksqTGq1oJMDg==}
-    engines: {node: '>=8'}
-    dev: false
-
-  /@sentry/utils@7.73.0:
-    resolution: {integrity: sha512-h3ZK/qpf4k76FhJV9uiSbvMz3V/0Ovy94C+5/9UgPMVCJXFmVsdw8n/dwANJ7LupVPfYP23xFGgebDMFlK1/2w==}
+  /@sentry-internal/tracing@7.86.0:
+    resolution: {integrity: sha512-b4dUsNWlPWRwakGwR7bhOkqiFlqQszH1hhVFwrm/8s3kqEBZ+E4CeIfCvuHBHQ1cM/fx55xpXX/BU163cy+3iQ==}
     engines: {node: '>=8'}
     dependencies:
-      '@sentry/types': 7.73.0
-      tslib: 1.14.1
+      '@sentry/core': 7.86.0
+      '@sentry/types': 7.86.0
+      '@sentry/utils': 7.86.0
+    dev: false
+
+  /@sentry/browser@7.86.0:
+    resolution: {integrity: sha512-nfYWpVOmug+W7KJO7/xhA1JScMZcYHcoOVHLsUFm4znx51U4qZEk+zZDM11Q2Nw6MuDyEYg6bsH1QCwaoC6nLw==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry-internal/feedback': 7.86.0
+      '@sentry-internal/tracing': 7.86.0
+      '@sentry/core': 7.86.0
+      '@sentry/replay': 7.86.0
+      '@sentry/types': 7.86.0
+      '@sentry/utils': 7.86.0
+    dev: false
+
+  /@sentry/core@7.86.0:
+    resolution: {integrity: sha512-SbLvqd1bRYzhDS42u7GMnmbDMfth/zRiLElQWbLK/shmuZzTcfQSwNNdF4Yj+VfjOkqPFgGmICHSHVUc9dh01g==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/types': 7.86.0
+      '@sentry/utils': 7.86.0
+    dev: false
+
+  /@sentry/replay@7.86.0:
+    resolution: {integrity: sha512-YYZO8bfQSx1H87Te/zzyHPLHvExWiYwUfMWW68yGX+PPZIIzxaM81/iCQHkoucxlvuPCOtxCgf7RSMbsnqEa8g==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@sentry-internal/tracing': 7.86.0
+      '@sentry/core': 7.86.0
+      '@sentry/types': 7.86.0
+      '@sentry/utils': 7.86.0
+    dev: false
+
+  /@sentry/types@7.86.0:
+    resolution: {integrity: sha512-pGAt0+bMfWgo0KG2epthfNV4Wae03tURpoxNjGo5Fr4cXxvLTSijSAQ6rmmO4bXBJ7+rErEjX30g30o/eEdP9g==}
+    engines: {node: '>=8'}
+    dev: false
+
+  /@sentry/utils@7.86.0:
+    resolution: {integrity: sha512-6PejFtw9VTFFy5vu0ks+U7Ozkqz+eMt+HN8AZKBKErYzX5/xs0kpkOcSRpu3ETdTYcZf8VAmLVgFgE2BE+3WuQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/types': 7.86.0
     dev: false
 
   /@sinclair/typebox@0.27.8:
@@ -5170,6 +5177,7 @@ packages:
 
   /tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
+    dev: true
 
   /type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
