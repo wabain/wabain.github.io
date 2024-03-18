@@ -63,7 +63,7 @@ GEM
       rb-inotify (~> 0.9, >= 0.9.10)
     mercenary (0.3.6)
     mini_portile2 (2.8.5)
-    nokogiri (1.15.5)
+    nokogiri (1.15.6)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     parallel (1.23.0)
@@ -101,7 +101,7 @@ DEPENDENCIES
   jekyll-seo-tag (= 2.8.0)
   jekyll-sitemap (= 1.4.0)
   kramdown-parser-gfm (~> 1.1.0)
-  nokogiri (~> 1.15.5)
+  nokogiri (~> 1.15.6)
 
 RUBY VERSION
    ruby 2.7.1p83
