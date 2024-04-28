@@ -117,15 +117,8 @@ jobs:
           # site.revisions.json if this is a PR merge commit
           fetch-depth: 2
 
-      - name: Get target ruby version
-        id: ruby-version
-        run: |
-          set -euo pipefail && echo "version=$(head -n1 .ruby-version)" | tee -a "$GITHUB_OUTPUT"
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ steps.ruby-version.outputs.version }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
