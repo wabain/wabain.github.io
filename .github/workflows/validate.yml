@@ -131,7 +131,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dependencies: |
             tree
-            pnpm
             poetry
             geckodriver
 
@@ -142,6 +141,11 @@ jobs:
           key: ${{ runner.os }}-bundle-${{ hashFiles('Gemfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-bundle-
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack install
 
       - name: Get pnpm cache directory path
         id: pnpm-store-path
