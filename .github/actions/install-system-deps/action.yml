@@ -142,8 +142,6 @@ runs:
     - name: List dependency executable versions
       shell: bash -e {0}
       run: |
-        echo "Versions:"
-
         print-version() {
           local cmd=$1
           shift
@@ -161,6 +159,14 @@ runs:
           echo "$cmd ($(which "$cmd")): $("$cmd" $args 2>&1 | head -n1)"
         }
 
+        echo 'Dependencies (externally managed):'
+        print-version ruby
+        print-version bundler
+        print-version python
+        print-version pipx
+
+        echo
+        echo 'Dependencies (via install-system-deps):'
         print-version firefox
         print-version geckodriver
         print-version git
@@ -171,9 +177,3 @@ runs:
         print-version unzip -v
         print-version pnpm
         print-version poetry
-
-        # Not handled by this action:
-        print-version ruby
-        print-version bundler
-        print-version python
-        print-version pipx
