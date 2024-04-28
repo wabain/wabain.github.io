@@ -408,14 +408,28 @@ def prepare_deploy_commit(params: DeployParams, push_sha: str) -> tuple[str, str
             f"--work-tree={worktree_dir}",
         ]
 
+        base_args = [
+            *worktree_args,
+            "-c",
+            f"core.excludesfile={REPO_ROOT}/.deploy-gitignore",
+        ]
+
         deploy_tag = f"deploy/master/{deploy_number}-{push_sha}"
 
         run(
             [
                 "git",
-                *worktree_args,
-                "-c",
-                f"core.excludesfile={REPO_ROOT}/.deploy-gitignore",
+                *base_args,
+                "add",
+                "--",
+                worktree_dir,
+            ]
+        )
+
+        run(
+            [
+                "git",
+                *base_args,
                 "commit",
                 "--allow-empty",
                 "-m",
