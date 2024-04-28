@@ -502,13 +502,15 @@ def sentry_deploy(
     assert release_version is not None, params
     assert deploy_number is not None, params
 
-    prepare_sentry_deploy(params, push_sha=push_sha, release_version=release_version)
+    prepare_sentry_deploy(params, release_version=release_version)
     yield
-    finalize_sentry_deploy(params, release_version=release_version, deploy_number=deploy_number)
+    finalize_sentry_deploy(
+        params, release_version=release_version, push_sha=push_sha, deploy_number=deploy_number
+    )
 
 
 @log_group("Initialize sentry release")
-def prepare_sentry_deploy(params: DeployParams, push_sha: str, release_version: str) -> None:
+def prepare_sentry_deploy(params: DeployParams, release_version: str) -> None:
     assert params.deploy_dir is not None, params
 
     run_sentry(
@@ -519,17 +521,6 @@ def prepare_sentry_deploy(params: DeployParams, push_sha: str, release_version: 
             release_version,
             "--url",
             params.run_url,
-        ],
-    )
-
-    run_sentry(
-        params,
-        [
-            "releases",
-            "set-commits",
-            release_version,
-            "--commit",
-            f"wabain/wabain.github.io@{push_sha}",
         ],
     )
 
@@ -550,7 +541,20 @@ def prepare_sentry_deploy(params: DeployParams, push_sha: str, release_version: 
 
 
 @log_group("Finalize sentry release and deploy")
-def finalize_sentry_deploy(params: DeployParams, release_version: str, deploy_number: str) -> None:
+def finalize_sentry_deploy(
+    params: DeployParams, release_version: str, push_sha: str, deploy_number: str
+) -> None:
+    run_sentry(
+        params,
+        [
+            "releases",
+            "set-commits",
+            release_version,
+            "--commit",
+            f"wabain/wabain.github.io@{push_sha}",
+        ],
+    )
+
     run_sentry(params, ["releases", "finalize", release_version])
 
     run_sentry(
