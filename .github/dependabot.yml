@@ -38,3 +38,12 @@ updates:
       - "automerge"
       - "dependencies"
       - "ruby"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "automerge"
+      - "dependencies"
+      - "python"
