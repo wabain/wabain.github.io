@@ -133,7 +133,7 @@ jobs:
           git config --global user.email "bain.william.a+ci@gmail.com"
           git config --global user.name "CI"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -147,7 +147,7 @@ jobs:
 
       - name: Download workflow artifacts
         id: artifact-download
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
           WORKSPACE: ${{ github.workspace }}
           WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}

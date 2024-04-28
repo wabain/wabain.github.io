@@ -7,6 +7,7 @@ inputs:
       tree
       jq
       pnpm
+      poetry
       geckodriver
       sentry-cli
       unzip
@@ -39,7 +40,7 @@ runs:
               gsub("^\\s+|\\s+$"; "") |
               # Filter empty entries
               select(. != "") |
-              if test("^(tree|jq|pnpm|geckodriver|sentry-cli|unzip)$") then
+              if test("^(tree|jq|pnpm|poetry|geckodriver|sentry-cli|unzip)$") then
                 .
               else
                 error("::error ::Unknown dependency: \(.)")
@@ -79,6 +80,18 @@ runs:
 
         echo "::group::Install pnpm"
         npm install --global "pnpm@$VERSION"
+        echo "::endgroup::"
+
+    - name: Install poetry
+      shell: bash -e {0}
+      env:
+        NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'poetry') }}
+        VERSION: "1.8.2"
+      run: |
+        [[ "$NEEDED" == true ]] || exit 0
+
+        echo "::group::Install poetry"
+        pipx install "poetry==$VERSION"
         echo "::endgroup::"
 
     - name: Install jq
@@ -129,8 +142,6 @@ runs:
     - name: List dependency executable versions
       shell: bash -e {0}
       run: |
-        echo "Versions:"
-
         print-version() {
           local cmd=$1
           shift
@@ -148,6 +159,14 @@ runs:
           echo "$cmd ($(which "$cmd")): $("$cmd" $args 2>&1 | head -n1)"
         }
 
+        echo 'Dependencies (externally managed):'
+        print-version ruby
+        print-version bundler
+        print-version python
+        print-version pipx
+
+        echo
+        echo 'Dependencies (via install-system-deps):'
         print-version firefox
         print-version geckodriver
         print-version git
@@ -157,9 +176,4 @@ runs:
         print-version sentry-cli
         print-version unzip -v
         print-version pnpm
-
-        # Not handled by this action:
-        print-version ruby
-        print-version bundler
-        print-version python
         print-version poetry

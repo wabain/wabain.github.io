@@ -110,22 +110,20 @@ jobs:
             exit 1
           esac
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ steps.resolve.outputs.ref }}
           # Fetch parents so that we can record their hashes in
           # site.revisions.json if this is a PR merge commit
           fetch-depth: 2
 
-      - name: Get target ruby version
-        id: ruby-version
-        run: |
-          set -euo pipefail && echo "version=$(head -n1 .ruby-version)" | tee -a "$GITHUB_OUTPUT"
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          ruby-version: ${{ steps.ruby-version.outputs.version }}
+          python-version-file: pyproject.toml
 
       - name: Install system dependencies
         uses: ./.github/actions/install-system-deps
@@ -134,10 +132,11 @@ jobs:
           dependencies: |
             tree
             pnpm
+            poetry
             geckodriver
 
       - name: Repopulate Ruby gem cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-bundle-${{ hashFiles('Gemfile.lock') }}
@@ -149,12 +148,26 @@ jobs:
         run: set -euo pipefail && echo "dir=$(pnpm store path)" | tee -a "$GITHUB_OUTPUT"
 
       - name: Repopulate pnpm package cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-store-path.outputs.dir }}
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
+
+      - name: Get poetry cache directory path
+        id: poetry-store-path
+        run: set -euo pipefail && echo "dir=$(poetry config cache-dir)" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Repopulate poetry cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.poetry-store-path.outputs.dir }}
+            !${{ steps.poetry-store-path.outputs.dir }}/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
 
       - name: Install packages
         run: |
@@ -255,9 +268,26 @@ jobs:
       - name: Test CI infra
         run: ci/pull-request/test/tests.sh
 
+      - name: Check CI code
+        run: |
+          export MYPYPATH=$PWD/ci
+
+          # Prefer active python instance (the one initialized using
+          # setup-python above). For some reason poetry otherwise tries to use
+          # the python version it was installed with, although it looks like
+          # that isn't intended (c.f.
+          # https://github.com/python-poetry/poetry/issues/7158,
+          # https://github.com/python-poetry/poetry/issues/7772).
+          poetry env use python
+
+          poetry check --lock
+          poetry install
+          poetry run -- black --check .
+          poetry run -- mypy -p integration_tools
+
       - name: Upload deploy artifact
         if: steps.create-deploy-tarfile.outcome == 'success'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: site.tgz
           path: |
