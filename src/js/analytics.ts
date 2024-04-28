@@ -161,7 +161,7 @@ export const GtagBackend: AnalyticsBackend = {
             'page_path': path,
         }
 
-        gtag('config', 'UA-51279886-1', params)
+        gtag('config', 'G-SJQF3R12ZH', params)
     },
 
     onEvent(action, { label, category, value }) {
