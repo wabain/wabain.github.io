@@ -9,8 +9,8 @@ dependencies:
     specifier: ^7.112.2
     version: 7.112.2
   animejs:
-    specifier: ^3.2.1
-    version: 3.2.1
+    specifier: ^3.2.2
+    version: 3.2.2
   debug:
     specifier: ^4.3.4
     version: 4.3.4
@@ -29,8 +29,8 @@ devDependencies:
     specifier: ^7.24.1
     version: 7.24.1(@babel/core@7.24.4)
   '@types/animejs':
-    specifier: ^3.1.11
-    version: 3.1.11
+    specifier: ^3.1.12
+    version: 3.1.12
   '@types/debug':
     specifier: ^4.1.12
     version: 4.1.12
@@ -1088,8 +1088,8 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /@types/animejs@3.1.11:
-    resolution: {integrity: sha512-BIVx60G/eflyqdeKBL4+gZ3L+A0afeo11wo6FpX66bpSUQuI6roei5gYbFaGjbzawOo6hrUVPoDSfS6lwsgn8A==}
+  /@types/animejs@3.1.12:
+    resolution: {integrity: sha512-fpdH+ZtlO0kqjTOqRaBdsEmvpRNOayI8k4EVkEtitL5l6wducDOXk0rgQgfZqWf/ZX9DzXrHf257S5i9xTcISQ==}
     dev: true
 
   /@types/babel__core@7.20.2:
@@ -1609,8 +1609,8 @@ packages:
       uri-js: 4.4.1
     dev: true
 
-  /animejs@3.2.1:
-    resolution: {integrity: sha512-sWno3ugFryK5nhiDm/2BKeFCpZv7vzerWUcUPyAZLDhMek3+S/p418ldZJbJXo5ZUOpfm2kP2XRO4NJcULMy9A==}
+  /animejs@3.2.2:
+    resolution: {integrity: sha512-Ao95qWLpDPXXM+WrmwcKbl6uNlC5tjnowlaRYtuVDHHoygjtIPfDUoK9NthrlZsQSKjZXlmji2TrBUAVbiH0LQ==}
     dev: false
 
   /ansi-escapes@4.3.2:
