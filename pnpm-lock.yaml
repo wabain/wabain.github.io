@@ -44,8 +44,8 @@ devDependencies:
     specifier: ^20.9.5
     version: 20.9.5
   '@types/selenium-webdriver':
-    specifier: ^4.1.20
-    version: 4.1.20
+    specifier: ^4.1.22
+    version: 4.1.22
   '@types/twitter-for-web':
     specifier: ^0.0.5
     version: 0.0.5
@@ -104,8 +104,8 @@ devDependencies:
     specifier: ^13.3.3
     version: 13.3.3(sass@1.69.5)(webpack@5.91.0)
   selenium-webdriver:
-    specifier: ^4.15.0
-    version: 4.15.0
+    specifier: ^4.20.0
+    version: 4.20.0
   style-loader:
     specifier: ^4.0.0
     version: 4.0.0(webpack@5.91.0)
@@ -1211,8 +1211,8 @@ packages:
     resolution: {integrity: sha512-lqa4UEhhv/2sjjIQgjX8B+RBjj47eo0mzGasklVJ78UKGQY1r0VpB9XHDaZZO9qzEFDdy4MrXLuEaSmPrPSe/A==}
     dev: true
 
-  /@types/selenium-webdriver@4.1.20:
-    resolution: {integrity: sha512-WxzARWDZVTbXlJgwYGhNoiV4OuHDabctSQmK5V88LqjW9TJiLETcknxRZ2xB1toecQnu0T2jt1pPXnSYkaWYiw==}
+  /@types/selenium-webdriver@4.1.22:
+    resolution: {integrity: sha512-MCL4l7q8dwxejr2Q2NXLyNwHWMPdlWE0Kpn6fFwJtvkJF7PTkG5jkvbH/X1IAAQxgt/L1dA8u2GtDeekvSKvOA==}
     dependencies:
       '@types/ws': 8.5.4
     dev: true
@@ -4663,13 +4663,13 @@ packages:
       ajv-keywords: 5.1.0(ajv@8.12.0)
     dev: true
 
-  /selenium-webdriver@4.15.0:
-    resolution: {integrity: sha512-BNG1bq+KWiBGHcJ/wULi0eKY0yaDqFIbEmtbsYJmfaEghdCkXBsx1akgOorhNwjBipOr0uwpvNXqT6/nzl+zjg==}
+  /selenium-webdriver@4.20.0:
+    resolution: {integrity: sha512-s/G44lGQ1xB3tmtX6NNPomlkpL6CxLdmAvp/AGWWwi4qv5Te1+qji7tPSyr6gyuoPpdYiof1rKnWe3luy0MrYA==}
     engines: {node: '>= 14.20.0'}
     dependencies:
       jszip: 3.10.1
-      tmp: 0.2.1
-      ws: 8.14.2
+      tmp: 0.2.3
+      ws: 8.17.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -5131,11 +5131,9 @@ packages:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
     dev: true
 
-  /tmp@0.2.1:
-    resolution: {integrity: sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==}
-    engines: {node: '>=8.17.0'}
-    dependencies:
-      rimraf: 3.0.2
+  /tmp@0.2.3:
+    resolution: {integrity: sha512-nZD7m9iCPC5g0pYmcaxogYKggSfLsdxl8of3Q/oIbqCqLLIO9IAF0GWjX1z9NZRHPiXv8Wex4yDCaZsgEw0Y8w==}
+    engines: {node: '>=14.14'}
     dev: true
 
   /tmpl@1.0.5:
@@ -5416,8 +5414,8 @@ packages:
       signal-exit: 4.1.0
     dev: true
 
-  /ws@8.14.2:
-    resolution: {integrity: sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==}
+  /ws@8.17.0:
+    resolution: {integrity: sha512-uJq6108EgZMAl20KagGkzCKfMEjxmKvZHG7Tlq0Z6nOky7YF7aq4mOx6xK8TJ/i1LeK4Qus7INktacctDgY8Ow==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
