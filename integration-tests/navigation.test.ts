@@ -23,8 +23,8 @@ jest.setTimeout(30000)
 describe('navigation', function () {
     let webdriver: WebDriver = new Builder()
         .forBrowser(BROWSER)
-        .setFirefoxOptions(new FirefoxOptions().headless())
-        .setChromeOptions(new ChromeOptions().headless())
+        .setFirefoxOptions(new FirefoxOptions().addArguments('--headless'))
+        .setChromeOptions(new ChromeOptions().addArguments('--headless=new'))
         .build()
 
     // Seems like a problem with the jest declarations
