@@ -122,8 +122,8 @@ devDependencies:
     specifier: ^3.2.0
     version: 3.2.0
   ts-loader:
-    specifier: ^9.5.0
-    version: 9.5.0(typescript@5.4.5)(webpack@5.91.0)
+    specifier: ^9.5.1
+    version: 9.5.1(typescript@5.4.5)(webpack@5.91.0)
   typescript:
     specifier: ~5.4.5
     version: 5.4.5
@@ -2333,14 +2333,6 @@ packages:
 
   /emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
-    dev: true
-
-  /enhanced-resolve@5.15.0:
-    resolution: {integrity: sha512-LXYT42KJ7lpIKECr2mAXIaMldcNCh/7E0KBKOu4KSfkHmP+mZmSs+8V5gBAqisWBy0OO4W5Oyys0GO1Y8KtdKg==}
-    engines: {node: '>=10.13.0'}
-    dependencies:
-      graceful-fs: 4.2.11
-      tapable: 2.2.0
     dev: true
 
   /enhanced-resolve@5.16.0:
@@ -5172,15 +5164,15 @@ packages:
       typescript: 5.4.5
     dev: true
 
-  /ts-loader@9.5.0(typescript@5.4.5)(webpack@5.91.0):
-    resolution: {integrity: sha512-LLlB/pkB4q9mW2yLdFMnK3dEHbrBjeZTYguaaIfusyojBgAGf5kF+O6KcWqiGzWqHk0LBsoolrp4VftEURhybg==}
+  /ts-loader@9.5.1(typescript@5.4.5)(webpack@5.91.0):
+    resolution: {integrity: sha512-rNH3sK9kGZcH9dYzC7CewQm4NtxJTjSEVRJ2DyBZR7f8/wcta+iV44UPCXc5+nzDzivKtlzV6c9P4e+oFhDLYg==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       typescript: '*'
       webpack: ^5.0.0
     dependencies:
       chalk: 4.1.2
-      enhanced-resolve: 5.15.0
+      enhanced-resolve: 5.16.0
       micromatch: 4.0.5
       semver: 7.6.0
       source-map: 0.7.4
