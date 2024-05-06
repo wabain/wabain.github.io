@@ -20,7 +20,7 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.8",
     "@types/selenium-webdriver": "^4.1.22",
-    "@types/twitter-for-web": "^0.0.5",
+    "@types/twitter-for-web": "^0.0.6",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.19",
