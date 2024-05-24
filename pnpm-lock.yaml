@@ -98,11 +98,11 @@ devDependencies:
     specifier: ^3.2.5
     version: 3.2.5
   sass:
-    specifier: ^1.77.1
-    version: 1.77.1
+    specifier: ^1.77.2
+    version: 1.77.2
   sass-loader:
     specifier: ^13.3.3
-    version: 13.3.3(sass@1.77.1)(webpack@5.91.0)
+    version: 13.3.3(sass@1.77.2)(webpack@5.91.0)
   selenium-webdriver:
     specifier: ^4.21.0
     version: 4.21.0
@@ -4642,7 +4642,7 @@ packages:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
     dev: true
 
-  /sass-loader@13.3.3(sass@1.77.1)(webpack@5.91.0):
+  /sass-loader@13.3.3(sass@1.77.2)(webpack@5.91.0):
     resolution: {integrity: sha512-mt5YN2F1MOZr3d/wBRcZxeFgwgkH44wVc2zohO2YF6JiOMkiXe4BYRZpSu2sO1g71mo/j16txzUhsKZlqjVGzA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -4662,12 +4662,12 @@ packages:
         optional: true
     dependencies:
       neo-async: 2.6.2
-      sass: 1.77.1
+      sass: 1.77.2
       webpack: 5.91.0(webpack-cli@5.1.4)
     dev: true
 
-  /sass@1.77.1:
-    resolution: {integrity: sha512-OMEyfirt9XEfyvocduUIOlUSkWOXS/LAt6oblR/ISXCTukyavjex+zQNm51pPCOiFKY1QpWvEH1EeCkgyV3I6w==}
+  /sass@1.77.2:
+    resolution: {integrity: sha512-eb4GZt1C3avsX3heBNlrc7I09nyT00IUuo4eFhAbeXWU2fvA7oXI53SxODVAA+zgZCk9aunAZgO+losjR3fAwA==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
