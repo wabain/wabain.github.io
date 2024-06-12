@@ -1,9 +1,12 @@
 {
   "integrity": {
     "@sentry/browser": {
-      "url": "https://browser.sentry-cdn.com/7.112.2/bundle.min.js",
-      "checksum": "sha384-GYBfUSSXr8sZhL4vR5sbenAmxj0Qh7vhSCMf1M4z4etvo3x0yUEOI3k5sFuEcJvX",
-      "via": "https://docs.sentry.io/platforms/javascript/install/loader/#errors-only-bundle"
+      "version": "8.9.2",
+      "url": "https://browser.sentry-cdn.com/8.9.2/bundle.min.js",
+      "checksum": "sha384-V1L2j6P9YYFgSbGOSSHVfHQZBNv2a1JK5HXDTg6a6IILWj4Rde0tZxsXOrwWD6ll",
+      "via": "https://raw.githubusercontent.com/getsentry/sentry-release-registry/master/packages/npm/%40sentry/browser/8.9.2.json",
+      "docs": "https://docs.sentry.io/platforms/javascript/install/loader/#errors-only-bundle",
+      "updateScript": "bin/sentry-sdk-refresh.sh $VERSION"
     }
   }
 }

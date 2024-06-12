@@ -1,3 +1,5 @@
+const path = require('path')
+
 const JEKYLL_ENV = process.env.JEKYLL_ENV ?? 'development'
 const RELEASE_VERSION = process.env.WB_RELEASE_VERSION ?? undefined
 
@@ -16,6 +18,14 @@ module.exports = {
 function getSentryHash() {
     const expectedUrlPrefix = `${SENTRY_BROWSER_ROOT}/${SENTRY_SDK_VERSION}/`
     const params = RUNTIME_DEPS.integrity['@sentry/browser']
+
+    if (params.version !== SENTRY_SDK_VERSION) {
+        throw new Error(
+            `current Sentry bundle info is for ${JSON.stringify(params.version)}; expected ${JSON.stringify(SENTRY_SDK_VERSION)}
+
+try updating ${path.dirname(__dirname)}/runtime-deps.json with output from: ${params.updateScript.replace('$VERSION', SENTRY_SDK_VERSION)}`,
+        )
+    }
 
     if (!params.url.startsWith(expectedUrlPrefix)) {
         throw new Error(
