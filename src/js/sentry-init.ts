@@ -60,7 +60,6 @@ function postInit(Sentry: SentryClient): void {
         ?.getAttribute('content')
 
     if (process.env.RELEASE_VERSION !== RELEASE_VERSION) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const msg = `Release version mismatch: want ${process.env.RELEASE_VERSION}, got ${RELEASE_VERSION}`
         debug(msg)
         Sentry.captureMessage(msg, WARNING)

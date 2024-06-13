@@ -1,3 +1,4 @@
+@use "sass:math";
 @use "../base/colors";
 @use "../base/sizing";
 
@@ -26,7 +27,7 @@
   grid-row: post-separator;
   grid-column: primary;
 
-  transform: translateX(-(sizing.$grid / 32));
+  transform: translateX(math.div(-(sizing.$grid), 32));
 
   margin-top: sizing.$margin-sm;
   margin-bottom: sizing.$margin-md;
