@@ -61,7 +61,7 @@ function stylelintConfigSassRules() {
             ],
         ],
         'scss/at-extend-no-missing-placeholder': true,
-        'scss/at-import-no-partial-leading-underscore': true,
+        'scss/load-no-partial-leading-underscore': true,
         'scss/at-import-partial-extension-blacklist': ['scss'],
         'scss/at-rule-no-unknown': true,
         'scss/selector-no-redundant-nesting-selector': true,
