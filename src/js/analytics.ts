@@ -191,7 +191,6 @@ export const GtagBackend: AnalyticsBackend = {
             resolve = _res
         })
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         resolve = resolve!
 
         const timeout = new Promise<void>((res) => {

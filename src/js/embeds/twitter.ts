@@ -69,7 +69,7 @@ function loadTwitterApi(analytics: Analytics): Promise<Twitter> {
             'error',
             (e) => {
                 const message = (e.error ?? e.message) || 'unspecified error'
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+
                 reject(new Error(`failed to load script: ${message}`))
             },
             { once: true },

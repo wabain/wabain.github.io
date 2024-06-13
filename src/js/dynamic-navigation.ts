@@ -74,7 +74,7 @@ function parseTitle(title: string): { base: string; page: string | null } {
     }
 
     return {
-        base: parsed[1]!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        base: parsed[1]!,
         page: parsed[2] || null,
     }
 }
@@ -543,7 +543,6 @@ class PageTransformer {
         const len = collection.length
 
         for (let i = 0; i < len; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const elem = collection[i]!
             if (getDomainRelativeUrl(elem.href) === active) {
                 elem.classList.add('active-link')
