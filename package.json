@@ -37,7 +37,7 @@
     "postcss": "^8.4.38",
     "postcss-loader": "^8.1.1",
     "prettier": "^3.3.2",
-    "sass": "^1.77.5",
+    "sass": "^1.77.6",
     "sass-loader": "^13.3.3",
     "selenium-webdriver": "^4.21.0",
     "style-loader": "^4.0.0",
