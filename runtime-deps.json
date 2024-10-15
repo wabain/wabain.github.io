@@ -1,10 +1,10 @@
 {
   "integrity": {
     "@sentry/browser": {
-      "version": "8.14.0",
-      "url": "https://browser.sentry-cdn.com/8.14.0/bundle.min.js",
-      "checksum": "sha384-4oe3chveK27XfK6t2pnNpVkDjuKpIqhsNtb9oXlovOpgu9wLm+L8sr3Di3M9BDAt",
-      "via": "https://raw.githubusercontent.com/getsentry/sentry-release-registry/master/packages/npm/%40sentry/browser/8.14.0.json",
+      "version": "8.34.0",
+      "url": "https://browser.sentry-cdn.com/8.34.0/bundle.min.js",
+      "checksum": "sha384-gpuLt53EKve0n0F+7BnRYO7f0kud8EOsyUCB24QEF7QYVelpALkhqI5u4Db4ve0o",
+      "via": "https://raw.githubusercontent.com/getsentry/sentry-release-registry/master/packages/npm/%40sentry/browser/8.34.0.json",
       "docs": "https://docs.sentry.io/platforms/javascript/install/loader/#errors-only-bundle",
       "updateScript": "bin/sentry-sdk-refresh.sh $VERSION"
     }
