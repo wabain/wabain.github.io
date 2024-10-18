@@ -44,8 +44,8 @@ devDependencies:
     specifier: ^22.7.6
     version: 22.7.6
   '@types/selenium-webdriver':
-    specifier: ^4.1.22
-    version: 4.1.22
+    specifier: ^4.1.26
+    version: 4.1.26
   '@types/twitter-for-web':
     specifier: ^0.0.6
     version: 0.0.6
@@ -104,8 +104,8 @@ devDependencies:
     specifier: ^16.0.2
     version: 16.0.2(sass@1.80.2)(webpack@5.95.0)
   selenium-webdriver:
-    specifier: ^4.21.0
-    version: 4.21.0
+    specifier: ^4.25.0
+    version: 4.25.0
   style-loader:
     specifier: ^4.0.0
     version: 4.0.0(webpack@5.95.0)
@@ -573,6 +573,10 @@ packages:
       '@babel/helper-string-parser': 7.25.7
       '@babel/helper-validator-identifier': 7.25.7
       to-fast-properties: 2.0.0
+    dev: true
+
+  /@bazel/runfiles@5.8.1:
+    resolution: {integrity: sha512-NDdfpdQ6rZlylgv++iMn5FkObC/QlBQvipinGLSOguTYpRywmieOyJ29XHvUilspwTFSILWpoE9CqMGkHXug1g==}
     dev: true
 
   /@bcoe/v8-coverage@0.2.3:
@@ -1315,9 +1319,10 @@ packages:
     resolution: {integrity: sha512-lqa4UEhhv/2sjjIQgjX8B+RBjj47eo0mzGasklVJ78UKGQY1r0VpB9XHDaZZO9qzEFDdy4MrXLuEaSmPrPSe/A==}
     dev: true
 
-  /@types/selenium-webdriver@4.1.22:
-    resolution: {integrity: sha512-MCL4l7q8dwxejr2Q2NXLyNwHWMPdlWE0Kpn6fFwJtvkJF7PTkG5jkvbH/X1IAAQxgt/L1dA8u2GtDeekvSKvOA==}
+  /@types/selenium-webdriver@4.1.26:
+    resolution: {integrity: sha512-PUgqsyNffal0eAU0bzGlh37MJo558aporAPZoKqBeB/pF7zhKl1S3zqza0GpwFqgoigNxWhEIJzru75eeYco/w==}
     dependencies:
+      '@types/node': 22.7.6
       '@types/ws': 8.5.4
     dev: true
 
@@ -4781,13 +4786,14 @@ packages:
       ajv-keywords: 5.1.0(ajv@8.16.0)
     dev: true
 
-  /selenium-webdriver@4.21.0:
-    resolution: {integrity: sha512-WaEJHZjOWNth1QG5FEpxpREER0qptZBMonFU6GtAqdCNLJVxbtC3E7oS/I/+Q1sf1W032Wg0Ebk+m46lANOXyQ==}
+  /selenium-webdriver@4.25.0:
+    resolution: {integrity: sha512-zl9IX93caOT8wbcCpZzAkEtYa+hNgJ4C5GUN8uhpzggqRLvsg1asfKi0p1uNZC8buYVvsBZbx8S+9MjVAjs4oA==}
     engines: {node: '>= 14.21.0'}
     dependencies:
+      '@bazel/runfiles': 5.8.1
       jszip: 3.10.1
       tmp: 0.2.3
-      ws: 8.17.1
+      ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -5524,8 +5530,8 @@ packages:
       signal-exit: 4.1.0
     dev: true
 
-  /ws@8.17.1:
-    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
+  /ws@8.18.0:
+    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
