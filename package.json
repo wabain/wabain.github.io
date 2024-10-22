@@ -11,9 +11,9 @@
   },
   "_enginesComment": "TODO: Update pnpm to v9 once dependabot supports the v9 lockfile",
   "devDependencies": {
-    "@babel/eslint-parser": "^7.25.8",
-    "@babel/plugin-transform-modules-commonjs": "^7.25.7",
-    "@babel/preset-typescript": "^7.25.7",
+    "@babel/eslint-parser": "^7.25.9",
+    "@babel/plugin-transform-modules-commonjs": "^7.25.9",
+    "@babel/preset-typescript": "^7.25.9",
     "@types/animejs": "^3.1.12",
     "@types/debug": "^4.1.12",
     "@types/gtag.js": "^0.0.20",
