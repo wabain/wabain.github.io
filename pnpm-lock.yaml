@@ -101,8 +101,8 @@ devDependencies:
     specifier: ^1.80.6
     version: 1.80.6
   sass-loader:
-    specifier: ^16.0.2
-    version: 16.0.2(sass@1.80.6)(webpack@5.95.0)
+    specifier: ^16.0.4
+    version: 16.0.4(sass@1.80.6)(webpack@5.95.0)
   selenium-webdriver:
     specifier: ^4.21.0
     version: 4.21.0
@@ -4735,8 +4735,8 @@ packages:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
     dev: true
 
-  /sass-loader@16.0.2(sass@1.80.6)(webpack@5.95.0):
-    resolution: {integrity: sha512-Ll6iXZ1EYwYT19SqW4mSBb76vSSi8JgzElmzIerhEGgzB5hRjDQIWsPmuk1UrAXkR16KJHqVY0eH+5/uw9Tmfw==}
+  /sass-loader@16.0.4(sass@1.80.6)(webpack@5.95.0):
+    resolution: {integrity: sha512-LavLbgbBGUt3wCiYzhuLLu65+fWXaXLmq7YxivLhEqmiupCFZ5sKUAipK3do6V80YSU0jvSxNhEdT13IXNr3rg==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@rspack/core': 0.x || 1.x
