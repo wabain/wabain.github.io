@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`navigation page / should reload when current page link is clicked: self-link selector 1`] = `"html>body>div:nth-child(2)>header>h1>a"`;
 
