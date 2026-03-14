@@ -36,7 +36,6 @@ from ..output import (
 )
 from ..utils import resolve_commit, run, temporary_worktree, validate_branch_ref
 
-
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
 
