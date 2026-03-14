@@ -26,6 +26,7 @@ export default function init(): SentryClient | null {
             environment: process.env.JEKYLL_ENV,
             release: process.env.RELEASE_VERSION || undefined,
             enabled,
+            sendDefaultPii: true,
         })
     } catch (e) {
         debug('init failed: %o', e)
