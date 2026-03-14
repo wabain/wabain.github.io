@@ -1,6 +1,7 @@
 import { Builder, By, until, error as SeleniumErrors } from 'selenium-webdriver'
 import { Options as FirefoxOptions } from 'selenium-webdriver/firefox'
 import { Options as ChromeOptions } from 'selenium-webdriver/chrome'
+import type { Options as ChromiumOptions } from 'selenium-webdriver/chromium'
 import type { WebDriver, WebElement } from 'selenium-webdriver'
 
 import { BROWSER, ORIGIN, SITE_META_PATH } from './env'
@@ -24,7 +25,11 @@ describe('navigation', function () {
     let webdriver: WebDriver = new Builder()
         .forBrowser(BROWSER)
         .setFirefoxOptions(new FirefoxOptions().addArguments('--headless'))
-        .setChromeOptions(new ChromeOptions().addArguments('--headless=new'))
+        .setChromeOptions(
+            new ChromeOptions().addArguments(
+                '--headless=new',
+            ) satisfies ChromiumOptions as ChromeOptions,
+        )
         .build()
 
     // Seems like a problem with the jest declarations
