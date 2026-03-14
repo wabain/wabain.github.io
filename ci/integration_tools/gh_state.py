@@ -17,7 +17,6 @@ import os
 from .utils import run
 from .output import print_info_line, print_info_multi
 
-
 REPO = "wabain/wabain.github.io"
 
 
