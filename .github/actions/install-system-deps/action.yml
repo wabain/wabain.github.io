@@ -73,7 +73,7 @@ runs:
       shell: bash -e {0}
       env:
         NEEDED: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'poetry') }}
-        VERSION: "1.8.2"
+        VERSION: "2.3.2"
       run: |
         [[ "$NEEDED" == true ]] || exit 0
 
