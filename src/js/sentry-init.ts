@@ -56,12 +56,12 @@ function postInit(Sentry: SentryClient): void {
         Sentry.captureMessage(msg, WARNING)
     }
 
-    const RELEASE_VERSION = document
+    const releaseName = document
         .querySelector('meta[name="version"]')
         ?.getAttribute('content')
 
-    if (process.env.RELEASE_VERSION !== RELEASE_VERSION) {
-        const msg = `Release version mismatch: want ${process.env.RELEASE_VERSION}, got ${RELEASE_VERSION}`
+    if (process.env.RELEASE_VERSION !== releaseName) {
+        const msg = `Release version mismatch: want ${process.env.RELEASE_VERSION}, got ${releaseName}`
         debug(msg)
         Sentry.captureMessage(msg, WARNING)
     }
