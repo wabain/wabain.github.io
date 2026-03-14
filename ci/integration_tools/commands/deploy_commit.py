@@ -527,12 +527,9 @@ def prepare_sentry_deploy(params: DeployParams, release_version: str) -> None:
     run_sentry(
         params,
         [
-            "releases",
-            "files",
-            release_version,
-            "upload-sourcemaps",
-            "--ignore",
-            f"{REPO_ROOT}/.deploy-gitignore",
+            "sourcemaps",
+            "upload",
+            f"--release={release_version}",
             "--url-prefix",
             "/home-assets",
             str(params.deploy_dir / "home-assets"),
