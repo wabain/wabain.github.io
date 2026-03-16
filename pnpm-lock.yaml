@@ -129,10 +129,10 @@ devDependencies:
     version: 5.9.3
   webpack:
     specifier: ^5.105.4
-    version: 5.105.4(webpack-cli@7.0.0)
+    version: 5.105.4(webpack-cli@7.0.1)
   webpack-cli:
-    specifier: ^7.0.0
-    version: 7.0.0(webpack@5.105.4)
+    specifier: ^7.0.1
+    version: 7.0.1(webpack@5.105.4)
 
 packages:
 
@@ -2236,7 +2236,7 @@ packages:
       webpack: '>=4.0.0 <6.0.0'
     dependencies:
       del: 4.1.1
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /cliui@8.0.1:
@@ -2314,7 +2314,7 @@ packages:
       schema-utils: 4.3.3
       serialize-javascript: 7.0.4
       tinyglobby: 0.2.15
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /core-util-is@1.0.3:
@@ -2396,7 +2396,7 @@ packages:
       postcss-modules-values: 4.0.0(postcss@8.5.8)
       postcss-value-parser: 4.2.0
       semver: 7.7.4
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /css-select@5.2.2:
@@ -2742,7 +2742,7 @@ packages:
       micromatch: 4.0.8
       normalize-path: 3.0.0
       schema-utils: 4.3.3
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /eslint@8.57.1:
@@ -4103,7 +4103,7 @@ packages:
     dependencies:
       schema-utils: 4.3.3
       tapable: 2.3.0
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /mini-svg-data-uri@1.4.4:
@@ -4481,7 +4481,7 @@ packages:
       jiti: 2.6.1
       postcss: 8.5.8
       semver: 7.7.4
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     transitivePeerDependencies:
       - typescript
     dev: true
@@ -4990,7 +4990,7 @@ packages:
     dependencies:
       neo-async: 2.6.2
       sass: 1.98.0
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /sass@1.98.0:
@@ -5229,7 +5229,7 @@ packages:
     peerDependencies:
       webpack: ^5.27.0
     dependencies:
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /style-search@0.1.0:
@@ -5458,7 +5458,7 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.46.0
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /terser@5.46.0:
@@ -5537,7 +5537,7 @@ packages:
       semver: 7.7.4
       source-map: 0.7.6
       typescript: 5.9.3
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
     dev: true
 
   /tslib@2.8.1:
@@ -5661,8 +5661,8 @@ packages:
       graceful-fs: 4.2.11
     dev: true
 
-  /webpack-cli@7.0.0(webpack@5.105.4):
-    resolution: {integrity: sha512-NbM62WodkUPXQGR/Ip3pSFsFUKJSseDIFr2H5Z1+4fHwB9X4cO10knPShIopFqAHZa8a5Q8pdtmtE6C12/mlMQ==}
+  /webpack-cli@7.0.1(webpack@5.105.4):
+    resolution: {integrity: sha512-QeNvbQ3q67tiY7UqjbsfhK2026YTVhtW8XsfdrrGfGUtBe6EQpxBB1w9SbB2eLTZzx4m8tRvm8dqKo8rBNfeFg==}
     engines: {node: '>=20.9.0'}
     hasBin: true
     peerDependencies:
@@ -5683,7 +5683,7 @@ packages:
       import-local: 3.2.0
       interpret: 3.1.1
       rechoir: 0.8.0
-      webpack: 5.105.4(webpack-cli@7.0.0)
+      webpack: 5.105.4(webpack-cli@7.0.1)
       webpack-merge: 6.0.1
     dev: true
 
@@ -5701,7 +5701,7 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /webpack@5.105.4(webpack-cli@7.0.0):
+  /webpack@5.105.4(webpack-cli@7.0.1):
     resolution: {integrity: sha512-jTywjboN9aHxFlToqb0K0Zs9SbBoW4zRUlGzI2tYNxVYcEi/IPpn+Xi4ye5jTLvX2YeLuic/IvxNot+Q1jMoOw==}
     engines: {node: '>=10.13.0'}
     hasBin: true
@@ -5735,7 +5735,7 @@ packages:
       tapable: 2.3.0
       terser-webpack-plugin: 5.4.0(webpack@5.105.4)
       watchpack: 2.5.1
-      webpack-cli: 7.0.0(webpack@5.105.4)
+      webpack-cli: 7.0.1(webpack@5.105.4)
       webpack-sources: 3.3.4
     transitivePeerDependencies:
       - '@swc/core'
