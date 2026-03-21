@@ -110,6 +110,7 @@ def get_github_api(
     method: str = "GET",
     token: str | None = None,
     data: bytes | None = None,
+    check_status: bool = True,
 ) -> HTTPResponse:
     base_headers = {
         "Accept": "application/vnd.github.v3+json",
@@ -133,7 +134,27 @@ def get_github_api(
     req = Request(url, headers={**base_headers, **(headers or {})}, method=method, data=data)
 
     try:
-        return urlopen(req)
+        response = urlopen(req)
+
+        if not isinstance(response, HTTPResponse):
+            raise TypeError(f"unexpected response type for {method} request to {url}: {response!r}")
+
+        match response.status:
+            case s if not check_status or 200 <= s < 300:
+                pass
+
+            case s if 300 <= s < 400:
+                if method not in ("GET", "HEAD"):
+                    msg = f"unexpected status {response.status} for {method} request"
+                    raise HTTPError(req.full_url, response.status, msg, response.headers, None)
+
+            case _:
+                raise HTTPError(
+                    req.full_url, response.status, response.reason, response.headers, None
+                )
+
+        return response
+
     except HTTPError as exc:
-        exc.add_note(f"unsuccessful request to {url}")
+        exc.add_note(f"unsuccessful {method} request to {url}")
         raise
