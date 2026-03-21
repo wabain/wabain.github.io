@@ -95,8 +95,6 @@ def run_command(**kwargs) -> None:
     validate_branch_ref(params.head_ref)
     validate_branch_ref(params.base_ref)
 
-    push_ref: str
-
     match params:
         case DeployParams(
             pr_number=pr_number,
@@ -136,6 +134,8 @@ def run_command(**kwargs) -> None:
             params.record_output("stale", "true")
             return
 
+    push_sha: str
+
     match params.effective_event:
         case "pull_request":
             assert pr_number is not None  # Checked above
@@ -174,9 +174,9 @@ def run_command(**kwargs) -> None:
                 return
 
             with enter_log_group("Prepare merge commit"):
-                push_ref = f'merge.{pr_number}.{head_ref.replace("/", "-")}.{datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S")}'
+                local_merge_ref = f'merge.{pr_number}.{head_ref.replace("/", "-")}.{datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S")}'
 
-                with temporary_worktree(merge_ref, args=["-b", push_ref]) as worktree_dir:
+                with temporary_worktree(merge_ref, args=["-b", local_merge_ref]) as worktree_dir:
                     merge_prep.rewrite_pull_request_merge_commit_message(
                         pr_number,
                         pr_eval,
@@ -186,13 +186,13 @@ def run_command(**kwargs) -> None:
                         ],
                     )
 
-                push_sha = resolve_commit(push_ref)
+                push_sha = resolve_commit(local_merge_ref)
 
         case "push":
-            push_ref, push_sha = head_ref, resolve_commit(head_ref)
+            push_sha = resolve_commit(head_ref)
 
             stale = not push_deploy_revisions_up_to_date(
-                params, RevisionInfo.for_push(ref=push_ref, sha=push_sha)
+                params, RevisionInfo.for_push(ref=head_ref, sha=push_sha)
             )
             params.record_output("stale", json.dumps(stale))
 
