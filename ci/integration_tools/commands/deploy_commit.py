@@ -170,6 +170,7 @@ def run_command(**kwargs) -> None:
             params.record_output("stale", json.dumps(stale))
 
             if stale:
+                trigger_pull_request_merge_update(params)
                 return
 
             with enter_log_group("Prepare merge commit"):
@@ -485,6 +486,19 @@ def approve_pull_request(params: DeployParams, pr_eval: PullRequestEvaluation) -
         print_info_multi("post [dry-run]", url, review_params)
     else:
         get_github_api(url, method="POST", token=token, data=review_params.encode())
+
+
+def trigger_pull_request_merge_update(params: DeployParams) -> None:
+    """Trigger an asynchronous merge commit update for the given pull request"""
+    assert params.effective_event == "pull_request", params
+    assert params.pr_number is not None, params
+
+    url = f"/repos/{REPO}/pulls/{params.pr_number}/update-branch"
+
+    if params.dry_run:
+        print_info_multi("put [dry-run]", url)
+    else:
+        get_github_api(url, method="PUT", data=b"{}")
 
 
 @contextmanager
