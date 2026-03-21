@@ -222,5 +222,5 @@ jobs:
         continue-on-error: true
         env:
           PR_NUMBER: ${{ inputs.pull_request_number }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bin/ci-update-pr-label.sh "$PR_NUMBER" del merge-pending
