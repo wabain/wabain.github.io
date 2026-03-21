@@ -45,7 +45,12 @@ jobs:
               run.pull_requests.some((pr) => pr.number === context.payload.pull_request.number),
             )
 
-            return relevantRuns?.reduce((r1, r2) => r1.created_at < r2.created_at ? r2 : r1)
+            if (!relevantRuns?.length) {
+              core.info('No relevant workflow runs found')
+              return { id: null, conclusion: null }
+            }
+
+            return relevantRuns.reduce((r1, r2) => r1.created_at < r2.created_at ? r2 : r1)
 
   check-merge-deploy:
     name: Check merge and deploy eligibility
