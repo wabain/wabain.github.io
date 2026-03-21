@@ -1,4 +1,5 @@
 name: Install common dependencies
+description: Install common dependencies for CI workflows
 inputs:
   dependencies:
     description: Which dependencies to install
@@ -15,10 +16,6 @@ inputs:
     description: Token to authenticate with when requesting geckodriver artifacts
     required: false
 
-env:
-  # Use a default rcfile. See the comment in .github/workflows/validate.yml
-  BASH_ENV: ci/env.sh
-
 runs:
   using: composite
   steps:
@@ -29,6 +26,11 @@ runs:
         INPUT_DEPENDENCIES: ${{ inputs.dependencies }}
       run: |
         set -euo pipefail
+
+        if [ -z "${USER_INSTALL_DIR:-}" ]; then
+          echo '::error ::USER_INSTALL_DIR environment variable is not set (caller must init ci/env.sh)'
+          exit 1
+        fi
 
         jq --null-input --raw-output '
           env.INPUT_DEPENDENCIES |
