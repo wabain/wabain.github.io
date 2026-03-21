@@ -110,7 +110,7 @@ jobs:
             exit 1
           esac
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ steps.resolve.outputs.ref }}
           # Fetch parents so that we can record their hashes in
@@ -121,7 +121,7 @@ jobs:
         uses: ruby/setup-ruby@v1
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version-file: pyproject.toml
 
@@ -135,7 +135,7 @@ jobs:
             geckodriver
 
       - name: Repopulate Ruby gem cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-bundle-${{ hashFiles('Gemfile.lock') }}
@@ -152,7 +152,7 @@ jobs:
         run: set -euo pipefail && echo "dir=$(pnpm store path)" | tee -a "$GITHUB_OUTPUT"
 
       - name: Repopulate pnpm package cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.pnpm-store-path.outputs.dir }}
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
@@ -164,7 +164,7 @@ jobs:
         run: set -euo pipefail && echo "dir=$(poetry config cache-dir)" | tee -a "$GITHUB_OUTPUT"
 
       - name: Repopulate poetry cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ${{ steps.poetry-store-path.outputs.dir }}
@@ -291,7 +291,7 @@ jobs:
 
       - name: Upload deploy artifact
         if: steps.create-deploy-tarfile.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: site.tgz
           path: |
