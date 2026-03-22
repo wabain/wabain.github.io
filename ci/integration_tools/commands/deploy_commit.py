@@ -34,7 +34,7 @@ from ..output import (
     print_info_line,
     print_info_multi,
 )
-from ..utils import resolve_commit, run, temporary_worktree, validate_branch_ref
+from ..utils import record_output, resolve_commit, run, temporary_worktree, validate_branch_ref
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
@@ -77,16 +77,7 @@ class DeployParams:
         )
 
     def record_output(self, name: str, value: str) -> None:
-        assert "\n" not in name, repr(name)
-        assert "\n" not in value, repr(value)
-
-        print_info_line("output", f"{name}={value}")
-
-        if self.outputs_file is None:
-            return
-
-        with open(self.outputs_file, "a", encoding="utf8") as f:
-            f.write(f"{name}={value}\n")
+        record_output(self.outputs_file, name, value)
 
 
 def run_command(**kwargs) -> None:
