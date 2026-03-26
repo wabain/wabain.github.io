@@ -32,7 +32,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-webpack-plugin": "^5.0.3",
     "jest": "^30.3.0",
-    "mini-css-extract-plugin": "^2.10.1",
+    "mini-css-extract-plugin": "^2.10.2",
     "mini-svg-data-uri": "^1.4.4",
     "postcss": "^8.5.8",
     "postcss-loader": "^8.2.1",
