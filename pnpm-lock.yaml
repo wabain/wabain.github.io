@@ -122,8 +122,8 @@ devDependencies:
     specifier: ^4.0.1
     version: 4.0.1
   ts-loader:
-    specifier: ^9.5.4
-    version: 9.5.4(typescript@5.9.3)(webpack@5.105.4)
+    specifier: ^9.5.7
+    version: 9.5.7(typescript@5.9.3)(webpack@5.105.4)
   typescript:
     specifier: ~5.9.3
     version: 5.9.3
@@ -623,25 +623,25 @@ packages:
     engines: {node: '>=14.17.0'}
     dev: true
 
-  /@emnapi/core@1.9.1:
-    resolution: {integrity: sha512-mukuNALVsoix/w1BJwFzwXBN/dHeejQtuVzcDsfOEsdpCumXb/E9j8w11h5S54tT1xhifGfbbSm/ICrObRb3KA==}
+  /@emnapi/core@1.9.2:
+    resolution: {integrity: sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA==}
     requiresBuild: true
     dependencies:
-      '@emnapi/wasi-threads': 1.2.0
+      '@emnapi/wasi-threads': 1.2.1
       tslib: 2.8.1
     dev: true
     optional: true
 
-  /@emnapi/runtime@1.9.1:
-    resolution: {integrity: sha512-VYi5+ZVLhpgK4hQ0TAjiQiZ6ol0oe4mBx7mVv7IflsiEp0OWoVsp/+f9Vc1hOhE0TtkORVrI1GvzyreqpgWtkA==}
+  /@emnapi/runtime@1.9.2:
+    resolution: {integrity: sha512-3U4+MIWHImeyu1wnmVygh5WlgfYDtyf0k8AbLhMFxOipihf6nrWC4syIm/SwEeec0mNSafiiNnMJwbza/Is6Lw==}
     requiresBuild: true
     dependencies:
       tslib: 2.8.1
     dev: true
     optional: true
 
-  /@emnapi/wasi-threads@1.2.0:
-    resolution: {integrity: sha512-N10dEJNSsUx41Z6pZsXU8FjPjpBEplgH24sfkmITrBED1/U2Esum9F3lfLrMjKHHjmi557zQn7kR9R+XWXu5Rg==}
+  /@emnapi/wasi-threads@1.2.1:
+    resolution: {integrity: sha512-uTII7OYF+/Mes/MrcIOYp5yOtSMLBWSIoLPpcgwipoiKbli6k322tcoFsxoIIxPDqW01SQGAgko4EzZi2BNv2w==}
     requiresBuild: true
     dependencies:
       tslib: 2.8.1
@@ -1036,8 +1036,8 @@ packages:
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
     requiresBuild: true
     dependencies:
-      '@emnapi/core': 1.9.1
-      '@emnapi/runtime': 1.9.1
+      '@emnapi/core': 1.9.2
+      '@emnapi/runtime': 1.9.2
       '@tybys/wasm-util': 0.10.1
     dev: true
     optional: true
@@ -1194,7 +1194,7 @@ packages:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -1952,7 +1952,7 @@ packages:
     engines: {node: '>= 8'}
     dependencies:
       normalize-path: 3.0.0
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /argparse@1.0.10:
@@ -2646,6 +2646,14 @@ packages:
 
   /enhanced-resolve@5.20.0:
     resolution: {integrity: sha512-/ce7+jQ1PQ6rVXwe+jKEg5hW5ciicHwIQUagZkp6IufBoY3YDgdTTY1azVs0qoRgVmvsNB+rbjLJxDAeHHtwsQ==}
+    engines: {node: '>=10.13.0'}
+    dependencies:
+      graceful-fs: 4.2.11
+      tapable: 2.3.2
+    dev: true
+
+  /enhanced-resolve@5.20.1:
+    resolution: {integrity: sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA==}
     engines: {node: '>=10.13.0'}
     dependencies:
       graceful-fs: 4.2.11
@@ -3564,7 +3572,7 @@ packages:
       jest-regex-util: 30.0.1
       jest-util: 30.3.0
       jest-worker: 30.3.0
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       walker: 1.0.8
     optionalDependencies:
       fsevents: 2.3.3
@@ -3597,7 +3605,7 @@ packages:
       '@types/stack-utils': 2.0.3
       chalk: 4.1.2
       graceful-fs: 4.2.11
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       pretty-format: 30.3.0
       slash: 3.0.0
       stack-utils: 2.0.6
@@ -3751,7 +3759,7 @@ packages:
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /jest-util@30.3.0:
@@ -3763,7 +3771,7 @@ packages:
       chalk: 4.1.2
       ci-info: 4.4.0
       graceful-fs: 4.2.11
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     dev: true
 
   /jest-validate@30.3.0:
@@ -4075,7 +4083,7 @@ packages:
     engines: {node: '>=8.6'}
     dependencies:
       braces: 3.0.3
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /mime-db@1.52.0:
@@ -4347,13 +4355,19 @@ packages:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
     dev: true
 
-  /picomatch@2.3.1:
-    resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
+  /picomatch@2.3.2:
+    resolution: {integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==}
     engines: {node: '>=8.6'}
     dev: true
 
   /picomatch@4.0.3:
     resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
+    engines: {node: '>=12'}
+    requiresBuild: true
+    dev: true
+
+  /picomatch@4.0.4:
+    resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
     requiresBuild: true
     dev: true
@@ -5529,15 +5543,15 @@ packages:
       typescript: 5.9.3
     dev: true
 
-  /ts-loader@9.5.4(typescript@5.9.3)(webpack@5.105.4):
-    resolution: {integrity: sha512-nCz0rEwunlTZiy6rXFByQU1kVVpCIgUpc/psFiKVrUwrizdnIbRFu8w7bxhUF0X613DYwT4XzrZHpVyMe758hQ==}
+  /ts-loader@9.5.7(typescript@5.9.3)(webpack@5.105.4):
+    resolution: {integrity: sha512-/ZNrKgA3K3PtpMYOC71EeMWIloGw3IYEa5/t1cyz2r5/PyUwTXGzYJvcD3kfUvmhlfpz1rhV8B2O6IVTQ0avsg==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       typescript: '*'
       webpack: ^5.0.0
     dependencies:
       chalk: 4.1.2
-      enhanced-resolve: 5.20.0
+      enhanced-resolve: 5.20.1
       micromatch: 4.0.8
       semver: 7.7.4
       source-map: 0.7.6
