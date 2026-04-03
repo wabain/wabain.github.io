@@ -47,13 +47,27 @@ jobs:
                   error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
                 else
                   [
-                    "ref=refs/pull/\(env.PR_NUMBER)/merge",
+                    "display_ref=refs/pull/\(env.PR_NUMBER)/merge",
                     "head_ref=\(.head.ref)",
                     "base_ref=\(.base.ref)"
                   ] | join("\n")
                 end
               ' |
               tee -a "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v6
+        with:
+          # Fetch parents so that we can record their hashes in
+          # site.revisions.json if this is a PR merge commit
+          fetch-depth: 2
+
+      - name: Create dispatched pull request merge
+        if: steps.dispatched-pr.outcome == 'success'
+        uses: ./.github/actions/init-merge
+        with:
+          pr-number: ${{ github.event.inputs.pull_request_number }}
+          head-ref: ${{ steps.dispatched-pr.outputs.head_ref }}
+          base-ref: ${{ steps.dispatched-pr.outputs.base_ref }}
 
       # Currently it isn't possible to trigger a rerun of a pull request job
       # through the API, so we implement some manual indirection over the
@@ -83,7 +97,7 @@ jobs:
           GH_HEAD_REF: ${{ github.head_ref }}
           GH_BASE_REF: ${{ github.base_ref }}
           GH_PR_NUMBER: ${{ github.event.pull_request.number }}
-          DISPATCHED_REF: ${{ steps.dispatched-pr.outputs.ref }}
+          DISPATCHED_REF: ${{ steps.dispatched-pr.outputs.display_ref }}
           DISPATCHED_HEAD_REF: ${{ steps.dispatched-pr.outputs.head_ref }}
           DISPATCHED_BASE_REF: ${{ steps.dispatched-pr.outputs.base_ref }}
           DISPATCHED_PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
@@ -93,14 +107,14 @@ jobs:
           case "$DISPATCHED_PR_OUTCOME" in
           success)
             echo "effective_event=pull_request" | tee -a "$GITHUB_OUTPUT"
-            echo "ref=$DISPATCHED_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "display_ref=$DISPATCHED_REF" | tee -a "$GITHUB_OUTPUT"
             echo "head_ref=$DISPATCHED_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
             echo "base_ref=$DISPATCHED_BASE_REF" | tee -a "$GITHUB_OUTPUT"
             echo "pr_number=$DISPATCHED_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
             ;;
           skipped)
             echo "effective_event=$EVENT_NAME" | tee -a "$GITHUB_OUTPUT"
-            echo "ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
+            echo "display_ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
             echo "head_ref=$GH_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
             echo "base_ref=$GH_BASE_REF" | tee -a "$GITHUB_OUTPUT"
             echo "pr_number=$GH_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
@@ -109,13 +123,6 @@ jobs:
             echo "::error ::Unexpected prereq outcome: $DISPATCHED_PR_OUTCOME"
             exit 1
           esac
-
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ steps.resolve.outputs.ref }}
-          # Fetch parents so that we can record their hashes in
-          # site.revisions.json if this is a PR merge commit
-          fetch-depth: 2
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -184,7 +191,7 @@ jobs:
         env:
           EVENT: ${{ steps.resolve.outputs.effective_event }}
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          REF: ${{ steps.resolve.outputs.ref }}
+          DISPLAY_REF: ${{ steps.resolve.outputs.display_ref }}
           HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
         run: |
@@ -207,7 +214,7 @@ jobs:
                   null
                 end |
                 {
-                  ref: env.REF,
+                  ref: env.DISPLAY_REF,
                   sha: $sha,
                   tree: $tree,
 
@@ -233,7 +240,7 @@ jobs:
               --null-input \
               --arg sha "$sha" \
               --arg tree "$tree" \
-              '{ ref: env.REF, sha: $sha, tree: $tree }' \
+              '{ ref: env.DISPLAY_REF, sha: $sha, tree: $tree }' \
               > site.revisions.json
 
             cat site.revisions.json | jq -C .
@@ -258,7 +265,7 @@ jobs:
         if: >
           steps.resolve.outputs.effective_event == 'pull_request' ||
             (steps.resolve.outputs.effective_event == 'push' &&
-             steps.resolve.outputs.ref == 'refs/heads/develop')
+             steps.resolve.outputs.display_ref == 'refs/heads/develop')
         run: |
           tar -c -z --null --verbatim-files-from \
             --verbose --show-transformed-names \

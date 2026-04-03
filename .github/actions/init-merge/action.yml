@@ -1,0 +1,63 @@
+name: Initialize merge commit for pull request
+description: This action creates and validates the merge commit for a pull request
+inputs:
+  pr-number:
+    description: The number of the pull request
+    required: true
+  base-ref:
+    description: The base ref of the pull request
+    required: true
+  head-ref:
+    description: The head ref of the pull request
+    required: true
+  worktree:
+    description: The directory of the git worktree to use for the merge commit creation
+    required: false
+    default: .
+outputs:
+  stale:
+    description: Whether the merge commit is stale and needs to be recreated
+    value: ${{ steps.init-merge.outputs.stale }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v6
+      with:
+        python-version-file: ${{ inputs.worktree }}/pyproject.toml
+
+    - name: Initialize merge commit
+      id: init-merge
+      shell: bash -e {0}
+      env:
+        base_ref: ${{ inputs.base-ref }}
+        head_ref: ${{ inputs.head-ref }}
+        pr_number: ${{ inputs.pr-number }}
+        GIT_AUTHOR_NAME: ${{ github.actor }}
+        GIT_AUTHOR_EMAIL: ${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com
+      working-directory: ${{ inputs.worktree }}
+      run: |
+        set -euo pipefail
+        set -x
+
+        merge_ref="refs/pull/$pr_number/merge"
+
+        git fetch --depth=1 origin "+$merge_ref:$merge_ref"
+        git fetch --depth=2 origin "$base_ref"
+        git fetch --shallow-exclude="$base_ref" origin "$head_ref"
+        git fetch --deepen=2 origin "$head_ref"
+
+        git log --graph --oneline --decorate=full "$merge_ref" "origin/$base_ref" "origin/$head_ref"
+
+        bootstrap_dir="$GITHUB_WORKSPACE/../bootstrap"
+        git worktree add --detach "$bootstrap_dir"
+
+        GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME" \
+        GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL" \
+        "$bootstrap_dir/bin/ci-tools" sync-merge \
+          --remote origin \
+          --base-ref "$base_ref" \
+          --head-ref "$head_ref" \
+          --reconcile-tree-from "$merge_ref" \
+          --message "Merge pull request #$pr_number from $head_ref"
+
+        git show --no-patch --format=fuller HEAD

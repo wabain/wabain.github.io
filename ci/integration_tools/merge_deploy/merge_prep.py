@@ -2,14 +2,57 @@ from __future__ import annotations
 
 import itertools
 import os
+import subprocess
+from tempfile import NamedTemporaryFile
 from typing import Sequence
 
 from ..gh_state import PullRequestEvaluation
-from ..utils import run
+from ..utils import run, run_status
 
 
 def pull_request_merge_ref(pr_number: int) -> str:
+    raise NotImplementedError("todo: remove")
     return f"refs/pull/{pr_number}/merge"
+
+
+def create_merge_commit(
+    head_ref: str,
+    message: str,
+    global_git_args: Sequence[str] = (),
+    recover: bool = True,
+) -> None:
+    try:
+        with NamedTemporaryFile(mode="wt+", prefix="merge-message.", suffix=".txt") as message_file:
+            message_file.write(message)
+            message_file.flush()
+
+            run(
+                [
+                    "git",
+                    *global_git_args,
+                    "merge",
+                    "--no-ff",
+                    "--commit",
+                    "-F",
+                    message_file.name,
+                    head_ref,
+                ],
+                capture_output=False,
+            )
+
+    except subprocess.CalledProcessError as exc:
+        exc.add_note(f"failed to create merge commit for {head_ref}")
+
+        if recover and (
+            run_status(
+                ["git", *global_git_args, "rev-parse", "--verify", "--quiet", "MERGE_HEAD"],
+            )
+            != 1
+        ):
+            run(["git", *global_git_args, "merge", "--abort"], capture_output=False)
+            exc.add_note("aborted merge in progress")
+
+        raise
 
 
 def rewrite_pull_request_merge_commit_message(
