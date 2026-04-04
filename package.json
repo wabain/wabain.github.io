@@ -46,7 +46,7 @@
     "stylelint-order": "^6.0.4",
     "svgo": "^4.0.1",
     "ts-loader": "^9.5.7",
-    "typescript": "~5.9.3",
+    "typescript": "~6.0.2",
     "webpack": "^5.105.4",
     "webpack-cli": "^7.0.2"
   },
