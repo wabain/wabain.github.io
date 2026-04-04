@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@sentry/browser": "^10.43.0",
-    "animejs": "^3.2.2",
+    "animejs": "^4.3.6",
     "debug": "^4.4.3",
     "normalize.css": "^8.0.1"
   }

@@ -9,8 +9,8 @@ dependencies:
     specifier: ^10.43.0
     version: 10.43.0
   animejs:
-    specifier: ^3.2.2
-    version: 3.2.2
+    specifier: ^4.3.6
+    version: 4.3.6
   debug:
     specifier: ^4.4.3
     version: 4.4.3
@@ -1909,8 +1909,8 @@ packages:
       require-from-string: 2.0.2
     dev: true
 
-  /animejs@3.2.2:
-    resolution: {integrity: sha512-Ao95qWLpDPXXM+WrmwcKbl6uNlC5tjnowlaRYtuVDHHoygjtIPfDUoK9NthrlZsQSKjZXlmji2TrBUAVbiH0LQ==}
+  /animejs@4.3.6:
+    resolution: {integrity: sha512-rzZ4bDc8JAtyx6hYwxj7s5M/yWfnM5qqY4hZDnhy1cWFvMb6H5/necHS2sbCY3WQTDbRLuZL10dPXSxSCFOr/w==}
     dev: false
 
   /ansi-escapes@4.3.2:
