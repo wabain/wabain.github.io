@@ -27,14 +27,14 @@ GEM
       ffi (>= 1.15.0)
       logger
     eventmachine (1.2.7)
-    ffi (1.17.3)
+    ffi (1.17.4)
     fiber-annotation (0.2.0)
     fiber-local (1.1.0)
       fiber-storage
     fiber-storage (1.0.1)
     forwardable-extended (2.6.0)
     hashery (2.1.2)
-    html-proofer (5.2.0)
+    html-proofer (5.2.1)
       addressable (~> 2.3)
       async (~> 2.1)
       benchmark (~> 0.5)
@@ -47,7 +47,7 @@ GEM
     http_parser.rb (0.8.0)
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
-    io-event (1.14.4)
+    io-event (1.14.5)
     jekyll (3.9.5)
       addressable (~> 2.4)
       colorator (~> 1.0)
@@ -75,7 +75,7 @@ GEM
       jekyll (>= 3.7, < 5.0)
     jekyll-watch (2.2.1)
       listen (~> 3.0)
-    json (2.19.2)
+    json (2.19.3)
     kramdown (2.4.0)
       rexml
     kramdown-parser-gfm (1.1.0)
@@ -128,7 +128,7 @@ PLATFORMS
 
 DEPENDENCIES
   crass (~> 1.0.6)
-  html-proofer (~> 5.2.0)
+  html-proofer (~> 5.2.1)
   jekyll (~> 3.9.5)
   jekyll-archives (= 2.2.1)
   jekyll-feed (= 0.17.0)
