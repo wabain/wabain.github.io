@@ -1,14 +1,10 @@
-# Name referenced in .github/workflows/check-merge-deploy.yml
+# Name referenced in .github/workflows/after-pr-build.yml
 name: Build and test
 on:
   push:
     branches-ignore: master
   pull_request: {}
-  workflow_dispatch:
-    inputs:
-      pull_request_number:
-        description: Number of the pull request targeted by a workflow dispatch job
-        default: ""
+  workflow_dispatch: {}
 
   # Called by merge-queue.yml to validate a batch of merged pull requests
   workflow_call:
@@ -32,54 +28,13 @@ jobs:
       BASH_ENV: ci/env.sh
 
     steps:
-      - name: Resolve dispatched pull request
-        id: dispatched-pr
-        if: >
-          inputs.merge_queue_sha == '' &&
-            github.event_name == 'workflow_dispatch' &&
-            github.event.inputs.pull_request_number != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
-        run: |
-          set -euo pipefail
-
-          curl --silent --show-error --fail \
-              -H "Authorization: token $GH_TOKEN" \
-              -H 'Accept: application/vnd.github.v3+json' \
-              "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$(jq -nr '@uri "\(env.PR_NUMBER)"')" |
-              jq -r '
-                if .head.ref != (env.GITHUB_REF | sub("^refs/heads/"; "")) then
-                  error("Ref mismatch: dispatched with \(env.GITHUB_REF), PR has \(.head.ref)")
-                elif .mergeable == false then
-                  error("PR \(env.PR_NUMBER) at \(.head.sha) cannot be merged with \(.base.sha)")
-                elif .mergeable == null then
-                  # TODO: Poll until this changes?
-                  error("PR \(env.PR_NUMBER) mergeability not yet determined at \(.head.sha) with \(.base.sha)")
-                else
-                  [
-                    "ref=refs/pull/\(env.PR_NUMBER)/merge",
-                    "head_ref=\(.head.ref)",
-                    "base_ref=\(.base.ref)"
-                  ] | join("\n")
-                end
-              ' |
-              tee -a "$GITHUB_OUTPUT"
-
-      # Currently it isn't possible to trigger a rerun of a pull request job
-      # through the API, so we implement some manual indirection over the
-      # workflow_dispatch event.
-      #
       # Use the outputs of this step as follows:
       #
-      # - effective_event: replaces github.event_name, will be 'pull_request' for
-      #   for workflow_dispatch jobs which trigger pull request logic
+      # - effective_event: replaces github.event_name, will be 'merge_queue' when
+      #   called by merge-queue.yml
       #
-      # - ref: replaces github.ref / $GITHUB_REF
-      #
-      #   If effective_event != 'pull_request' then ref will be equivalent to
-      #   github.ref. When processing pull requests, use HEAD instead of github.sha /
-      #   $GITHUB_SHA.
+      # - ref: replaces github.ref / $GITHUB_REF. For pull requests, use HEAD
+      #   instead of github.sha / $GITHUB_SHA.
       #
       # - head_ref: replaces github.head_ref
       #
@@ -88,20 +43,15 @@ jobs:
       # - pr_number: replaces github.event.pull_request.number
       #
       # - revision_ref: the ref recorded in site.revisions.json for non-PR
-      #   events. For merge queue batches (effective_event 'merge_queue') this is
-      #   the branch the batch will be pushed to, while ref is the commit SHA.
+      #   events. For merge queue batches this is the branch the batch will be
+      #   pushed to, while ref is the commit SHA.
       - name: Resolve parameters
         id: resolve
         env:
-          DISPATCHED_PR_OUTCOME: ${{ steps.dispatched-pr.outcome }}
           EVENT_NAME: ${{ github.event_name }}
           GH_HEAD_REF: ${{ github.head_ref }}
           GH_BASE_REF: ${{ github.base_ref }}
           GH_PR_NUMBER: ${{ github.event.pull_request.number }}
-          DISPATCHED_REF: ${{ steps.dispatched-pr.outputs.ref }}
-          DISPATCHED_HEAD_REF: ${{ steps.dispatched-pr.outputs.head_ref }}
-          DISPATCHED_BASE_REF: ${{ steps.dispatched-pr.outputs.base_ref }}
-          DISPATCHED_PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
           MERGE_QUEUE_SHA: ${{ inputs.merge_queue_sha }}
         run: |
           set -euo pipefail
@@ -114,26 +64,11 @@ jobs:
           fi
 
           echo "revision_ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
-
-          case "$DISPATCHED_PR_OUTCOME" in
-          success)
-            echo "effective_event=pull_request" | tee -a "$GITHUB_OUTPUT"
-            echo "ref=$DISPATCHED_REF" | tee -a "$GITHUB_OUTPUT"
-            echo "head_ref=$DISPATCHED_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
-            echo "base_ref=$DISPATCHED_BASE_REF" | tee -a "$GITHUB_OUTPUT"
-            echo "pr_number=$DISPATCHED_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
-            ;;
-          skipped)
-            echo "effective_event=$EVENT_NAME" | tee -a "$GITHUB_OUTPUT"
-            echo "ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
-            echo "head_ref=$GH_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
-            echo "base_ref=$GH_BASE_REF" | tee -a "$GITHUB_OUTPUT"
-            echo "pr_number=$GH_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
-            ;;
-          *)
-            echo "::error ::Unexpected prereq outcome: $DISPATCHED_PR_OUTCOME"
-            exit 1
-          esac
+          echo "effective_event=$EVENT_NAME" | tee -a "$GITHUB_OUTPUT"
+          echo "ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
+          echo "head_ref=$GH_HEAD_REF" | tee -a "$GITHUB_OUTPUT"
+          echo "base_ref=$GH_BASE_REF" | tee -a "$GITHUB_OUTPUT"
+          echo "pr_number=$GH_PR_NUMBER" | tee -a "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
         with:
@@ -344,23 +279,3 @@ jobs:
           path: |
             site.tgz
             site.revisions.json
-
-      # For workflow_dispatch events there's no obvious indicator of a failure
-      # within the pull request, so add a comment
-      - name: "Post-run: Add pull request comment if dispatched rerun failed"
-        if: >
-          failure() &&
-            steps.resolve.outputs.effective_event == 'pull_request' &&
-            github.event_name == 'workflow_dispatch'
-        continue-on-error: true
-        env:
-          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          export URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-
-          curl --silent --show-error --fail -XPOST \
-            -H "Authorization: token $GH_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            -d "$(jq -n '{ body: "A [job] dispatched for this pull request failed.\n\n[job]: \(env.URL)" }')"

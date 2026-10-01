@@ -27,7 +27,7 @@ env:
   BASH_ENV: ci/env.sh
 
   # Keep in sync with merge-queue.yml
-  MERGE_QUEUE_DRY_RUN: "true"
+  MERGE_QUEUE_DRY_RUN: "false"
 
 jobs:
   check:

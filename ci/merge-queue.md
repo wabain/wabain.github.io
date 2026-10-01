@@ -90,7 +90,7 @@ up as a branch). The ref is overwritten by each run.
 
 ## Dry run
 
-While `MERGE_QUEUE_DRY_RUN` is `"true"` (set in both workflows), batches are
-staged and built as normal, but nothing is pushed to `develop` or `master`, no
-labels are changed, no comments or approvals are posted, and the queue doesn't
-dispatch itself.
+Setting `MERGE_QUEUE_DRY_RUN` to `"true"` (in both workflows) stops the queue
+from merging while it keeps staging and building batches: nothing is pushed to
+`develop` or `master`, no labels are changed, no comments or approvals are
+posted, and the queue doesn't dispatch itself.

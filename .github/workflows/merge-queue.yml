@@ -32,7 +32,7 @@ env:
 
   # While "true", runs build batches but don't push to develop or master, update
   # labels, or dispatch follow-up runs. Keep in sync with merge-queue-trigger.yml.
-  MERGE_QUEUE_DRY_RUN: "true"
+  MERGE_QUEUE_DRY_RUN: "false"
 
   # Limit on consecutive follow-up runs dispatched by this workflow, as a
   # backstop against a dispatch loop
