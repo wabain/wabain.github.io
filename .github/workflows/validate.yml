@@ -271,7 +271,8 @@ jobs:
 
       - name: Lint and build
         run: |
-          export WB_RELEASE_VERSION="$(jq --raw-output -f ci/release-name.jq site.revisions.json)"
+          WB_RELEASE_VERSION="$(jq --raw-output -f ci/release-name.jq site.revisions.json)"
+          export WB_RELEASE_VERSION
           echo "::notice ::Release $WB_RELEASE_VERSION"
 
           pnpm run lint-build-infra
@@ -316,6 +317,9 @@ jobs:
           poetry run -- black --check .
           poetry run -- mypy -p integration_tools
           poetry run -- python -m unittest discover -s ci/integration_tools -t ci
+
+      - name: Lint workflows
+        run: bin/actionlint.sh -color
 
       - name: Upload deploy artifact
         if: steps.create-deploy-tarfile.outcome == 'success'
