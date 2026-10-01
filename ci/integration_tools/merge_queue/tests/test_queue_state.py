@@ -37,8 +37,6 @@ def make_candidate(
         merge_pending_label_present=False,
         merge_isolate_label_present=isolate,
         merge_blocked_label_present=blocked,
-        pr_is_eligible=eligible,
-        pr_may_be_eligible=eligible,
         pr_is_eligible_up_to_mergeability=eligible,
         pr_eligibility={},
     )

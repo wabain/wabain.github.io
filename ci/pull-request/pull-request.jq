@@ -41,12 +41,6 @@ def by_collaborator: by_owner or .author_association == "COLLABORATOR";
     merge_isolate_label_present: .labels | any(.name == "merge-isolate"),
     merge_blocked_label_present: .labels | any(.name == "merge-blocked"),
 
-    # Eligibility to merge using GitHub's merge commit (merge_sha). Mergeability
-    # is unknown until GitHub has computed that commit, so pr_may_be_eligible
-    # also holds while it's pending.
-    pr_is_eligible: ($eligible_up_to_mergeability and $pr_eligibility.mergeable),
-    pr_may_be_eligible: ($eligible_up_to_mergeability and $pr_eligibility.mergeable != false),
-
     # The merge queue determines mergeability itself by attempting the merge
     pr_is_eligible_up_to_mergeability: $eligible_up_to_mergeability,
     pr_eligibility: $pr_eligibility,

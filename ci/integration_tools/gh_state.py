@@ -41,8 +41,6 @@ class PullRequestEvaluation:
     merge_pending_label_present: bool
     merge_isolate_label_present: bool
     merge_blocked_label_present: bool
-    pr_is_eligible: bool
-    pr_may_be_eligible: bool
     pr_is_eligible_up_to_mergeability: bool
 
     pr_eligibility: dict[str, Any]
@@ -94,7 +92,7 @@ def evaluate_pull_request_state(pr_number: int) -> PullRequestEvaluation:
 
     print_info_multi(
         f"#{pr_number} eval",
-        f'eligible {json.dumps(mergeability["pr_is_eligible"])}',
+        f'eligible {json.dumps(mergeability["pr_is_eligible_up_to_mergeability"])}',
         json.dumps(mergeability, indent=2),
     )
 

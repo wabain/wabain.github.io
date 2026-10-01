@@ -68,8 +68,6 @@ run-test "First party: Eligible" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": true,
-        "pr_may_be_eligible": true,
         "pr_is_eligible_up_to_mergeability": true,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -96,8 +94,6 @@ run-test "No automerge label" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": false,
-        "pr_may_be_eligible": false,
         "pr_is_eligible_up_to_mergeability": false,
         "pr_eligibility": {
             "automerge_label_present": false,
@@ -124,8 +120,6 @@ run-test "Not mergeable" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": false,
-        "pr_may_be_eligible": false,
         "pr_is_eligible_up_to_mergeability": true,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -152,8 +146,6 @@ run-test "Null mergeability" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": false,
-        "pr_may_be_eligible": true,
         "pr_is_eligible_up_to_mergeability": true,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -180,8 +172,6 @@ run-test "Draft" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": false,
-        "pr_may_be_eligible": false,
         "pr_is_eligible_up_to_mergeability": false,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -206,8 +196,6 @@ run-test "Third-party: Approved by owner" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": true,
-        "pr_may_be_eligible": true,
         "pr_is_eligible_up_to_mergeability": true,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -232,8 +220,6 @@ run-test "Third-party: Unapproved" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": false,
-        "pr_may_be_eligible": false,
         "pr_is_eligible_up_to_mergeability": false,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -260,8 +246,6 @@ run-test "Third-party: Approved by other" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
-        "pr_is_eligible": false,
-        "pr_may_be_eligible": false,
         "pr_is_eligible_up_to_mergeability": false,
         "pr_eligibility": {
             "automerge_label_present": true,
@@ -288,8 +272,6 @@ run-test "Merge queue labels" \
         "merge_pending_label_present": false,
         "merge_isolate_label_present": true,
         "merge_blocked_label_present": true,
-        "pr_is_eligible": true,
-        "pr_may_be_eligible": true,
         "pr_is_eligible_up_to_mergeability": true,
         "pr_eligibility": {
             "automerge_label_present": true,
