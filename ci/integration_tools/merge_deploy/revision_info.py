@@ -9,7 +9,6 @@ import dataclasses
 import json
 from pathlib import Path
 
-from ..gh_state import PullRequestEvaluation
 from ..output import print_info_line
 
 
@@ -30,15 +29,6 @@ class RevisionInfo:
     @staticmethod
     def for_push(ref: str, sha: str) -> RevisionInfo:
         return RevisionInfo(head_ref=ref, head_sha=sha, base_ref=ref)
-
-    @staticmethod
-    def from_pr_eval(pr_eval: PullRequestEvaluation) -> RevisionInfo:
-        return RevisionInfo(
-            head_ref=pr_eval.head_ref,
-            head_sha=pr_eval.head_sha,
-            base_ref=pr_eval.base_ref,
-            merge_sha=pr_eval.merge_sha,
-        )
 
     @staticmethod
     def load_deploy_json(src: Path) -> RevisionInfo:

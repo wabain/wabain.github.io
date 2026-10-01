@@ -1,5 +1,5 @@
-name: Merge and deploy if eligible
-run-name: Merge and deploy ${{ inputs.head_ref }} on ${{ inputs.effective_event }} (${{ inputs.pull_request_number }}${{ inputs.push_commit }})
+name: Deploy if eligible
+run-name: Deploy ${{ inputs.head_ref }} (${{ inputs.push_commit }})
 on:
   workflow_call:
     inputs:
@@ -8,29 +8,19 @@ on:
         type: number
         required: true
 
-      effective_event:
-        description: "The type of event associated with the deployment (one of push or pull_request)"
-        required: true
-        type: string
-
-      pull_request_number:
-        description: "The number of the pull request, if and only if effective_event is pull_request"
-        required: false
-        type: number
-
       head_ref:
-        description: "The branch to be merged, or the branch which was pushed to for push events"
+        description: "The branch which was pushed to"
         required: true
         type: string
 
       base_ref:
-        description: "The branch to merge into, or the branch which was pushed to for push events"
+        description: "The branch which was pushed to (must match head_ref)"
         required: true
         type: string
 
       push_commit:
-        description: "The SHA of the pushed commit for push events"
-        required: false
+        description: "The SHA of the pushed commit"
+        required: true
         type: string
 
   workflow_dispatch:
@@ -40,34 +30,24 @@ on:
         type: number
         required: true
 
-      effective_event:
-        description: "The type of event associated with the deployment (one of push or pull_request)"
-        required: true
-        type: string
-
-      pull_request_number:
-        description: "The number of the pull request, if and only if effective_event is pull_request"
-        required: false
-        type: number
-
       head_ref:
-        description: "The branch to be merged, or the branch which was pushed to for push events"
+        description: "The branch which was pushed to"
         required: true
         type: string
 
       base_ref:
-        description: "The branch to merge into, or the branch which was pushed to for push events"
+        description: "The branch which was pushed to (must match head_ref)"
         required: true
         type: string
 
       push_commit:
-        description: "The SHA of the pushed commit for push events"
-        required: false
+        description: "The SHA of the pushed commit"
+        required: true
         type: string
 
 jobs:
   check-merge-deploy:
-    name: Merge and deploy using artifact
+    name: Deploy using artifact
     runs-on: ubuntu-22.04
 
     env:
@@ -77,54 +57,14 @@ jobs:
     steps:
       - name: Validate inputs
         env:
-          effective_event: ${{ inputs.effective_event }}
-          pull_request_number: ${{ inputs.pull_request_number }}
           head_ref: ${{ inputs.head_ref }}
           base_ref: ${{ inputs.base_ref }}
-          push_commit: ${{ inputs.push_commit }}
           TARGET_REF: develop
         run: |
           set -euo pipefail
 
-          case "$effective_event" in
-          pull_request)
-            if [ -z "$pull_request_number" ]; then
-              echo '::error ::Missing pull_request_number input'
-              exit 1
-            fi
-
-            if ! [ -z "$push_commit" ]; then
-              echo "::error ::Unexpected push_commit input for pull_request event ($push_commit)"
-              exit 1
-            fi
-
-            ;;
-          push)
-            if [[ "$head_ref" != "$TARGET_REF" ]]; then
-              echo "::error ::Can only deploy on push when targeting $TARGET_REF (got $head_ref)"
-              exit 1
-            fi
-
-            if ! [ -z "$pull_request_number" ]; then
-              echo "::error ::Unexpected pull_request_number input for push event ($pull_request_number)"
-              exit 1
-            fi
-
-            if [ -z "$push_commit" ]; then
-              echo "::error ::Missing push_commit input"
-              exit 1
-            fi
-
-            ;;
-          *)
-            if ! [ -z "$pull_request_number" ]; then
-              echo "::error ::Unexpected effective_event input ($effective_event)"
-              exit 1
-            fi
-          esac
-
-          if [[ "$base_ref" != "$TARGET_REF" ]]; then
-            echo "::error ::Can only deploy changes targeting $TARGET_REF (got $base_ref)"
+          if [[ "$head_ref" != "$TARGET_REF" || "$base_ref" != "$TARGET_REF" ]]; then
+            echo "::error ::Can only deploy on push to $TARGET_REF (got $head_ref, $base_ref)"
             exit 1
           fi
 
@@ -185,12 +125,9 @@ jobs:
         env:
           CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
-          EFFECTIVE_EVENT: ${{ inputs.effective_event }}
-          PR_NUMBER: ${{ inputs.pull_request_number }}
           HEAD_REF: ${{ inputs.head_ref }}
           BASE_REF: ${{ inputs.base_ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -200,13 +137,11 @@ jobs:
           args=()
 
           [[ "$CI_DRY_RUN" != false ]] && args+=( --dry-run )
-          [ ! -z "$PR_NUMBER" ] && args+=( --pr-number "$PR_NUMBER" )
           [ -e "$BASE_DIR/site" ] && args+=( --deploy-dir "$BASE_DIR/site" )
           [ -f "$BASE_DIR/site.revisions.json" ] && args+=( --deploy-revision-info "$BASE_DIR/site.revisions.json" )
 
           bin/ci-tools deploy-commit \
             "${args[@]}" \
-            --effective-event "$EFFECTIVE_EVENT" \
             --base-ref "$BASE_REF" \
             --head-ref "$HEAD_REF" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \

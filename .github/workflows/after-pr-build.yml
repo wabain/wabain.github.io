@@ -22,7 +22,6 @@ jobs:
 
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
-      effective_event: push
       head_ref: ${{ github.event.workflow_run.head_branch }}
       base_ref: ${{ github.event.workflow_run.head_branch }}
       push_commit: ${{ github.event.workflow_run.head_sha }}
