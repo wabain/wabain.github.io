@@ -7,13 +7,19 @@ echo "Latest geckodriver release..."
 
 echo
 echo "$json"
+# Match on the asset name rather than the content type, which has changed
+# between releases (application/gzip, application/x-gzip, application/x-gtar)
 url="$(echo "$json" | jq -er '
-    .assets | [
-        .[] |
-        select(.content_type == "application/x-gzip") |
-        .browser_download_url |
-        select(contains("linux64"))
-    ] | first
+    [
+        .assets[] |
+        select(.name | endswith("-linux64.tar.gz")) |
+        .browser_download_url
+    ] |
+    if length == 1 then
+        first
+    else
+        error("Expected one linux64 tarball, found \(length): \(.)")
+    end
 ')"
 
 echo
