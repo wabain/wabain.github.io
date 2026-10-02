@@ -7,13 +7,11 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 import json
-import os
 from pathlib import Path
-import shlex
 import sys
 from typing import Any, Literal
 
-from ..merge_deploy import merge_prep, revision_info
+from ..merge_deploy import deploy, merge_prep, revision_info
 from ..merge_deploy.revision_info import RevisionInfo
 
 from ..gh_state import (
@@ -25,18 +23,14 @@ from ..gh_state import (
     remove_label,
 )
 from ..output import (
-    emit_error,
     emit_notice,
     emit_summary,
     emit_warning,
     enter_log_group,
-    log_group,
     print_info_line,
     print_info_multi,
 )
 from ..utils import resolve_commit, run, temporary_worktree, validate_branch_ref
-
-REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
@@ -74,6 +68,18 @@ class DeployParams:
             self.deploy_dir is not None
             and self.deploy_revision_info is not None
             and self.base_ref == "develop"
+        )
+
+    def site(self) -> deploy.DeploySite:
+        assert self.allows_pages_deploy(), self
+        assert self.deploy_dir is not None and self.deploy_revision_info is not None
+
+        return deploy.DeploySite(
+            remote=self.remote,
+            run_url=self.run_url,
+            deploy_dir=self.deploy_dir,
+            deploy_revision_info=self.deploy_revision_info,
+            dry_run=self.dry_run,
         )
 
     def record_output(self, name: str, value: str) -> None:
@@ -128,11 +134,13 @@ def run_command(**kwargs) -> None:
 
     release_version = None
     if params.allows_pages_deploy():
-        release_version = get_release_version(params)
+        release_version = deploy.get_release_version(params.site())
 
         emit_summary("release", release_version)
 
-        if not has_consistent_release_version(params, release_version=release_version):
+        if not deploy.has_consistent_release_version(
+            params.site(), release_version=release_version
+        ):
             params.record_output("stale", "true")
             return
 
@@ -215,7 +223,12 @@ def run_command(**kwargs) -> None:
 
     deploy_number = deploy_tag = None
     if params.allows_pages_deploy():
-        deploy_number, deploy_tag = prepare_deploy_commit(params, push_sha=push_sha)
+        deploy_number, deploy_tag = deploy.prepare_deploy_commit(
+            params.site(),
+            push_sha=push_sha,
+            source_description=None if pr_number is None else f"PR #{pr_number}",
+            trigger=params.effective_event.replace("_", " "),
+        )
     elif base_ref == "develop":
         emit_warning("Event targeting", base_ref, "is not deployable:", params)
 
@@ -223,7 +236,12 @@ def run_command(**kwargs) -> None:
         params.effective_event == "pull_request"
         and not pr_eval.pr_eligibility["approver_is_collaborator"]
     ):
-        approve_pull_request(params, pr_eval)
+        assert pr_number is not None, params
+        assert pr_eval.pr_is_eligible, pr_eval
+
+        deploy.approve_pull_request(
+            pr_number, pr_eval, run_url=params.run_url, dry_run=params.dry_run
+        )
 
     with sentry_deploy(
         params, push_sha=push_sha, release_version=release_version, deploy_number=deploy_number
@@ -282,17 +300,7 @@ def fetch_deploy_refs(params: DeployParams) -> None:
     remote = params.remote
 
     if params.allows_pages_deploy():
-        # TODO: avoid full-depth fetch here; see prepare_deploy_commit
-        run(
-            [
-                "git",
-                "fetch",
-                "--no-tags",
-                "--",
-                remote,
-                f"+refs/heads/master:refs/remotes/{remote}/master",
-            ]
-        )
+        deploy.fetch_deploy_branch(remote)
 
     if params.effective_event == "pull_request":
         head_ref, base_ref = params.head_ref, params.base_ref
@@ -377,117 +385,6 @@ def push_deploy_revisions_up_to_date(params: DeployParams, current: RevisionInfo
     )
 
 
-@log_group("Prepare deploy")
-def prepare_deploy_commit(params: DeployParams, push_sha: str) -> tuple[str, str]:
-    assert params.deploy_dir is not None
-    assert params.deploy_revision_info is not None
-
-    # Get the number of commits there will be on the deploy branch; this will give us a
-    # monotonically increasing deploy number (up to history rewrites and deploy branch changes).
-    #
-    # Note that we do a non-shallow fetch of master in fetch_deploy_refs to ensure this works.
-    deploy_number = str(
-        len(run(["git", "rev-list", f"refs/remotes/{params.remote}/master"]).splitlines()) + 1
-    )
-
-    deploy_description = (
-        deploy_number
-        if params.pr_number is None
-        else f"{deploy_number} from PR #{params.pr_number}"
-    )
-
-    with temporary_worktree(
-        f"refs/remotes/{params.remote}/master", args=["--no-checkout", "-B", "master"]
-    ) as worktree_dir:
-        run(["rsync", "-a", f"{params.deploy_dir}/", f"{worktree_dir}/"])
-
-        (Path(worktree_dir) / ".nojekyll").touch()
-
-        worktree_args = [
-            f"--git-dir={worktree_dir}/.git",
-            f"--work-tree={worktree_dir}",
-        ]
-
-        base_args = [
-            *worktree_args,
-            "-c",
-            f"core.excludesfile={REPO_ROOT}/.deploy-gitignore",
-        ]
-
-        deploy_tag = f"deploy/master/{deploy_number}-{push_sha}"
-
-        run(
-            [
-                "git",
-                *base_args,
-                "add",
-                "--",
-                worktree_dir,
-            ]
-        )
-
-        run(
-            [
-                "git",
-                *base_args,
-                "commit",
-                "--allow-empty",
-                "-m",
-                f"Deploy to GitHub Pages [{deploy_description}]",
-                "-m",
-                "Source commit for this deployment:",
-                "-m",
-                run(["git", "show", "--no-patch", "--format=fuller", push_sha]),
-            ]
-        )
-
-        run(
-            [
-                "git",
-                *worktree_args,
-                "tag",
-                "-a",
-                deploy_tag,
-                "master",
-                "-m",
-                f'Deploy {deploy_description} triggered by {params.effective_event.replace("_", " ")}',
-                "-m",
-                params.run_url,
-            ]
-        )
-
-    return deploy_number, deploy_tag
-
-
-def approve_pull_request(params: DeployParams, pr_eval: PullRequestEvaluation) -> None:
-    assert params.effective_event == "pull_request", params
-    assert pr_eval.pr_is_eligible, pr_eval
-
-    token = os.getenv("GH_BOT_TOKEN")
-
-    if token is None:
-        raise ValueError("GH_BOT_TOKEN environment variable not provided")
-
-    review_params = json.dumps(
-        {
-            "commit_id": pr_eval.head_sha,
-            "event": "APPROVE",
-            "body": (
-                "Approving [automatically] based on the following criteria:\n\n"
-                f"```json\n{json.dumps(pr_eval.pr_eligibility, indent=4)}\n```\n\n"
-                f"[automatically]: {params.run_url}"
-            ),
-        }
-    )
-
-    url = f"/repos/{REPO}/pulls/{params.pr_number}/reviews"
-
-    if params.dry_run:
-        print_info_multi("post [dry-run]", url, review_params)
-    else:
-        get_github_api(url, method="POST", token=token, data=review_params.encode())
-
-
 def trigger_pull_request_merge_update(params: DeployParams) -> None:
     """Trigger an asynchronous merge commit update for the given pull request"""
     assert params.effective_event == "pull_request", params
@@ -515,121 +412,10 @@ def sentry_deploy(
     assert release_version is not None, params
     assert deploy_number is not None, params
 
-    prepare_sentry_deploy(params, release_version=release_version)
-    yield
-    finalize_sentry_deploy(
-        params, release_version=release_version, push_sha=push_sha, deploy_number=deploy_number
-    )
-
-
-@log_group("Initialize sentry release")
-def prepare_sentry_deploy(params: DeployParams, release_version: str) -> None:
-    assert params.deploy_dir is not None, params
-
-    run_sentry(
-        params,
-        [
-            "releases",
-            "new",
-            release_version,
-            "--url",
-            params.run_url,
-        ],
-    )
-
-    run_sentry(
-        params,
-        [
-            "sourcemaps",
-            "upload",
-            f"--release={release_version}",
-            "--url-prefix",
-            "/home-assets",
-            str(params.deploy_dir / "home-assets"),
-        ],
-    )
-
-
-@log_group("Finalize sentry release and deploy")
-def finalize_sentry_deploy(
-    params: DeployParams, release_version: str, push_sha: str, deploy_number: str
-) -> None:
-    run_sentry(
-        params,
-        [
-            "releases",
-            "set-commits",
-            release_version,
-            "--commit",
-            f"wabain/wabain.github.io@{push_sha}",
-        ],
-    )
-
-    run_sentry(params, ["releases", "finalize", release_version])
-
-    run_sentry(
-        params,
-        [
-            "releases",
-            "deploys",
-            release_version,
-            "new",
-            "--name",
-            deploy_number,
-            "--env",
-            "production",
-            "--url",
-            params.run_url,
-        ],
-    )
-
-
-def run_sentry(params: DeployParams, args: list[str]) -> None:
-    if params.dry_run:
-        print_info_line("run [dry-run]", "sentry-cli", *(shlex.quote(s) for s in args))
-    else:
-        run(["sentry-cli", *args])
-
-
-def get_release_version(params: DeployParams) -> str:
-    assert params.deploy_dir is not None, params
-    assert params.deploy_revision_info is not None, params
-
-    return run(
-        [
-            "jq",
-            "--raw-output",
-            "-f",
-            str(REPO_ROOT / "ci/release-name.jq"),
-            str(params.deploy_revision_info),
-        ]
-    ).removesuffix("\n")
-
-
-def has_consistent_release_version(params: DeployParams, release_version: str) -> bool:
-    assert params.deploy_dir is not None, params
-    assert params.deploy_revision_info is not None, params
-
-    src = params.deploy_dir / ".test-meta.json"
-    try:
-        test_meta = json.loads(src.read_text())
-    except Exception as e:
-        e.add_note(f"failed to load test metadata from {src}")
-        raise
-
-    match test_meta:
-        case {"release_version": str(built_version)}:
-            pass
-
-        case _:
-            emit_error("Unexpected .test-meta.json content:", json.dumps(test_meta))
-            return False
-
-    consistent = built_version == release_version
-
-    if not consistent:
-        emit_warning(f"Unexpected release version from run")
-        emit_warning(f"Expected {built_version!r}")
-        emit_warning(f"Run has  {release_version!r}")
-
-    return consistent
+    with deploy.sentry_deploy(
+        params.site(),
+        push_sha=push_sha,
+        release_version=release_version,
+        deploy_number=deploy_number,
+    ):
+        yield
