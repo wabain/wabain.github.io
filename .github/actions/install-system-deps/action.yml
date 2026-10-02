@@ -13,7 +13,7 @@ inputs:
       unzip
 
   github-token:
-    description: Token to authenticate with when requesting geckodriver artifacts
+    description: Token to authenticate with when requesting geckodriver and sentry-cli artifacts
     required: false
 
 runs:
