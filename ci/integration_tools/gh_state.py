@@ -5,19 +5,26 @@ from __future__ import annotations
 from dataclasses import dataclass
 import dataclasses
 from http.client import HTTPResponse
+import itertools
 import json
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any
+from typing import Any, Literal
 from urllib.error import HTTPError
 from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
 import os
+import re
 
 from .utils import run
 from .output import print_info_line, print_info_multi
 
 REPO = "wabain/wabain.github.io"
+
+# Workflow which validates pull requests (name: "Build and test")
+VALIDATE_WORKFLOW = "validate.yml"
+
+BuildState = Literal["success", "pending", "failure", "missing"]
 
 
 @dataclass(kw_only=True)
@@ -29,9 +36,14 @@ class PullRequestEvaluation:
     base_ref: str
     merge_sha: str | None
 
+    pr_is_open: bool
+
     merge_pending_label_present: bool
+    merge_isolate_label_present: bool
+    merge_blocked_label_present: bool
     pr_is_eligible: bool
     pr_may_be_eligible: bool
+    pr_is_eligible_up_to_mergeability: bool
 
     pr_eligibility: dict[str, Any]
 
@@ -87,6 +99,64 @@ def evaluate_pull_request_state(pr_number: int) -> PullRequestEvaluation:
     )
 
     return PullRequestEvaluation(**mergeability, raw=eval_result)
+
+
+def list_open_pull_requests() -> list[dict[str, Any]]:
+    """List open pull requests, oldest first"""
+    per_page = 100
+    pulls: list[dict[str, Any]] = []
+
+    for page in itertools.count(1):
+        params = f"state=open&sort=created&direction=asc&per_page={per_page}&page={page}"
+
+        with get_github_api(f"/repos/{REPO}/pulls?{params}") as response:
+            page_pulls = json.load(response)
+
+        pulls.extend(page_pulls)
+
+        if len(page_pulls) < per_page:
+            break
+
+    return pulls
+
+
+def get_pull_request_build_state(head_sha: str) -> BuildState:
+    """Get the state of the latest pull request validation run for the given head commit"""
+    if not re.fullmatch("[0-9a-f]{40}", head_sha):
+        raise ValueError(f"invalid commit SHA: {head_sha!r}")
+
+    # The workflow runs API can't filter by pull request number, so runs are
+    # looked up by the head commit instead. This also ensures the result is for
+    # the same commit the pull request was evaluated at, not an earlier push.
+    params = f"event=pull_request&head_sha={head_sha}&per_page=100"
+
+    with get_github_api(
+        f"/repos/{REPO}/actions/workflows/{VALIDATE_WORKFLOW}/runs?{params}"
+    ) as response:
+        runs = json.load(response)["workflow_runs"]
+
+    if not runs:
+        state: BuildState = "missing"
+    else:
+        latest = max(runs, key=lambda run: run["created_at"])
+
+        if latest["status"] != "completed":
+            state = "pending"
+        elif latest["conclusion"] == "success":
+            state = "success"
+        else:
+            state = "failure"
+
+    print_info_line("build state", head_sha, state)
+    return state
+
+
+def add_comment(pr_number: int, body: str) -> None:
+    get_github_api(
+        f"/repos/{REPO}/issues/{pr_number}/comments",
+        method="POST",
+        data=json.dumps({"body": body}).encode(),
+    )
 
 
 def add_label(pr_number: int, label: str) -> None:

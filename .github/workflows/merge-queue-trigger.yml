@@ -1,0 +1,87 @@
+# Dispatch the merge queue when a pull request may have become ready. See
+# ci/merge-queue.md.
+#
+# For some of these events GitHub runs this file as it appears in the pull
+# request, so this only checks out develop, evaluates, and dispatches.
+name: Merge queue trigger
+run-name: "Merge queue trigger (#${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number }})"
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, ready_for_review]
+
+  pull_request_review:
+    types: [submitted]
+
+  workflow_run:
+    workflows: ["Build and test"]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  # See comment in validate.yml
+  BASH_ENV: ci/env.sh
+
+  # Keep in sync with merge-queue.yml
+  MERGE_QUEUE_DRY_RUN: "true"
+
+jobs:
+  check:
+    name: Check pull request readiness
+    runs-on: ubuntu-22.04
+
+    if: >
+      (github.event_name == 'pull_request_target' &&
+        github.event.pull_request.state == 'open' &&
+        ((github.event.action == 'labeled' && github.event.label.name == 'automerge') ||
+         (github.event.action == 'unlabeled' && github.event.label.name == 'merge-blocked') ||
+         github.event.action == 'ready_for_review')) ||
+      (github.event_name == 'pull_request_review' &&
+        github.event.review.state == 'approved') ||
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.event == 'pull_request' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.pull_requests[0] != null)
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: develop
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: pyproject.toml
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          dependencies: |
+            jq
+
+      - name: Evaluate pull request
+        id: evaluate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          set -euo pipefail
+
+          args=()
+          [[ "$MERGE_QUEUE_DRY_RUN" != false ]] && args+=( --dry-run )
+
+          bin/ci-tools evaluate-queue-pr \
+            "${args[@]}" \
+            --pr-number "$PR_NUMBER" \
+            --outputs-file "$GITHUB_OUTPUT"
+
+      - name: Dispatch merge queue
+        if: steps.evaluate.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bin/ci-tools dispatch-merge-queue

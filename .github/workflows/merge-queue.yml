@@ -1,0 +1,229 @@
+# Batch merge of ready pull requests. See ci/merge-queue.md for how this works
+# and why it is structured this way.
+name: Merge queue
+# e.g. "Merge queue (schedule)" or "Merge queue (workflow_dispatch, chain depth 1)"
+run-name: >-
+  Merge queue (${{ github.event_name }}${{
+    inputs.chain_depth && format(', chain depth {0}', inputs.chain_depth) || ''
+  }})
+on:
+  # Dispatched by merge-queue-trigger.yml, by this workflow when there may be
+  # more work, or manually
+  workflow_dispatch:
+    inputs:
+      chain_depth:
+        description: Number of preceding runs in a chain of follow-up dispatches
+        type: number
+        default: 0
+
+  # Fallback in case a dispatch is missed
+  schedule:
+    - cron: "17 * * * *"
+
+# Only one run may be active. GitHub keeps at most one further run pending,
+# replacing it with any newer one, which is fine since runs are stateless.
+concurrency:
+  group: merge-queue
+  cancel-in-progress: false
+
+env:
+  # See comment in validate.yml
+  BASH_ENV: ci/env.sh
+
+  # While "true", runs build batches but don't push to develop or master, update
+  # labels, or dispatch follow-up runs. Keep in sync with merge-queue-trigger.yml.
+  MERGE_QUEUE_DRY_RUN: "true"
+
+  # Limit on consecutive follow-up runs dispatched by this workflow, as a
+  # backstop against a dispatch loop
+  MERGE_QUEUE_MAX_CHAIN_DEPTH: "10"
+
+  CHAIN_DEPTH: ${{ inputs.chain_depth || 0 }}
+
+jobs:
+  stage:
+    name: Stage batch
+    runs-on: ubuntu-22.04
+
+    outputs:
+      has_batch: ${{ steps.stage.outputs.has_batch }}
+      batch: ${{ steps.stage.outputs.batch }}
+
+    steps:
+      - name: Configure git
+        run: |
+          git config --global user.email "bain.william.a+ci@gmail.com"
+          git config --global user.name "CI"
+
+      - uses: actions/checkout@v6
+        with:
+          ref: develop
+          # Merging needs the history of develop and the PR branches
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: pyproject.toml
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          dependencies: |
+            jq
+
+      - name: Stage batch
+        id: stage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          args=()
+          # Still stage the batch in dry-run mode so that it gets built
+          [[ "$MERGE_QUEUE_DRY_RUN" != false ]] && args+=( --dry-run=pr-labels )
+
+          bin/ci-tools stage-batch "${args[@]}" --outputs-file "$GITHUB_OUTPUT"
+
+  build:
+    name: Build batch
+    needs: [stage]
+    if: needs.stage.outputs.has_batch == 'true'
+    uses: ./.github/workflows/validate.yml
+    with:
+      merge_queue_sha: ${{ fromJSON(needs.stage.outputs.batch).tip_sha }}
+
+  land:
+    name: Merge and deploy batch
+    needs: [stage, build]
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Configure git
+        run: |
+          git config --global user.email "bain.william.a+ci@gmail.com"
+          git config --global user.name "CI"
+
+      - uses: actions/checkout@v6
+        with:
+          ref: develop
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: pyproject.toml
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dependencies: |
+            jq
+            sentry-cli
+
+      - name: Download build
+        uses: actions/download-artifact@v7
+        with:
+          name: site.tgz
+          path: ${{ runner.temp }}/build
+
+      - name: Extract build
+        env:
+          BUILD_DIR: ${{ runner.temp }}/build
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f "$BUILD_DIR/site.revisions.json" ]]; then
+            echo "::error ::missing site.revisions.json in build artifact"
+            exit 1
+          fi
+
+          tar -xzf "$BUILD_DIR/site.tgz" -C "$BUILD_DIR" site
+
+      - name: Merge and deploy
+        id: land
+        env:
+          BATCH: ${{ needs.stage.outputs.batch }}
+          BUILD_DIR: ${{ runner.temp }}/build
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          printf '%s' "$BATCH" > "$RUNNER_TEMP/batch.json"
+
+          args=()
+          [[ "$MERGE_QUEUE_DRY_RUN" != false ]] && args+=( --dry-run )
+
+          bin/ci-tools land-batch \
+            "${args[@]}" \
+            --batch-file "$RUNNER_TEMP/batch.json" \
+            --deploy-dir "$BUILD_DIR/site" \
+            --deploy-revision-info "$BUILD_DIR/site.revisions.json" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --outputs-file "$GITHUB_OUTPUT"
+
+      # More PRs may be ready if some were skipped or over the batch size
+      # limit. An abandoned batch doesn't dispatch, since no state changed; the
+      # trigger or schedule picks up its PRs.
+      - name: Dispatch next run
+        if: env.MERGE_QUEUE_DRY_RUN == 'false' && steps.land.outputs.requeue == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bin/ci-tools dispatch-merge-queue \
+            --chain-depth "$CHAIN_DEPTH" \
+            --max-chain-depth "$MERGE_QUEUE_MAX_CHAIN_DEPTH"
+
+  record-failure:
+    name: Record batch failure
+    needs: [stage, build]
+    if: always() && needs.build.result == 'failure'
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: develop
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: pyproject.toml
+
+      - name: Install system dependencies
+        uses: ./.github/actions/install-system-deps
+        with:
+          dependencies: |
+            jq
+
+      - name: Label pull requests
+        env:
+          BATCH: ${{ needs.stage.outputs.batch }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          printf '%s' "$BATCH" > "$RUNNER_TEMP/batch.json"
+
+          args=()
+          [[ "$MERGE_QUEUE_DRY_RUN" != false ]] && args+=( --dry-run )
+
+          bin/ci-tools record-batch-failure \
+            "${args[@]}" \
+            --batch-file "$RUNNER_TEMP/batch.json" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      # Retry the failed batch's PRs alone
+      - name: Dispatch next run
+        if: env.MERGE_QUEUE_DRY_RUN == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bin/ci-tools dispatch-merge-queue \
+            --chain-depth "$CHAIN_DEPTH" \
+            --max-chain-depth "$MERGE_QUEUE_MAX_CHAIN_DEPTH"
