@@ -10,6 +10,14 @@ on:
         description: Number of the pull request targeted by a workflow dispatch job
         default: ""
 
+  # Called by merge-queue.yml to validate a batch of merged pull requests
+  workflow_call:
+    inputs:
+      merge_queue_sha:
+        description: Commit to validate (and package for deploy) as the next state of develop
+        type: string
+        required: true
+
 jobs:
   validate:
     name: Validate commit
@@ -26,7 +34,10 @@ jobs:
     steps:
       - name: Resolve dispatched pull request
         id: dispatched-pr
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.pull_request_number != ''
+        if: >
+          inputs.merge_queue_sha == '' &&
+            github.event_name == 'workflow_dispatch' &&
+            github.event.inputs.pull_request_number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
@@ -75,6 +86,10 @@ jobs:
       # - base_ref: replaces github.base_ref
       #
       # - pr_number: replaces github.event.pull_request.number
+      #
+      # - revision_ref: the ref recorded in site.revisions.json for non-PR
+      #   events. For merge queue batches (effective_event 'merge_queue') this is
+      #   the branch the batch will be pushed to, while ref is the commit SHA.
       - name: Resolve parameters
         id: resolve
         env:
@@ -87,8 +102,18 @@ jobs:
           DISPATCHED_HEAD_REF: ${{ steps.dispatched-pr.outputs.head_ref }}
           DISPATCHED_BASE_REF: ${{ steps.dispatched-pr.outputs.base_ref }}
           DISPATCHED_PR_NUMBER: ${{ github.event.inputs.pull_request_number }}
+          MERGE_QUEUE_SHA: ${{ inputs.merge_queue_sha }}
         run: |
           set -euo pipefail
+
+          if [ -n "$MERGE_QUEUE_SHA" ]; then
+            echo "effective_event=merge_queue" | tee -a "$GITHUB_OUTPUT"
+            echo "ref=$MERGE_QUEUE_SHA" | tee -a "$GITHUB_OUTPUT"
+            echo "revision_ref=refs/heads/develop" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "revision_ref=$GITHUB_REF" | tee -a "$GITHUB_OUTPUT"
 
           case "$DISPATCHED_PR_OUTCOME" in
           success)
@@ -187,6 +212,7 @@ jobs:
           REF: ${{ steps.resolve.outputs.ref }}
           HEAD_REF: ${{ steps.resolve.outputs.head_ref }}
           BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          REVISION_REF: ${{ steps.resolve.outputs.revision_ref }}
         run: |
           sha="$(git rev-parse 'HEAD')"
           tree="$(git rev-parse 'HEAD^{tree}')"
@@ -233,7 +259,7 @@ jobs:
               --null-input \
               --arg sha "$sha" \
               --arg tree "$tree" \
-              '{ ref: env.REF, sha: $sha, tree: $tree }' \
+              '{ ref: env.REVISION_REF, sha: $sha, tree: $tree }' \
               > site.revisions.json
 
             cat site.revisions.json | jq -C .
@@ -257,6 +283,7 @@ jobs:
         id: create-deploy-tarfile
         if: >
           steps.resolve.outputs.effective_event == 'pull_request' ||
+            steps.resolve.outputs.effective_event == 'merge_queue' ||
             (steps.resolve.outputs.effective_event == 'push' &&
              steps.resolve.outputs.ref == 'refs/heads/develop')
         run: |
