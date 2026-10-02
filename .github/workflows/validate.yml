@@ -315,6 +315,7 @@ jobs:
           poetry install
           poetry run -- black --check .
           poetry run -- mypy -p integration_tools
+          poetry run -- python -m unittest discover -s ci/integration_tools -t ci
 
       - name: Upload deploy artifact
         if: steps.create-deploy-tarfile.outcome == 'success'
