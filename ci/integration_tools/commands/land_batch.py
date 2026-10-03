@@ -11,9 +11,14 @@ from dataclasses import dataclass
 from pathlib import Path
 import subprocess
 import sys
+import time
 import traceback
 
-from ..gh_state import PullRequestEvaluation, evaluate_pull_request_state
+from ..gh_state import (
+    PullRequestEvaluation,
+    evaluate_pull_request_state,
+    is_pull_request_merged,
+)
 from ..merge_deploy import deploy
 from ..merge_deploy.revision_info import RevisionInfo
 from ..merge_queue.queue_state import (
@@ -25,8 +30,19 @@ from ..merge_queue.queue_state import (
     is_queueable,
     set_label,
 )
-from ..output import emit_error_block, emit_summary, emit_warning, enter_log_group
+from ..output import (
+    emit_error_block,
+    emit_summary,
+    emit_warning,
+    emit_warning_block,
+    enter_log_group,
+)
 from ..utils import record_output, resolve_commit, run
+
+# GitHub marks a pull request as merged some time after its head is pushed to
+# the base branch
+MERGED_WAIT_TIMEOUT_SECS = 15
+MERGED_POLL_INTERVAL_SECS = 1
 
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
@@ -147,10 +163,17 @@ def run_command(**kwargs) -> None:
             f"--force-with-lease=refs/heads/{batch.base_ref}:{batch.base_sha}",
         ]
 
+        # Re-push each head branch unchanged so that the push fails if any has
+        # moved.
+        #
+        # NOTE: Due to git quirks the unchanged refs are checked by the client
+        # only *before* the other ref updates are applied by the server, but for
+        # this use case the race condition that opens up isn't really
+        # distinguishable from someone updating a ref right after our push.
         for entry in batch.prs:
             push_args.extend(
                 [
-                    f":refs/heads/{entry.head_ref}",
+                    f"{entry.head_sha}:refs/heads/{entry.head_ref}",
                     f"--force-with-lease=refs/heads/{entry.head_ref}:{entry.head_sha}",
                 ]
             )
@@ -170,6 +193,7 @@ def run_command(**kwargs) -> None:
 
     emit_summary("Merged batch", batch.describe(), "as", batch.tip_sha)
 
+    delete_head_branches(params, batch)
     clear_queue_labels(params, evals)
 
 
@@ -180,6 +204,64 @@ def verify_build(batch: Batch, site: deploy.DeploySite) -> None:
 
     if built != expected:
         raise ValueError(f"build revision {built} does not match batch: expected {expected}")
+
+
+def delete_head_branches(params: LandParams, batch: Batch) -> None:
+    """Delete the batch's head branches once GitHub has marked their pull requests merged"""
+    unmerged = {entry.number for entry in batch.prs}
+
+    if not params.dry_run:
+        try:
+            unmerged = wait_for_merged(unmerged)
+        except Exception as exc:
+            emit_warning(
+                f"Failed to confirm pull requests are marked merged"
+                f" before branch cleanup: {exc}"
+            )
+            traceback.print_exception(exc, file=sys.stderr)
+        else:
+            if unmerged:
+                emit_warning(
+                    f"{', '.join(f'#{n}' for n in sorted(unmerged))} are not marked merged;"
+                    f" branch cleanup will close them unmerged"
+                )
+
+    push_args = [params.remote]
+
+    for entry in batch.prs:
+        push_args.extend(
+            [
+                f":refs/heads/{entry.head_ref}",
+                f"--force-with-lease=refs/heads/{entry.head_ref}:{entry.head_sha}",
+            ]
+        )
+
+    if params.dry_run:
+        push_args.insert(0, "--dry-run")
+
+    try:
+        run(["git", "push", *push_args])
+    except subprocess.CalledProcessError as exc:
+        # The batch has landed by now, so don't fail the run over its branches
+        stderr = "\n".join(line.rstrip() for line in (exc.stderr or "").splitlines())
+        emit_warning_block(
+            f"Failed to delete some head branches for batch {batch.describe()}\n\n{stderr}"
+        )
+
+
+def wait_for_merged(pr_numbers: set[int]) -> set[int]:
+    """Wait for GitHub to mark pull requests as merged, returning any which aren't"""
+    deadline = time.monotonic() + MERGED_WAIT_TIMEOUT_SECS
+    pending = set(pr_numbers)
+
+    with enter_log_group("Wait for pull requests to be marked merged"):
+        while True:
+            pending = {number for number in pending if not is_pull_request_merged(number)}
+
+            if not pending or time.monotonic() >= deadline:
+                return pending
+
+            time.sleep(MERGED_POLL_INTERVAL_SECS)
 
 
 def clear_queue_labels(params: LandParams, evals: dict[int, PullRequestEvaluation]) -> None:

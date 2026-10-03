@@ -18,8 +18,11 @@ Each run of `merge-queue.yml`:
 3. Lands the batch (`bin/ci-tools land-batch`). It re-evaluates every pull
    request in the batch. If any is no longer eligible to merge, the batch is
    abandoned and nothing is pushed. Otherwise a single atomic push updates
-   `develop`, deletes the PR branches, and pushes the deploy commit to `master`
-   with its tag. Each updated ref is guarded by a `--force-with-lease` argument.
+   `develop` and pushes the deploy commit to `master` with its tag. The same
+   push re-pushes each PR branch unchanged with a `--force-with-lease`
+   argument, so that it fails if any branch has moved. Once GitHub marks the
+   pull requests merged, a second push deletes their branches. Deleting them in
+   the first push can close a pull request before GitHub sees that it merged.
 4. On a build failure, the failure is recorded in the batch's pull requests
    (`bin/ci-tools record-batch-failure`).
 

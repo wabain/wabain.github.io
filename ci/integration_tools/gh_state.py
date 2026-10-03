@@ -101,6 +101,11 @@ def evaluate_pull_request_state(pr_number: int) -> PullRequestEvaluation:
     return PullRequestEvaluation(**mergeability, raw=eval_result)
 
 
+def is_pull_request_merged(pr_number: int) -> bool:
+    with get_github_api(f"/repos/{REPO}/pulls/{pr_number}") as response:
+        return bool(json.load(response)["merged"])
+
+
 def list_open_pull_requests() -> list[dict[str, Any]]:
     """List open pull requests, oldest first"""
     per_page = 100

@@ -108,6 +108,7 @@ class MessageType(Enum):
 
 emit_notice = MessageType.Notice.emit
 emit_warning = MessageType.Warn.emit
+emit_warning_block = MessageType.Warn.emit_block
 emit_error = MessageType.Error.emit
 emit_error_block = MessageType.Error.emit_block
 
