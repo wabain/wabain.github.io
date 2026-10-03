@@ -17,12 +17,15 @@ Each run of `merge-queue.yml`:
 2. Builds the batch by calling `validate.yml` with the batch commit.
 3. Lands the batch (`bin/ci-tools land-batch`). It re-evaluates every pull
    request in the batch. If any is no longer eligible to merge, the batch is
-   abandoned and nothing is pushed. Otherwise a single atomic push updates
-   `develop` and pushes the deploy commit to `master` with its tag. The same
-   push re-pushes each PR branch unchanged with a `--force-with-lease`
-   argument, so that it fails if any branch has moved. Once GitHub marks the
-   pull requests merged, a second push deletes their branches. Deleting them in
-   the first push can close a pull request before GitHub sees that it merged.
+   abandoned and nothing is pushed. Otherwise it pushes the batch's merges to
+   `develop` one at a time: GitHub only accepts a direct push to `develop` if
+   it merges a single approved pull request. The last push also pushes the
+   deploy commit to `master` with its tag, atomically. Each push leases
+   `develop` on the merge before it, and re-pushes the branches of the pull
+   requests not yet landed unchanged with a `--force-with-lease` argument, so
+   that it fails if any branch has moved. Once GitHub marks the landed pull
+   requests merged, another push deletes their branches. Deleting them along
+   with the merge can close a pull request before GitHub sees that it merged.
 4. On a build failure, the failure is recorded in the batch's pull requests
    (`bin/ci-tools record-batch-failure`).
 
@@ -56,7 +59,9 @@ batch from the open pull requests and their labels.
 
 No labels are added if merging fails due to a cancelled build, a failed push
 (for instance because `develop` moved), or a pull request changing before
-landing; the next run retries.
+landing; the next run retries. If a push fails partway through a batch, the
+pull requests already landed stay in `develop` without being deployed, and have
+their branches deleted and labels cleared as usual.
 
 Apart from the label rules above, there's no way to request that particular pull
 requests get built as a batch; we need requests to run `merge-queue.yml` to be

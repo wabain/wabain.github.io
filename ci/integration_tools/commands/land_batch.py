@@ -27,6 +27,8 @@ from ..merge_queue.queue_state import (
     QUEUE_BASE_REF,
     STAGING_REF,
     Batch,
+    BatchEntry,
+    describe_entries,
     is_queueable,
     set_label,
 )
@@ -36,6 +38,7 @@ from ..output import (
     emit_warning,
     emit_warning_block,
     enter_log_group,
+    print_info_multi,
 )
 from ..utils import record_output, resolve_commit, run
 
@@ -134,6 +137,9 @@ def run_command(**kwargs) -> None:
             f"{params.staging_ref} is at {staged}, which does not match batch tip {batch.tip_sha}"
         )
 
+    # Check the batch's shape before deploying anything
+    merge_shas = batch.merge_commits()
+
     deploy.fetch_deploy_branch(remote)
 
     for entry in batch.prs:
@@ -150,51 +156,32 @@ def run_command(**kwargs) -> None:
         trigger="merge queue",
     )
 
-    with deploy.sentry_deploy(
-        site,
-        push_sha=batch.tip_sha,
-        release_version=release_version,
-        deploy_number=deploy_number,
-    ):
-        push_args = [
-            "--atomic",
-            remote,
-            f"{batch.tip_sha}:refs/heads/{batch.base_ref}",
-            f"--force-with-lease=refs/heads/{batch.base_ref}:{batch.base_sha}",
-        ]
-
-        # Re-push each head branch unchanged so that the push fails if any has
-        # moved.
-        #
-        # NOTE: Due to git quirks the unchanged refs are checked by the client
-        # only *before* the other ref updates are applied by the server, but for
-        # this use case the race condition that opens up isn't really
-        # distinguishable from someone updating a ref right after our push.
-        for entry in batch.prs:
-            push_args.extend(
-                [
-                    f"{entry.head_sha}:refs/heads/{entry.head_ref}",
-                    f"--force-with-lease=refs/heads/{entry.head_ref}:{entry.head_sha}",
-                ]
+    # A failed push raises out of sentry_deploy, so the release isn't finalized
+    try:
+        with deploy.sentry_deploy(
+            site,
+            push_sha=batch.tip_sha,
+            release_version=release_version,
+            deploy_number=deploy_number,
+        ):
+            push_batch(params, batch, merge_shas, deploy_tag)
+    except BatchPushError as exc:
+        if exc.landed:
+            message = (
+                f"Deployment failed partway: {describe_entries(exc.landed)} are"
+                f" on {batch.base_ref} but not deployed"
             )
+        else:
+            message = f"Failed to push batch {batch.describe()}"
 
-        push_args.extend(["master:master", f"refs/tags/{deploy_tag}:refs/tags/{deploy_tag}"])
+        emit_error_block(f"{message}\n\n{exc.stderr}")
 
-        if params.dry_run:
-            push_args.insert(0, "--dry-run")
-
-        try:
-            run(["git", "push", *push_args])
-        except subprocess.CalledProcessError as exc:
-            # The remote's reason for rejecting the push is only in its stderr
-            stderr = "\n".join(line.rstrip() for line in (exc.stderr or "").splitlines())
-            emit_error_block(f"Failed to push batch {batch.describe()}\n\n{stderr}")
-            sys.exit(1)
+        finish_landed(params, exc.landed, evals)
+        sys.exit(1)
 
     emit_summary("Merged batch", batch.describe(), "as", batch.tip_sha)
 
-    delete_head_branches(params, batch)
-    clear_queue_labels(params, evals)
+    finish_landed(params, batch.prs, evals)
 
 
 def verify_build(batch: Batch, site: deploy.DeploySite) -> None:
@@ -206,9 +193,78 @@ def verify_build(batch: Batch, site: deploy.DeploySite) -> None:
         raise ValueError(f"build revision {built} does not match batch: expected {expected}")
 
 
-def delete_head_branches(params: LandParams, batch: Batch) -> None:
-    """Delete the batch's head branches once GitHub has marked their pull requests merged"""
-    unmerged = {entry.number for entry in batch.prs}
+class BatchPushError(Exception):
+    """A push failed after landing the pull requests in landed, if any"""
+
+    def __init__(self, landed: list[BatchEntry], stderr: str) -> None:
+        super().__init__(stderr)
+        self.landed = landed
+        self.stderr = stderr
+
+
+def push_batch(params: LandParams, batch: Batch, merge_shas: list[str], deploy_tag: str) -> None:
+    """Push the batch's merges to the base branch one at a time, deploying with the last
+
+    GitHub rejects a direct push to a branch which requires pull requests unless
+    it merges a single approved pull request, so each merge needs its own push.
+    The last push also updates master and the deploy tag, atomically.
+    """
+    for index, (entry, merge_sha) in enumerate(zip(batch.prs, merge_shas)):
+        prior_base_sha = batch.base_sha if index == 0 else merge_shas[index - 1]
+        push_args = [
+            "--atomic",
+            params.remote,
+            f"{merge_sha}:refs/heads/{batch.base_ref}",
+            f"--force-with-lease=refs/heads/{batch.base_ref}:{prior_base_sha}",
+        ]
+
+        # Re-push each unlanded pull request's head branch unchanged so that the
+        # push fails if any has moved.
+        #
+        # NOTE: Due to git quirks the unchanged refs are checked by the client
+        # only *before* the other ref updates are applied by the server, but for
+        # this use case the race condition that opens up isn't really
+        # distinguishable from someone updating a ref right after our push.
+        for pending in batch.prs[index:]:
+            push_args.extend(
+                [
+                    f"{pending.head_sha}:refs/heads/{pending.head_ref}",
+                    f"--force-with-lease=refs/heads/{pending.head_ref}:{pending.head_sha}",
+                ]
+            )
+
+        if merge_sha == batch.tip_sha:
+            push_args.extend(["master:master", f"refs/tags/{deploy_tag}:refs/tags/{deploy_tag}"])
+
+        if params.dry_run:
+            # Later pushes lease on a base branch which a dry run doesn't move
+            if index > 0:
+                print_info_multi("push [dry-run, not checked]", f"#{entry.number}", *push_args)
+                continue
+
+            push_args.insert(0, "--dry-run")
+
+        try:
+            run(["git", "push", *push_args])
+        except subprocess.CalledProcessError as exc:
+            # The remote's reason for rejecting the push is only in its stderr
+            stderr = "\n".join(line.rstrip() for line in (exc.stderr or "").splitlines())
+            raise BatchPushError(batch.prs[:index], stderr) from exc
+
+
+def finish_landed(
+    params: LandParams, landed: list[BatchEntry], evals: dict[int, PullRequestEvaluation]
+) -> None:
+    if not landed:
+        return
+
+    delete_head_branches(params, landed)
+    clear_queue_labels(params, {entry.number: evals[entry.number] for entry in landed})
+
+
+def delete_head_branches(params: LandParams, landed: list[BatchEntry]) -> None:
+    """Delete landed head branches once GitHub has marked their pull requests merged"""
+    unmerged = {entry.number for entry in landed}
 
     if not params.dry_run:
         try:
@@ -221,14 +277,15 @@ def delete_head_branches(params: LandParams, batch: Batch) -> None:
             traceback.print_exception(exc, file=sys.stderr)
         else:
             if unmerged:
+                unmerged_entries = [entry for entry in landed if entry.number in unmerged]
                 emit_warning(
-                    f"{', '.join(f'#{n}' for n in sorted(unmerged))} are not marked merged;"
+                    f"{describe_entries(unmerged_entries)} are not marked merged;"
                     f" branch cleanup will close them unmerged"
                 )
 
     push_args = [params.remote]
 
-    for entry in batch.prs:
+    for entry in landed:
         push_args.extend(
             [
                 f":refs/heads/{entry.head_ref}",
@@ -242,10 +299,10 @@ def delete_head_branches(params: LandParams, batch: Batch) -> None:
     try:
         run(["git", "push", *push_args])
     except subprocess.CalledProcessError as exc:
-        # The batch has landed by now, so don't fail the run over its branches
+        # The pull requests have landed by now, so don't fail the run over their branches
         stderr = "\n".join(line.rstrip() for line in (exc.stderr or "").splitlines())
         emit_warning_block(
-            f"Failed to delete some head branches for batch {batch.describe()}\n\n{stderr}"
+            f"Failed to delete some head branches for {describe_entries(landed)}\n\n{stderr}"
         )
 
 

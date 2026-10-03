@@ -105,7 +105,7 @@ class BatchJsonTest(unittest.TestCase):
 
 
 class BuildMergeChainTest(unittest.TestCase):
-    """Integration tests which run build_merge_chain against a scratch git repo"""
+    """Integration tests which build merge chains in a scratch git repo"""
 
     def setUp(self) -> None:
         tempdir = tempfile.TemporaryDirectory(prefix="merge-chain-test.")
@@ -150,6 +150,15 @@ class BuildMergeChainTest(unittest.TestCase):
         self.git("switch", "--quiet", "--detach", self.base)
         return entry
 
+    def make_batch(self, entries: list[BatchEntry]) -> Batch:
+        return Batch(
+            base_ref="develop",
+            base_sha=self.base,
+            tip_sha=self.head(),
+            isolated=False,
+            prs=entries,
+        )
+
     def test_skips_conflicts(self) -> None:
         pr1 = self.make_branch(1, "b.txt", "one\n")
         pr2 = self.make_branch(2, "b.txt", "two\n")
@@ -189,3 +198,25 @@ class BuildMergeChainTest(unittest.TestCase):
         self.assertEqual(merged, [])
         self.assertEqual(skipped, [pr1])
         self.assertEqual(resolve_head(["-C", str(self.repo)]), tip)
+
+    def test_merge_commits(self) -> None:
+        pr1 = self.make_branch(1, "b.txt", "one\n")
+        pr2 = self.make_branch(2, "c.txt", "two\n")
+        git_args = ["-C", str(self.repo)]
+        build_merge_chain([pr1, pr2], 10, git_args)
+
+        merges = self.make_batch([pr1, pr2]).merge_commits(git_args)
+
+        self.assertEqual(merges, [self.git("rev-parse", "HEAD^"), self.head()])
+
+    def test_merge_commits_rejects_mismatched_batch(self) -> None:
+        pr1 = self.make_branch(1, "b.txt", "one\n")
+        pr2 = self.make_branch(2, "c.txt", "two\n")
+        git_args = ["-C", str(self.repo)]
+        build_merge_chain([pr1, pr2], 10, git_args)
+
+        with self.assertRaisesRegex(ValueError, "not a merge of #2"):
+            self.make_batch([pr2, pr1]).merge_commits(git_args)
+
+        with self.assertRaisesRegex(ValueError, "expected one merge for each of 1"):
+            self.make_batch([pr1]).merge_commits(git_args)

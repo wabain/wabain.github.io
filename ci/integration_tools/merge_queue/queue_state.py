@@ -146,7 +146,46 @@ class Batch:
         return Batch(**data, prs=prs)
 
     def describe(self) -> str:
-        return ", ".join(f"#{entry.number}" for entry in self.prs)
+        return describe_entries(self.prs)
+
+    def merge_commits(self, global_git_args: Sequence[str] = ()) -> list[str]:
+        """Return the merge commit for each pull request, in batch order.
+
+        The batch tip must be a first-parent chain of merges onto the base, one
+        for each pull request, as built by build_merge_chain.
+        """
+        rev_list = run(
+            [
+                "git",
+                *global_git_args,
+                "rev-list",
+                "--first-parent",
+                "--parents",
+                f"{self.base_sha}..{self.tip_sha}",
+            ]
+        )
+        commits = [line.split() for line in reversed(rev_list.splitlines())]
+
+        if len(commits) != len(self.prs):
+            raise ValueError(
+                f"batch tip {self.tip_sha} has {len(commits)} commits on {self.base_sha},"
+                f" expected one merge for each of {len(self.prs)} pull requests"
+            )
+
+        parent = self.base_sha
+        for commit, entry in zip(commits, self.prs):
+            if commit[1:] != [parent, entry.head_sha]:
+                raise ValueError(
+                    f"batch commit {commit[0]} is not a merge of #{entry.number}"
+                    f" ({entry.head_sha}) onto {parent}"
+                )
+            parent = commit[0]
+
+        return [commit[0] for commit in commits]
+
+
+def describe_entries(entries: Iterable[BatchEntry]) -> str:
+    return ", ".join(f"#{entry.number}" for entry in entries)
 
 
 def build_merge_chain(
