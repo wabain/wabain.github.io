@@ -93,7 +93,7 @@ def set_label(pr_number: int, label: str, *, present: bool, current: bool, dry_r
 
     if dry_run:
         action = "post [dry-run]" if present else "delete [dry-run]"
-        print_info_multi(action, "PR", pr_number, "label", label)
+        print_info_multi(action, f"PR {pr_number}", "label", label)
     elif present:
         add_label(pr_number, label)
     else:

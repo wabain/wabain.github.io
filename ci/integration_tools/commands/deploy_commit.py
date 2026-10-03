@@ -287,7 +287,7 @@ def update_pull_request_merge_pending_label(params: DeployParams, pending: bool)
 
     if params.dry_run:
         action = "post [dry-run]" if pending else "delete [dry-run]"
-        print_info_multi(action, "PR", params.pr_number, "label", "merge-pending")
+        print_info_multi(action, f"PR {params.pr_number}", "label", "merge-pending")
         return
 
     if pending:
