@@ -27,7 +27,7 @@ from ..merge_queue.queue_state import (
     sync_merge_pending_label,
 )
 from ..output import emit_summary, emit_warning, enter_log_group
-from ..utils import record_output, resolve_commit, run, temporary_worktree
+from ..utils import record_output, resolve_commit, run, run_status, temporary_worktree
 
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
@@ -149,7 +149,7 @@ def build_batch(
             (isolated, 1, True),
             (regular, params.max_size, False),
         ]:
-            entries = fetch_entries(params, group)
+            entries = fetch_entries(params, group, base_sha)
 
             with enter_log_group(f"Merge {'isolated ' if is_isolated else ''}candidates"):
                 merged, skipped = build_merge_chain(entries, max_size, git_args)
@@ -177,8 +177,10 @@ def build_batch(
     return None
 
 
-def fetch_entries(params: StageParams, candidates: list[QueueCandidate]) -> list[BatchEntry]:
-    """Fetch the candidates' branches, dropping any which moved since evaluation"""
+def fetch_entries(
+    params: StageParams, candidates: list[QueueCandidate], base_sha: str
+) -> list[BatchEntry]:
+    """Fetch the candidates' branches, dropping any which moved or have already landed"""
     entries = []
 
     for candidate in candidates:
@@ -198,6 +200,12 @@ def fetch_entries(params: StageParams, candidates: list[QueueCandidate]) -> list
 
         if (sha := resolve_commit(remote_ref)) != entry.head_sha:
             emit_warning(f"Skipped #{entry.number}: head moved from {entry.head_sha} to {sha}")
+            continue
+
+        # A landed pull request stays open until GitHub marks it merged or its
+        # branch is deleted, either of which can lag behind the push
+        if run_status(["git", "merge-base", "--is-ancestor", entry.head_sha, base_sha]) == 0:
+            emit_warning(f"Skipped #{entry.number}: head is already in {QUEUE_BASE_REF}")
             continue
 
         entries.append(entry)

@@ -13,13 +13,20 @@ Each run of `merge-queue.yml`:
 
 1. Stages a batch (`bin/ci-tools stage-batch`). Starting from `develop`, it
    merges a sequence of ready pull requests onto a branch, skipping any that
-   conflict. The result is force-pushed to `refs/ci-tools/merge-queue/staging`.
+   conflict or are already in `develop`. The result is force-pushed to
+   `refs/ci-tools/merge-queue/staging`.
 2. Builds the batch by calling `validate.yml` with the batch commit.
 3. Lands the batch (`bin/ci-tools land-batch`). It re-evaluates every pull
    request in the batch. If any is no longer eligible to merge, the batch is
-   abandoned and nothing is pushed. Otherwise a single atomic push updates
-   `develop`, deletes the PR branches, and pushes the deploy commit to `master`
-   with its tag. Each updated ref is guarded by a `--force-with-lease` argument.
+   abandoned and nothing is pushed. Otherwise it pushes the batch's merges to
+   `develop` one at a time: GitHub only accepts a direct push to `develop` if
+   it merges a single approved pull request. The last push also pushes the
+   deploy commit to `master` with its tag, atomically. Each push leases
+   `develop` on the merge before it, and re-pushes the branches of the pull
+   requests not yet landed unchanged with a `--force-with-lease` argument, so
+   that it fails if any branch has moved. Once GitHub marks the landed pull
+   requests merged, another push deletes their branches. Deleting them along
+   with the merge can close a pull request before GitHub sees that it merged.
 4. On a build failure, the failure is recorded in the batch's pull requests
    (`bin/ci-tools record-batch-failure`).
 
@@ -46,14 +53,16 @@ batch from the open pull requests and their labels.
 - `merge-isolate`: set on every pull request in a failed multi-PR batch. While
   any ready pull request has it, the queue builds only the single
   lowest-numbered such PR, alone, and builds no regular batch. This retries the
-  PRs of a failed batch one at a time.
+  PRs of a failed batch one at a time. Cleared when the pull request merges.
 - `merge-blocked`: set, with a comment, when a pull request fails to build
   alone. It supersedes `merge-isolate`. Blocked pull requests are excluded until
   someone removes the label, after which they're batched normally again.
 
 No labels are added if merging fails due to a cancelled build, a failed push
 (for instance because `develop` moved), or a pull request changing before
-landing; the next run retries.
+landing; the next run retries. If a push fails partway through a batch, the
+pull requests already landed stay in `develop` without being deployed, and have
+their branches deleted and labels cleared as usual.
 
 Apart from the label rules above, there's no way to request that particular pull
 requests get built as a batch; we need requests to run `merge-queue.yml` to be
