@@ -17,7 +17,7 @@ GEM
       fiber-annotation
       fiber-local (~> 1.1)
       json
-    crass (1.0.6)
+    crass (1.0.7)
     em-websocket (0.5.3)
       eventmachine (>= 0.12.9)
       http_parser.rb (~> 0)
@@ -121,7 +121,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  crass (~> 1.0.6)
+  crass (~> 1.0.7)
   html-proofer (~> 5.2.2)
   jekyll (~> 3.9.5)
   jekyll-archives (= 2.2.1)
