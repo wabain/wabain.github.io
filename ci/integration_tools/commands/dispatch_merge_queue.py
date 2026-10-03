@@ -18,8 +18,32 @@ MERGE_QUEUE_WORKFLOW = "merge-queue.yml"
 
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--chain-depth", type=int, help="Depth of the dispatching run")
+    parser.add_argument(
+        "--chain-depth", type=parse_chain_depth, help="Depth of the dispatching run"
+    )
     parser.add_argument("--max-chain-depth", type=int)
+
+
+def parse_chain_depth(value: str) -> int:
+    """Parse an integer depth, allowing an integral decimal like "1.0"
+
+    The GitHub mobile app passes number inputs to workflow_dispatch in decimal
+    form.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    try:
+        depth = float(value)
+    except ValueError:
+        depth = None
+
+    if depth is None or not depth.is_integer():
+        raise argparse.ArgumentTypeError(f"not an integer: {value!r}")
+
+    return int(depth)
 
 
 def run_command(*, chain_depth: int | None, max_chain_depth: int | None) -> None:

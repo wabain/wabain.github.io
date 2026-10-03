@@ -4,7 +4,7 @@ name: Merge queue
 # e.g. "Merge queue (schedule)" or "Merge queue (workflow_dispatch, chain depth 1)"
 run-name: >-
   Merge queue (${{ github.event_name }}${{
-    inputs.chain_depth && format(', chain depth {0}', inputs.chain_depth) || ''
+    inputs.chain_depth > 0 && format(', chain depth {0}', inputs.chain_depth) || ''
   }})
 on:
   # Dispatched by merge-queue-trigger.yml, by this workflow when there may be
