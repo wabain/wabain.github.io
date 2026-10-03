@@ -43,7 +43,7 @@
     "svgo": "^4.1.0",
     "ts-loader": "^9.5.7",
     "typescript": "~6.0.3",
-    "webpack": "^5.105.4",
+    "webpack": "^5.111.1",
     "webpack-cli": "^7.2.3"
   },
   "scripts": {
