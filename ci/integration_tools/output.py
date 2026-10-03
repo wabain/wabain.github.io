@@ -84,6 +84,17 @@ class MessageType(Enum):
             else:
                 print_info_line(self.value, line, header_style=self.style)
 
+    def emit_block(self, *message: Any) -> None:
+        """Emit a message as a single annotation, keeping its line breaks"""
+        text = " ".join(str(a) for a in message)
+        if not is_within_github_action():
+            self.emit(text)
+            return
+
+        # Escaping as in @actions/core's escapeData
+        escaped = text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::{self.value}::{escaped}", file=sys.stderr)
+
     @property
     def style(self) -> AnsiStyle:
         match self:
@@ -98,6 +109,7 @@ class MessageType(Enum):
 emit_notice = MessageType.Notice.emit
 emit_warning = MessageType.Warn.emit
 emit_error = MessageType.Error.emit
+emit_error_block = MessageType.Error.emit_block
 
 
 def emit_summary(*content: Any, title: str | None = None) -> None:

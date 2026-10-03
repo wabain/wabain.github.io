@@ -9,6 +9,8 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import subprocess
+import sys
 
 from ..gh_state import PullRequestEvaluation, evaluate_pull_request_state
 from ..merge_deploy import deploy
@@ -21,7 +23,7 @@ from ..merge_queue.queue_state import (
     is_queueable,
     set_label,
 )
-from ..output import emit_summary, emit_warning, enter_log_group
+from ..output import emit_error_block, emit_summary, emit_warning, enter_log_group
 from ..utils import record_output, resolve_commit, run
 
 
@@ -156,7 +158,13 @@ def run_command(**kwargs) -> None:
         if params.dry_run:
             push_args.insert(0, "--dry-run")
 
-        run(["git", "push", *push_args])
+        try:
+            run(["git", "push", *push_args])
+        except subprocess.CalledProcessError as exc:
+            # The remote's reason for rejecting the push is only in its stderr
+            stderr = "\n".join(line.rstrip() for line in (exc.stderr or "").splitlines())
+            emit_error_block(f"Failed to push batch {batch.describe()}\n\n{stderr}")
+            sys.exit(1)
 
     emit_summary("Merged batch", batch.describe(), "as", batch.tip_sha)
 
