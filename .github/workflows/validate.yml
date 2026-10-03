@@ -167,6 +167,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bundle-
 
+      # Dependabot alerts read only the first document of a multi-document
+      # pnpm-lock.yaml, so they miss every npm dependency. pnpm 12 writes one
+      # when it records its own version (pmOnFail other than ignore) or config
+      # dependencies. Reject it until
+      # https://github.com/dependabot/dependabot-core/issues/15904 is fixed.
+      - name: Check lockfile is a single YAML document
+        run: |
+          if grep -qE '^---( |$)' pnpm-lock.yaml; then
+            echo "::error file=pnpm-lock.yaml::pnpm-lock.yaml has multiple YAML documents; set pmOnFail: ignore and remove configDependencies"
+            exit 1
+          fi
+
       - name: Install pnpm
         run: |
           corepack enable
