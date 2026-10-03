@@ -11,7 +11,7 @@ gem "webrick", "~> 1.9"
 gem 'jekyll', '~> 3.9.5'
 gem 'jekyll-archives', '= 2.2.1'
 gem 'jekyll-feed', '0.17.0'
-gem 'jekyll-redirect-from', '= 0.16.0'
+gem 'jekyll-redirect-from', '0.17.0'
 gem 'jekyll-seo-tag', '2.8.0'
 gem 'jekyll-sitemap', '= 1.4.0'
 gem 'kramdown-parser-gfm', '~> 1.1.0'
