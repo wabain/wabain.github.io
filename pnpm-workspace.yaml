@@ -4,6 +4,10 @@
 # that version through corepack.
 pmOnFail: ignore
 
+# Collapse compatible duplicate versions on every install, including the
+# lockfile updates in Dependabot pull requests.
+autoDedupe: true
+
 allowBuilds:
   # Only compiles with node-gyp when npm_config_build_from_source is set. The
   # prebuilt binary comes from an optionalDependency (@parcel/watcher-<target>).
