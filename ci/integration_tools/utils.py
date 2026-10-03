@@ -10,10 +10,6 @@ from typing import Generator, Iterable
 from .output import AnsiStyle, print_info_line
 
 
-def validate_branch_ref(branch: str) -> None:
-    run(["git", "check-ref-format", "--branch", branch])
-
-
 def resolve_commit(rev: str) -> str:
     return run(
         ["git", "rev-parse", "--verify", "--end-of-options", rev + "^{commit}"]

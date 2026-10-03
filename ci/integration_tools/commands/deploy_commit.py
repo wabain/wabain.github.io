@@ -11,16 +11,23 @@ from ..merge_deploy import deploy, revision_info
 from ..merge_deploy.revision_info import RevisionInfo
 
 from ..output import emit_summary, print_info_line
-from ..utils import resolve_commit, run, validate_branch_ref
+from ..utils import resolve_commit, run
+
+DEPLOY_REF = "develop"
 
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--ref", required=True, help="The branch to deploy from")
     parser.add_argument("--run-url", required=True, help="URL describing this run")
-    parser.add_argument("--deploy-dir", help="Directory containing the site content", type=Path)
     parser.add_argument(
-        "--deploy-revision-info", help="File describing the revision to be deployed", type=Path
+        "--deploy-dir", required=True, help="Directory containing the site content", type=Path
+    )
+    parser.add_argument(
+        "--deploy-revision-info",
+        required=True,
+        help="File describing the revision to be deployed",
+        type=Path,
     )
     parser.add_argument(
         "--outputs-file", help="File where step output should be written", type=Path
@@ -33,22 +40,12 @@ class DeployParams:
     remote: str
     ref: str
     run_url: str
-    deploy_dir: Path | None
-    deploy_revision_info: Path | None
+    deploy_dir: Path
+    deploy_revision_info: Path
     outputs_file: Path | None
     dry_run: bool
 
-    def allows_pages_deploy(self) -> bool:
-        return (
-            self.deploy_dir is not None
-            and self.deploy_revision_info is not None
-            and self.ref == "develop"
-        )
-
     def site(self) -> deploy.DeploySite:
-        assert self.allows_pages_deploy(), self
-        assert self.deploy_dir is not None and self.deploy_revision_info is not None
-
         return deploy.DeploySite(
             remote=self.remote,
             run_url=self.run_url,
@@ -73,25 +70,25 @@ class DeployParams:
 def run_command(**kwargs) -> None:
     params = DeployParams(**kwargs)
 
-    validate_branch_ref(params.ref)
+    remote, ref, site = params.remote, params.ref, params.site()
 
-    remote, ref = params.remote, params.ref
+    if ref != DEPLOY_REF:
+        raise ValueError(f"can only deploy from {DEPLOY_REF}: got {ref}")
 
-    if not params.allows_pages_deploy():
-        emit_summary("Nothing to do for push to", ref)
-        return
-
-    release_version = deploy.get_release_version(params.site())
+    release_version = deploy.get_release_version(site)
     emit_summary("release", release_version)
 
-    if not deploy.has_consistent_release_version(params.site(), release_version=release_version):
+    if not deploy.has_consistent_release_version(site, release_version=release_version):
         params.record_output("stale", "true")
         return
 
     push_sha = resolve_commit(ref)
 
-    stale = not push_deploy_revisions_up_to_date(
-        params, RevisionInfo.for_push(ref=ref, sha=push_sha)
+    stale = not revision_info.verify_revision_consistency(
+        [
+            ("current", RevisionInfo.for_push(ref=ref, sha=push_sha)),
+            ("built", RevisionInfo.load_deploy_json(site.deploy_revision_info)),
+        ]
     )
     params.record_output("stale", json.dumps(stale))
 
@@ -110,11 +107,11 @@ def run_command(**kwargs) -> None:
     deploy.fetch_deploy_branch(remote)
 
     deploy_number, deploy_tag = deploy.prepare_deploy_commit(
-        params.site(), push_sha=push_sha, source_description=None, trigger="push"
+        site, push_sha=push_sha, source_description=None, trigger="push"
     )
 
     with deploy.sentry_deploy(
-        params.site(),
+        site,
         push_sha=push_sha,
         release_version=release_version,
         deploy_number=deploy_number,
@@ -145,14 +142,3 @@ def find_prior_deploy(params: DeployParams, push_sha: str) -> tuple[str, str] | 
                 return commit, tag.removeprefix("refs/tags/")
 
     return None
-
-
-def push_deploy_revisions_up_to_date(params: DeployParams, current: RevisionInfo) -> bool:
-    assert params.deploy_revision_info is not None, params
-
-    return revision_info.verify_revision_consistency(
-        [
-            ("current", current),
-            ("built", RevisionInfo.load_deploy_json(params.deploy_revision_info)),
-        ]
-    )
