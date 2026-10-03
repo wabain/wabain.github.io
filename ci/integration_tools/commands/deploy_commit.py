@@ -16,7 +16,7 @@ from ..utils import resolve_commit, run, validate_branch_ref
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--remote", default="origin")
-    parser.add_argument("--ref", required=True, help="The branch which was pushed to")
+    parser.add_argument("--ref", required=True, help="The branch to deploy from")
     parser.add_argument("--run-url", required=True, help="URL describing this run")
     parser.add_argument("--deploy-dir", help="Directory containing the site content", type=Path)
     parser.add_argument(

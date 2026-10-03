@@ -9,12 +9,12 @@ on:
         required: true
 
       ref:
-        description: "The branch which was pushed to"
+        description: "The branch to deploy from"
         required: true
         type: string
 
       push_commit:
-        description: "The SHA of the pushed commit"
+        description: "The SHA of the commit to deploy from"
         required: true
         type: string
 
@@ -26,12 +26,12 @@ on:
         required: true
 
       ref:
-        description: "The branch which was pushed to"
+        description: "The branch to deploy from"
         required: true
         type: string
 
       push_commit:
-        description: "The SHA of the pushed commit"
+        description: "The SHA of the commit to deploy from"
         required: true
         type: string
 
@@ -53,7 +53,8 @@ jobs:
           set -euo pipefail
 
           if [[ "$ref" != "$TARGET_REF" ]]; then
-            echo "::error ::Can only deploy on push to $TARGET_REF (got $ref)"
+            echo "::error ::Can only deploy directly from $TARGET_REF (got $ref);" \
+              "use merge-queue to deploy other branches"
             exit 1
           fi
 
