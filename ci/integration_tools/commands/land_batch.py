@@ -11,11 +11,13 @@ from dataclasses import dataclass
 from pathlib import Path
 import subprocess
 import sys
+import traceback
 
 from ..gh_state import PullRequestEvaluation, evaluate_pull_request_state
 from ..merge_deploy import deploy
 from ..merge_deploy.revision_info import RevisionInfo
 from ..merge_queue.queue_state import (
+    LABEL_MERGE_ISOLATE,
     LABEL_MERGE_PENDING,
     QUEUE_BASE_REF,
     STAGING_REF,
@@ -168,7 +170,7 @@ def run_command(**kwargs) -> None:
 
     emit_summary("Merged batch", batch.describe(), "as", batch.tip_sha)
 
-    clear_pending_labels(params, evals)
+    clear_queue_labels(params, evals)
 
 
 def verify_build(batch: Batch, site: deploy.DeploySite) -> None:
@@ -180,15 +182,15 @@ def verify_build(batch: Batch, site: deploy.DeploySite) -> None:
         raise ValueError(f"build revision {built} does not match batch: expected {expected}")
 
 
-def clear_pending_labels(params: LandParams, evals: dict[int, PullRequestEvaluation]) -> None:
+def clear_queue_labels(params: LandParams, evals: dict[int, PullRequestEvaluation]) -> None:
     # Labels on merged PRs are cosmetic, so don't fail the run over them
     for number, pr_eval in evals.items():
-        if not pr_eval.merge_pending_label_present:
-            continue
-
-        try:
-            set_label(
-                number, LABEL_MERGE_PENDING, present=False, current=True, dry_run=params.dry_run
-            )
-        except Exception as exc:
-            emit_warning(f"Failed to remove {LABEL_MERGE_PENDING} label from #{number}: {exc}")
+        for label, current in [
+            (LABEL_MERGE_PENDING, pr_eval.merge_pending_label_present),
+            (LABEL_MERGE_ISOLATE, pr_eval.merge_isolate_label_present),
+        ]:
+            try:
+                set_label(number, label, present=False, current=current, dry_run=params.dry_run)
+            except Exception as exc:
+                emit_warning(f"Failed to remove {label} label from #{number}: {exc}")
+                traceback.print_exception(exc, file=sys.stderr)

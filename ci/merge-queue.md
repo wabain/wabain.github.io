@@ -46,7 +46,7 @@ batch from the open pull requests and their labels.
 - `merge-isolate`: set on every pull request in a failed multi-PR batch. While
   any ready pull request has it, the queue builds only the single
   lowest-numbered such PR, alone, and builds no regular batch. This retries the
-  PRs of a failed batch one at a time.
+  PRs of a failed batch one at a time. Cleared when the pull request merges.
 - `merge-blocked`: set, with a comment, when a pull request fails to build
   alone. It supersedes `merge-isolate`. Blocked pull requests are excluded until
   someone removes the label, after which they're batched normally again.
