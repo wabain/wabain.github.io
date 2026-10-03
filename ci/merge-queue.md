@@ -13,7 +13,8 @@ Each run of `merge-queue.yml`:
 
 1. Stages a batch (`bin/ci-tools stage-batch`). Starting from `develop`, it
    merges a sequence of ready pull requests onto a branch, skipping any that
-   conflict. The result is force-pushed to `refs/ci-tools/merge-queue/staging`.
+   conflict or are already in `develop`. The result is force-pushed to
+   `refs/ci-tools/merge-queue/staging`.
 2. Builds the batch by calling `validate.yml` with the batch commit.
 3. Lands the batch (`bin/ci-tools land-batch`). It re-evaluates every pull
    request in the batch. If any is no longer eligible to merge, the batch is
