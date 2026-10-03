@@ -58,7 +58,7 @@
     "lint-pre-jekyll": "prettier --check . && stylelint src/scss",
     "build-pre-jekyll": "webpack --stats=verbose",
     "verify-bundled": "eslint --no-eslintrc --no-ignore --config .eslintrc.bundled.js content/home-assets",
-    "lint-build-infra": "eslint --ignore-pattern src --ext .js,.ts . && tsc -p integration-tests",
+    "lint-build-infra": "eslint --ignore-pattern src --ext .js,.ts .",
     "jekyll-build": "bundle exec jekyll build --source content",
     "jekyll-serve": "bundle exec jekyll serve --source content -H 0.0.0.0 -P 8080",
     "jekyll-lint": "bundle exec ruby build/jekyll-lint.rb",

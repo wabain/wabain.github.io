@@ -276,6 +276,9 @@ jobs:
           echo "::notice ::Release $WB_RELEASE_VERSION"
 
           pnpm run lint-build-infra
+          # The webpack build's ts-loader doesn't report errors in dependency
+          # type declarations, so type-check the full projects separately
+          pnpm run tck
           JEKYLL_ENV=production pnpm run pre-jekyll
           JEKYLL_ENV=production pnpm run jekyll-build
           JEKYLL_ENV=production pnpm run jekyll-lint
