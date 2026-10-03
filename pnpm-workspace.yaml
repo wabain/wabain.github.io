@@ -1,0 +1,14 @@
+# Keep pnpm-lock.yaml a single YAML document, which Dependabot alerts need
+# (see the lockfile check in .github/workflows/validate.yml). This also stops
+# pnpm from switching to the packageManager version; CI and Dependabot install
+# that version through corepack.
+pmOnFail: ignore
+
+allowBuilds:
+  # Only compiles with node-gyp when npm_config_build_from_source is set. The
+  # prebuilt binary comes from an optionalDependency (@parcel/watcher-<target>).
+  '@parcel/watcher': false
+  # Only checks that the native binding from an optionalDependency
+  # (@unrs/resolver-binding-<target>) resolves, falling back to fetching it for
+  # installs that skip optional deps, which we never do.
+  unrs-resolver: false

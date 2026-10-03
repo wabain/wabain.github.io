@@ -15,7 +15,10 @@ updates:
       #
       # Patterns generated based on the output of:
       #
-      #     pnpm why --json '@babel/*' | jq '[.[].devDependencies | keys[]]'
+      #     pnpm why --json '@babel/*' |
+      #       jq '[.[] | recurse(.dependents[]?)
+      #            | select(any(.dependents[]?; .depField == "devDependencies"))
+      #            | .name] | unique'
       dev-babel-dependents:
         dependency-type: "development"
         patterns:
