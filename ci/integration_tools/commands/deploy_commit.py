@@ -16,8 +16,7 @@ from ..utils import resolve_commit, run, validate_branch_ref
 
 def init_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--remote", default="origin")
-    parser.add_argument("--base-ref", required=True)
-    parser.add_argument("--head-ref", required=True)
+    parser.add_argument("--ref", required=True, help="The branch which was pushed to")
     parser.add_argument("--run-url", required=True, help="URL describing this run")
     parser.add_argument("--deploy-dir", help="Directory containing the site content", type=Path)
     parser.add_argument(
@@ -32,8 +31,7 @@ def init_parser(parser: argparse.ArgumentParser) -> None:
 @dataclass(kw_only=True)
 class DeployParams:
     remote: str
-    head_ref: str
-    base_ref: str
+    ref: str
     run_url: str
     deploy_dir: Path | None
     deploy_revision_info: Path | None
@@ -44,7 +42,7 @@ class DeployParams:
         return (
             self.deploy_dir is not None
             and self.deploy_revision_info is not None
-            and self.base_ref == "develop"
+            and self.ref == "develop"
         )
 
     def site(self) -> deploy.DeploySite:
@@ -75,18 +73,12 @@ class DeployParams:
 def run_command(**kwargs) -> None:
     params = DeployParams(**kwargs)
 
-    validate_branch_ref(params.head_ref)
-    validate_branch_ref(params.base_ref)
+    validate_branch_ref(params.ref)
 
-    remote, base_ref, head_ref = params.remote, params.base_ref, params.head_ref
-
-    if head_ref != base_ref:
-        raise ValueError(
-            f"head ref and base ref for push deploys should match: got {head_ref} and {base_ref}"
-        )
+    remote, ref = params.remote, params.ref
 
     if not params.allows_pages_deploy():
-        emit_summary("Nothing to do for push to", params.base_ref)
+        emit_summary("Nothing to do for push to", ref)
         return
 
     release_version = deploy.get_release_version(params.site())
@@ -96,10 +88,10 @@ def run_command(**kwargs) -> None:
         params.record_output("stale", "true")
         return
 
-    push_sha = resolve_commit(head_ref)
+    push_sha = resolve_commit(ref)
 
     stale = not push_deploy_revisions_up_to_date(
-        params, RevisionInfo.for_push(ref=head_ref, sha=push_sha)
+        params, RevisionInfo.for_push(ref=ref, sha=push_sha)
     )
     params.record_output("stale", json.dumps(stale))
 
@@ -109,7 +101,7 @@ def run_command(**kwargs) -> None:
     match find_prior_deploy(params, push_sha=push_sha):
         case (commit, tag):
             emit_summary(
-                f"Source commit for {head_ref} ({push_sha}) already deployed via {commit} ({tag})"
+                f"Source commit for {ref} ({push_sha}) already deployed via {commit} ({tag})"
             )
             return
         case other:
@@ -130,8 +122,8 @@ def run_command(**kwargs) -> None:
         push_args = [
             "--atomic",
             remote,
-            f"{push_sha}:refs/heads/{head_ref}",
-            f"--force-with-lease=refs/heads/{head_ref}:{push_sha}",
+            f"{push_sha}:refs/heads/{ref}",
+            f"--force-with-lease=refs/heads/{ref}:{push_sha}",
             "master:master",
             f"refs/tags/{deploy_tag}:refs/tags/{deploy_tag}",
         ]

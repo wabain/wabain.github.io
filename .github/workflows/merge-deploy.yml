@@ -1,5 +1,5 @@
 name: Deploy if eligible
-run-name: Deploy ${{ inputs.head_ref }} (${{ inputs.push_commit }})
+run-name: Deploy ${{ inputs.ref }} (${{ inputs.push_commit }})
 on:
   workflow_call:
     inputs:
@@ -8,13 +8,8 @@ on:
         type: number
         required: true
 
-      head_ref:
+      ref:
         description: "The branch which was pushed to"
-        required: true
-        type: string
-
-      base_ref:
-        description: "The branch which was pushed to (must match head_ref)"
         required: true
         type: string
 
@@ -30,13 +25,8 @@ on:
         type: number
         required: true
 
-      head_ref:
+      ref:
         description: "The branch which was pushed to"
-        required: true
-        type: string
-
-      base_ref:
-        description: "The branch which was pushed to (must match head_ref)"
         required: true
         type: string
 
@@ -57,14 +47,13 @@ jobs:
     steps:
       - name: Validate inputs
         env:
-          head_ref: ${{ inputs.head_ref }}
-          base_ref: ${{ inputs.base_ref }}
+          ref: ${{ inputs.ref }}
           TARGET_REF: develop
         run: |
           set -euo pipefail
 
-          if [[ "$head_ref" != "$TARGET_REF" || "$base_ref" != "$TARGET_REF" ]]; then
-            echo "::error ::Can only deploy on push to $TARGET_REF (got $head_ref, $base_ref)"
+          if [[ "$ref" != "$TARGET_REF" ]]; then
+            echo "::error ::Can only deploy on push to $TARGET_REF (got $ref)"
             exit 1
           fi
 
@@ -125,8 +114,7 @@ jobs:
         env:
           CI_DRY_RUN: "false"
           BASE_DIR: ${{ github.workspace }}
-          HEAD_REF: ${{ inputs.head_ref }}
-          BASE_REF: ${{ inputs.base_ref }}
+          REF: ${{ inputs.ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -142,7 +130,6 @@ jobs:
 
           bin/ci-tools deploy-commit \
             "${args[@]}" \
-            --base-ref "$BASE_REF" \
-            --head-ref "$HEAD_REF" \
+            --ref "$REF" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --outputs-file "$GITHUB_OUTPUT"
