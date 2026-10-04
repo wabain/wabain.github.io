@@ -122,6 +122,7 @@ jobs:
             jq
             sentry-cli
 
+      # Keep download and extract steps in sync with merge-deploy.yml
       - name: Download build
         uses: actions/download-artifact@v7
         with:

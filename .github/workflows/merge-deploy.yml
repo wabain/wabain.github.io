@@ -70,49 +70,36 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dependencies: |
-            tree
             jq
             sentry-cli
-            unzip
 
-      - name: Download workflow artifacts
-        id: artifact-download
-        uses: actions/github-script@v8
-        env:
-          WORKSPACE: ${{ github.workspace }}
-          WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
+      # Keep download and extract steps in sync with merge-queue.yml
+      - name: Download build
+        uses: actions/download-artifact@v7
         with:
-          script: |
-            const workflowRunId = JSON.parse(process.env.WORKFLOW_RUN_ID)
-            const workspace = process.env.WORKSPACE
-            return await require('./ci/check-merge-deploy/download.js')(
-              { workflowRunId, workspace },
-              { context, github, core },
-            )
+          name: site.tgz
+          path: ${{ runner.temp }}/build
+          run-id: ${{ inputs.workflow_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract
+      - name: Extract build
         env:
-          DEPLOY_PATH: ${{ fromJSON(steps.artifact-download.outputs.result).deploy_path }}
-          BASE_DIR: ${{ github.workspace }}
+          BUILD_DIR: ${{ runner.temp }}/build
         run: |
           set -euo pipefail
 
-          if [ -z "$DEPLOY_PATH" ]; then
-            echo "::error ::No deploy artifact found for workflow run"
+          if [[ ! -f "$BUILD_DIR/site.revisions.json" ]]; then
+            echo "::error ::missing site.revisions.json in build artifact"
             exit 1
           fi
 
-          file "$DEPLOY_PATH"
-          unzip "$DEPLOY_PATH" site.tgz site.revisions.json -d "$BASE_DIR"
-          tar -xzf "$BASE_DIR"/site.tgz -C "$BASE_DIR" site
-
-          tree "$BASE_DIR"
+          tar -xzf "$BUILD_DIR/site.tgz" -C "$BUILD_DIR" site
 
       - name: Push eligible refs
         id: push-refs
         env:
           CI_DRY_RUN: "false"
-          BASE_DIR: ${{ github.workspace }}
+          BUILD_DIR: ${{ runner.temp }}/build
           REF: ${{ inputs.ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -128,7 +115,7 @@ jobs:
           bin/ci-tools deploy-commit \
             "${args[@]}" \
             --ref "$REF" \
-            --deploy-dir "$BASE_DIR/site" \
-            --deploy-revision-info "$BASE_DIR/site.revisions.json" \
+            --deploy-dir "$BUILD_DIR/site" \
+            --deploy-revision-info "$BUILD_DIR/site.revisions.json" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --outputs-file "$GITHUB_OUTPUT"
