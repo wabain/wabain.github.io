@@ -17,6 +17,10 @@ class RevisionInfo:
     ref: str
     sha: str
 
+    def __post_init__(self) -> None:
+        if not self.ref.startswith("refs/heads/"):
+            raise ValueError(f"expected a full branch ref: got {self.ref!r}")
+
     @staticmethod
     def load_deploy_json(src: Path) -> RevisionInfo:
         return _load_deploy_revision_info(src)
