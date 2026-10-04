@@ -10,8 +10,6 @@ jobs:
   check-post-push-deploy:
     name: Check deploy eligibility for develop build
 
-    # Assert there is a single pull request associated with the payload—I think that should be
-    # the case for the pull_request event type
     if: >
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.conclusion == 'success' &&
@@ -22,7 +20,5 @@ jobs:
 
     with:
       workflow_run_id: ${{ github.event.workflow_run.id }}
-      effective_event: push
-      head_ref: ${{ github.event.workflow_run.head_branch }}
-      base_ref: ${{ github.event.workflow_run.head_branch }}
+      ref: ${{ github.event.workflow_run.head_branch }}
       push_commit: ${{ github.event.workflow_run.head_sha }}
