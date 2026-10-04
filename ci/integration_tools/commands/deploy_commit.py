@@ -10,8 +10,8 @@ from pathlib import Path
 from ..merge_deploy import deploy, revision_info
 from ..merge_deploy.revision_info import RevisionInfo
 
-from ..output import emit_summary, print_info_line
-from ..utils import resolve_commit, run
+from ..output import emit_summary
+from ..utils import record_output, resolve_commit, run
 
 DEPLOY_REF = "develop"
 
@@ -54,18 +54,6 @@ class DeployParams:
             dry_run=self.dry_run,
         )
 
-    def record_output(self, name: str, value: str) -> None:
-        assert "\n" not in name, repr(name)
-        assert "\n" not in value, repr(value)
-
-        print_info_line("output", f"{name}={value}")
-
-        if self.outputs_file is None:
-            return
-
-        with open(self.outputs_file, "a", encoding="utf8") as f:
-            f.write(f"{name}={value}\n")
-
 
 def run_command(**kwargs) -> None:
     params = DeployParams(**kwargs)
@@ -79,7 +67,7 @@ def run_command(**kwargs) -> None:
     emit_summary("release", release_version)
 
     if not deploy.has_consistent_release_version(site, release_version=release_version):
-        params.record_output("stale", "true")
+        record_output(params.outputs_file, "stale", "true")
         return
 
     push_sha = resolve_commit(ref)
@@ -90,7 +78,7 @@ def run_command(**kwargs) -> None:
             ("built", RevisionInfo.load_deploy_json(site.deploy_revision_info)),
         ]
     )
-    params.record_output("stale", json.dumps(stale))
+    record_output(params.outputs_file, "stale", json.dumps(stale))
 
     if stale:
         return
