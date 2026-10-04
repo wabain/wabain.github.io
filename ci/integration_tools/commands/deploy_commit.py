@@ -86,7 +86,7 @@ def run_command(**kwargs) -> None:
 
     stale = not revision_info.verify_revision_consistency(
         [
-            ("current", RevisionInfo.for_push(ref=ref, sha=push_sha)),
+            ("current", RevisionInfo(ref=ref, sha=push_sha)),
             ("built", RevisionInfo.load_deploy_json(site.deploy_revision_info)),
         ]
     )

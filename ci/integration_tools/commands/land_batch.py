@@ -187,7 +187,7 @@ def run_command(**kwargs) -> None:
 def verify_build(batch: Batch, site: deploy.DeploySite) -> None:
     """Check that the build being deployed is of the batch tip"""
     built = RevisionInfo.load_deploy_json(site.deploy_revision_info)
-    expected = RevisionInfo.for_push(ref=f"refs/heads/{QUEUE_BASE_REF}", sha=batch.tip_sha)
+    expected = RevisionInfo(ref=f"refs/heads/{QUEUE_BASE_REF}", sha=batch.tip_sha)
 
     if built != expected:
         raise ValueError(f"build revision {built} does not match batch: expected {expected}")
