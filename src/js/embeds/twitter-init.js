@@ -20,7 +20,7 @@ export default function () {
         };
 
         return t;
-    }(document, "script", "twitter-wjs"));
+    }(document, "script", "twitter-wjs"))
 
     return window.twttr
 }

@@ -393,13 +393,11 @@ class PageTransformer {
         )
         const navElem = document.querySelector('[data-region-id="page-header"]')
 
-        if (
-            !(
-                root &&
-                contentElem instanceof HTMLElement &&
-                navElem instanceof HTMLElement
-            )
-        ) {
+        if (!(
+            root &&
+            contentElem instanceof HTMLElement &&
+            navElem instanceof HTMLElement
+        )) {
             return null
         }
 
