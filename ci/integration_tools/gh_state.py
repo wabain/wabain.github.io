@@ -39,6 +39,7 @@ class PullRequestEvaluation:
     pr_is_open: bool
 
     merge_pending_label_present: bool
+    merge_manually_label_present: bool
     merge_isolate_label_present: bool
     merge_blocked_label_present: bool
     pr_is_eligible_up_to_mergeability: bool

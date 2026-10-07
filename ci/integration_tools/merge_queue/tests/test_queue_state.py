@@ -9,11 +9,13 @@ from unittest import mock
 
 from ...gh_state import BuildState, PullRequestEvaluation
 from ..queue_state import (
+    VALIDATE_WORKFLOW_PATH,
     Batch,
     BatchEntry,
     QueueCandidate,
     build_merge_chain,
     partition_ready,
+    paths_differ,
     resolve_head,
 )
 
@@ -26,21 +28,79 @@ def make_candidate(
     isolate: bool = False,
     blocked: bool = False,
     base_ref: str = "develop",
+    head_sha: str | None = None,
+    changes_validate_workflow: bool | None = None,
 ) -> QueueCandidate:
     pr_eval = PullRequestEvaluation(
         raw="{}",
         head_ref=f"branch-{number}",
-        head_sha=f"{number:040x}",
+        head_sha=head_sha or f"{number:040x}",
         base_ref=base_ref,
         merge_sha=None,
         pr_is_open=True,
         merge_pending_label_present=False,
+        merge_manually_label_present=False,
         merge_isolate_label_present=isolate,
         merge_blocked_label_present=blocked,
         pr_is_eligible_up_to_mergeability=eligible,
         pr_eligibility={},
     )
-    return QueueCandidate(number=number, pr_eval=pr_eval, build_state=build_state)
+    return QueueCandidate(
+        number=number,
+        pr_eval=pr_eval,
+        build_state=build_state,
+        changes_validate_workflow=changes_validate_workflow,
+    )
+
+
+class GitRepoTestCase(unittest.TestCase):
+    """Base for integration tests which use a scratch git repo"""
+
+    def setUp(self) -> None:
+        tempdir = tempfile.TemporaryDirectory(prefix="merge-queue-test.")
+        self.addCleanup(tempdir.cleanup)
+        self.repo = Path(tempdir.name)
+
+        env_patch = mock.patch.dict(
+            os.environ,
+            {
+                "GIT_AUTHOR_NAME": "Test",
+                "GIT_AUTHOR_EMAIL": "test@example.com",
+                "GIT_COMMITTER_NAME": "Test",
+                "GIT_COMMITTER_EMAIL": "test@example.com",
+                "GIT_CONFIG_GLOBAL": os.devnull,
+                "GIT_CONFIG_NOSYSTEM": "1",
+            },
+        )
+        env_patch.start()
+        self.addCleanup(env_patch.stop)
+
+        self.git("init", "--quiet", "--initial-branch=develop")
+        self.commit_file("a.txt", "base\n")
+        self.base = self.head()
+
+    def git(self, *args: str) -> str:
+        return subprocess.run(
+            ["git", "-C", str(self.repo), *args], check=True, capture_output=True, text=True
+        ).stdout.strip()
+
+    def head(self) -> str:
+        return self.git("rev-parse", "HEAD")
+
+    def commit_file(self, name: str, content: str) -> None:
+        path = self.repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+        self.git("add", name)
+        self.git("commit", "--quiet", "-m", f"write {name}")
+
+    def make_branch(self, number: int, name: str, content: str) -> BatchEntry:
+        """Commit a file on a new branch from the base, leaving HEAD detached at the base"""
+        self.git("switch", "--quiet", "--detach", self.base)
+        self.commit_file(name, content)
+        entry = BatchEntry(number=number, head_ref=f"branch-{number}", head_sha=self.head())
+        self.git("switch", "--quiet", "--detach", self.base)
+        return entry
 
 
 def numbers(candidates: list[QueueCandidate]) -> list[int]:
@@ -102,51 +162,8 @@ class BatchJsonTest(unittest.TestCase):
         self.assertEqual(Batch.from_json(batch.to_json()), batch)
 
 
-class BuildMergeChainTest(unittest.TestCase):
+class BuildMergeChainTest(GitRepoTestCase):
     """Integration tests which build merge chains in a scratch git repo"""
-
-    def setUp(self) -> None:
-        tempdir = tempfile.TemporaryDirectory(prefix="merge-chain-test.")
-        self.addCleanup(tempdir.cleanup)
-        self.repo = Path(tempdir.name)
-
-        env_patch = mock.patch.dict(
-            os.environ,
-            {
-                "GIT_AUTHOR_NAME": "Test",
-                "GIT_AUTHOR_EMAIL": "test@example.com",
-                "GIT_COMMITTER_NAME": "Test",
-                "GIT_COMMITTER_EMAIL": "test@example.com",
-                "GIT_CONFIG_GLOBAL": os.devnull,
-                "GIT_CONFIG_NOSYSTEM": "1",
-            },
-        )
-        env_patch.start()
-        self.addCleanup(env_patch.stop)
-
-        self.git("init", "--quiet", "--initial-branch=develop")
-        self.commit_file("a.txt", "base\n")
-        self.base = self.head()
-
-    def git(self, *args: str) -> str:
-        return subprocess.run(
-            ["git", "-C", str(self.repo), *args], check=True, capture_output=True, text=True
-        ).stdout.strip()
-
-    def head(self) -> str:
-        return self.git("rev-parse", "HEAD")
-
-    def commit_file(self, name: str, content: str) -> None:
-        (self.repo / name).write_text(content)
-        self.git("add", name)
-        self.git("commit", "--quiet", "-m", f"write {name}")
-
-    def make_branch(self, number: int, name: str, content: str) -> BatchEntry:
-        self.git("switch", "--quiet", "--detach", self.base)
-        self.commit_file(name, content)
-        entry = BatchEntry(number=number, head_ref=f"branch-{number}", head_sha=self.head())
-        self.git("switch", "--quiet", "--detach", self.base)
-        return entry
 
     def make_batch(self, entries: list[BatchEntry]) -> Batch:
         return Batch(
@@ -218,3 +235,43 @@ class BuildMergeChainTest(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "expected one merge for each of 1"):
             self.make_batch([pr1]).merge_commits(git_args)
+
+
+class ValidateWorkflowTest(GitRepoTestCase):
+    """Integration tests which compare the validate workflow in a scratch git repo"""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.commit_file(VALIDATE_WORKFLOW_PATH, "base\n")
+        self.base = self.head()
+        self.git_args = ["-C", str(self.repo)]
+
+    def changes(self, entry: BatchEntry, base_sha: str | None = None) -> bool:
+        return paths_differ(
+            f"{base_sha or self.base}...{entry.head_sha}", [VALIDATE_WORKFLOW_PATH], self.git_args
+        )
+
+    def drifted(self) -> bool:
+        return paths_differ([self.base, self.head()], [VALIDATE_WORKFLOW_PATH], self.git_args)
+
+    def test_changes_when_edited(self) -> None:
+        self.assertTrue(self.changes(self.make_branch(1, VALIDATE_WORKFLOW_PATH, "pr\n")))
+
+    def test_changes_ignores_other_files(self) -> None:
+        self.assertFalse(self.changes(self.make_branch(1, "b.txt", "pr\n")))
+
+    def test_changes_ignores_stale_branch(self) -> None:
+        pr1 = self.make_branch(1, "b.txt", "pr\n")
+        self.commit_file(VALIDATE_WORKFLOW_PATH, "develop\n")
+
+        self.assertFalse(self.changes(pr1, self.head()))
+
+    def test_drifted_when_base_edited(self) -> None:
+        self.commit_file(VALIDATE_WORKFLOW_PATH, "develop\n")
+
+        self.assertTrue(self.drifted())
+
+    def test_not_drifted_by_other_files(self) -> None:
+        self.commit_file("b.txt", "develop\n")
+
+        self.assertFalse(self.drifted())

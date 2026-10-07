@@ -38,6 +38,7 @@ def by_collaborator: by_owner or .author_association == "COLLABORATOR";
     merge_commit: .merge_commit_sha, # Aliased
 
     merge_pending_label_present: .labels | any(.name == "merge-pending"),
+    merge_manually_label_present: .labels | any(.name == "merge-manually"),
     merge_isolate_label_present: .labels | any(.name == "merge-isolate"),
     merge_blocked_label_present: .labels | any(.name == "merge-blocked"),
 

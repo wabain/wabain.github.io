@@ -84,7 +84,23 @@ jobs:
           # Still stage the batch in dry-run mode so that it gets built
           [[ "$MERGE_QUEUE_DRY_RUN" != false ]] && args+=( --dry-run=pr-labels )
 
-          bin/ci-tools stage-batch "${args[@]}" --outputs-file "$GITHUB_OUTPUT"
+          bin/ci-tools stage-batch \
+            "${args[@]}" \
+            --workflow-sha "$GITHUB_SHA" \
+            --outputs-file "$GITHUB_OUTPUT"
+
+      # If the build would use a stale validate.yml, start over with a run
+      # which uses the current one. Unlike the other dispatches, this one also
+      # happens in dry-run mode: what changed is develop, not state this run
+      # would have updated.
+      - name: Dispatch requeued run
+        if: steps.stage.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bin/ci-tools dispatch-merge-queue \
+            --chain-depth "$CHAIN_DEPTH" \
+            --max-chain-depth "$MERGE_QUEUE_MAX_CHAIN_DEPTH"
 
   build:
     name: Build batch
