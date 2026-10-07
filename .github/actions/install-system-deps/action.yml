@@ -112,6 +112,10 @@ runs:
 
     - name: List dependency executable versions
       shell: bash -e {0}
+      env:
+        DEP_POETRY: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'poetry') }}
+        DEP_GECKODRIVER: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'geckodriver') }}
+        DEP_SENTRY_CLI: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'sentry-cli') }}
       run: |
         print-version() {
           local cmd=$1
@@ -130,18 +134,26 @@ runs:
           echo "$cmd ($(which "$cmd")): $("$cmd" $args 2>&1 | head -n1)"
         }
 
+        print-version-if() {
+          local condition=$1
+          shift
+          if [[ "$condition" == true ]]; then
+            print-version "$@"
+          else
+            echo "$1: (not checked)"
+          fi
+        }
+
         echo 'Dependencies (externally managed):'
-        print-version ruby
-        print-version bundler
+        print-version git
         print-version python
-        print-version pipx
+        print-version-if "$DEP_POETRY" pipx
+        print-version-if "$DEP_GECKODRIVER" firefox
 
         echo
         echo 'Dependencies (via install-system-deps):'
-        print-version firefox
-        print-version geckodriver
-        print-version git
+        # Always print jq version since it's easy for it to slip into a build
         print-version jq
-        print-version node
-        print-version sentry-cli
-        print-version poetry
+        print-version-if "$DEP_POETRY" poetry
+        print-version-if "$DEP_GECKODRIVER" geckodriver
+        print-version-if "$DEP_SENTRY_CLI" sentry-cli
