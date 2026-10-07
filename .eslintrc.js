@@ -19,7 +19,7 @@ module.exports = {
             extends: [
                 'eslint:recommended',
                 'plugin:@typescript-eslint/recommended',
-                'plugin:@typescript-eslint/recommended-requiring-type-checking',
+                'plugin:@typescript-eslint/recommended-type-checked',
             ],
             parserOptions: {
                 ecmaVersion: 6,
@@ -65,7 +65,7 @@ module.exports = {
                 jest: true,
             },
             rules: {
-                '@typescript-eslint/no-var-requires': ['off'],
+                '@typescript-eslint/no-require-imports': ['off'],
                 '@typescript-eslint/no-use-before-define': [
                     'error',
                     { functions: false, classes: false },

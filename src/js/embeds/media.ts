@@ -23,7 +23,7 @@ export default function initializeMediaEmbeds(
             .then((elem) => {
                 if (!(elem instanceof HTMLVideoElement)) {
                     throw new TypeError(
-                        `expected video element, got ${String(elem)}`,
+                        `expected video element, got ${elem.constructor.name}`,
                     )
                 }
 
