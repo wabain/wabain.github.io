@@ -30,11 +30,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
-      # The plugin requires the parser at the same version.
+      # The typescript-eslint packages require each other at the same version.
       dev-typescript-eslint:
         dependency-type: "development"
         patterns:
           - "@typescript-eslint/*"
+          - "typescript-eslint"
 
   - package-ecosystem: "bundler"
     directory: "/"
