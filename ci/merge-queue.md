@@ -11,13 +11,12 @@ account, and the deploy has to be pushed atomically alongside `develop` anyway.
 
 Each run of `merge-queue.yml`:
 
-1. Stages a batch (`bin/ci-tools stage-batch`). If `validate.yml` on
-   `develop` differs from the run's own copy, it stages nothing and dispatches
-   a follow-up run instead (see [Changes to `validate.yml`](#changes-to-validateyml)).
-   Otherwise, starting from `develop`, it merges a sequence of ready pull
-   requests onto a branch, skipping any that change `validate.yml`, conflict,
-   or are already in `develop`. The result is force-pushed to
-   `refs/ci-tools/merge-queue/staging`.
+1. Stages a batch (`bin/ci-tools stage-batch`). If `develop` moved since the
+   run was queued, it stages nothing and dispatches a follow-up run instead
+   (see [Stale runs](#stale-runs)). Otherwise, starting from `develop`, it
+   merges a sequence of ready pull requests onto a branch, skipping any that
+   change `validate.yml`, conflict, or are already in `develop`. The result is
+   force-pushed to `refs/ci-tools/merge-queue/staging`.
 2. Builds the batch by calling `validate.yml` with the batch commit.
 3. Lands the batch (`bin/ci-tools land-batch`). It re-evaluates every pull
    request in the batch. If any is no longer eligible to merge, the batch is
@@ -113,8 +112,23 @@ up as a branch). The ref is overwritten by each run.
 Setting `MERGE_QUEUE_DRY_RUN` to `"true"` (in both workflows) stops the queue
 from merging while it keeps staging and building batches: nothing is pushed to
 `develop` or `master`, no labels are changed, no comments or approvals are
-posted, and the queue doesn't dispatch itself except to requeue a run with an
-out-of-date `validate.yml`.
+posted, and the queue doesn't dispatch itself except to requeue a [stale
+run](#stale-runs).
+
+## Stale runs
+
+GitHub reads a run's workflow files at the revision of `develop` when the run
+was queued, and every job checks out its tools at that same revision, so that
+the workflow and tools match. A run can be queued well before it starts, and
+`develop` may move in the meantime. If it has, `stage-batch` stages nothing and
+the run dispatches a follow-up, which uses the current workflows and tools.
+
+This should be rare. After a merge queue run pushes to develop, the run
+dispatches a follow-up, which replaces any pending run queued before it moved
+`develop`. A stale run usually means `develop` was pushed to outside the queue,
+or a run moved `develop` but didn't dispatch a follow-up (for instance because a
+push failed partway or because the merge queue runs reached the chain depth
+limit).
 
 ## Changes to `validate.yml`
 
@@ -130,8 +144,7 @@ batch's revision.
 To enforce this condition, `stage-batch` skips any pull request whose changes
 since it branched from `develop` include `validate.yml` and labels that pull
 request `merge-manually`. If `develop` itself changed the file after the
-merge queue run was queued, the run stages nothing and dispatches a follow-up
-run, which uses the current copy.
+merge queue run was queued, the run is [stale](#stale-runs) and requeues.
 
 A PR build uses the pull request's version of `validate.yml`; this can be used
 to qualify the changes before a manual merge. (However, pull request builds are

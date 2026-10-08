@@ -1,9 +1,8 @@
 """Build the next merge queue batch and push it to the staging ref
 
-The repository must contain the revision that --workflow-sha names, and the
-history of the queue base ref back to where the pull request branches forked
-from it. This command fetches the base ref and pull request branches from the
-remote.
+The repository must contain the history of the queue base ref back to
+where the pull request branches forked from it. This command fetches the
+base ref and pull request branches from the remote.
 """
 
 from __future__ import annotations
@@ -31,7 +30,7 @@ from ..merge_queue.queue_state import (
     set_label,
     sync_merge_pending_label,
 )
-from ..output import emit_summary, emit_warning, enter_log_group
+from ..output import emit_notice, emit_summary, emit_warning, enter_log_group
 from ..utils import record_output, resolve_commit, run, run_status, temporary_worktree
 
 
@@ -41,7 +40,12 @@ def init_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--workflow-sha",
         required=True,
-        help="Revision the running workflow was read from, which the batch build uses",
+        help="Revision the running workflow and its tools were read from",
+    )
+    parser.add_argument(
+        "--workflow-ref",
+        required=True,
+        help="Fully qualified ref the running workflow was dispatched from",
     )
     parser.add_argument("--max-size", type=int, default=10, help="Maximum PRs in a batch")
     parser.add_argument(
@@ -85,6 +89,7 @@ class StageParams:
     remote: str
     staging_ref: str
     workflow_sha: str
+    workflow_ref: str
     max_size: int
     batch_file: Path | None
     outputs_file: Path | None
@@ -114,16 +119,25 @@ def run_command(**kwargs) -> None:
     )
     base_sha = resolve_commit(f"refs/remotes/{params.remote}/{QUEUE_BASE_REF}")
 
-    if paths_differ([params.workflow_sha, base_sha], [VALIDATE_WORKFLOW_PATH]):
-        # A follow-up run picks up the current copy of the validate workflow.
-        # Labels are left for that run to update, so return before updating them.
-        emit_warning(
-            f"{VALIDATE_WORKFLOW_PATH} changed on {QUEUE_BASE_REF} since this run was queued;"
-            " requeueing"
+    if params.workflow_ref != f"refs/heads/{QUEUE_BASE_REF}":
+        # Staleness only applies to runs from the base branch. Runs from other
+        # branches are expected to differ from it.
+        emit_notice(
+            f"Not checking whether this run is stale: it's from {params.workflow_ref},"
+            f" not {QUEUE_BASE_REF}"
         )
+    elif base_sha != params.workflow_sha:
+        # This run's workflows and tools are from an older revision, so leave
+        # the batch to a follow-up run which uses the current ones. Labels are
+        # left for that run to update, so return before updating them.
+        message = (
+            f"{QUEUE_BASE_REF} moved from {params.workflow_sha} to {base_sha}"
+            " since this run was queued; requeueing"
+        )
+        emit_warning(message)
         record_output(params.outputs_file, "has_batch", "false")
         record_output(params.outputs_file, "stale", "true")
-        emit_summary(f"Requeued: {VALIDATE_WORKFLOW_PATH} changed on {QUEUE_BASE_REF}")
+        emit_summary(message)
         return
 
     isolated, regular = partition_ready(candidates)

@@ -251,9 +251,6 @@ class ValidateWorkflowTest(GitRepoTestCase):
             f"{base_sha or self.base}...{entry.head_sha}", [VALIDATE_WORKFLOW_PATH], self.git_args
         )
 
-    def drifted(self) -> bool:
-        return paths_differ([self.base, self.head()], [VALIDATE_WORKFLOW_PATH], self.git_args)
-
     def test_changes_when_edited(self) -> None:
         self.assertTrue(self.changes(self.make_branch(1, VALIDATE_WORKFLOW_PATH, "pr\n")))
 
@@ -265,13 +262,3 @@ class ValidateWorkflowTest(GitRepoTestCase):
         self.commit_file(VALIDATE_WORKFLOW_PATH, "develop\n")
 
         self.assertFalse(self.changes(pr1, self.head()))
-
-    def test_drifted_when_base_edited(self) -> None:
-        self.commit_file(VALIDATE_WORKFLOW_PATH, "develop\n")
-
-        self.assertTrue(self.drifted())
-
-    def test_not_drifted_by_other_files(self) -> None:
-        self.commit_file("b.txt", "develop\n")
-
-        self.assertFalse(self.drifted())

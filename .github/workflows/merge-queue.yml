@@ -57,7 +57,9 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: develop
+          # Every job uses the tools from the revision the workflow was read
+          # from, so that they match it. stage-batch fetches develop itself.
+          ref: ${{ github.sha }}
           # Merging needs the history of develop and the PR branches
           fetch-depth: 0
           filter: blob:none
@@ -87,12 +89,13 @@ jobs:
           bin/ci-tools stage-batch \
             "${args[@]}" \
             --workflow-sha "$GITHUB_SHA" \
+            --workflow-ref "$GITHUB_REF" \
             --outputs-file "$GITHUB_OUTPUT"
 
-      # If the build would use a stale validate.yml, start over with a run
-      # which uses the current one. Unlike the other dispatches, this one also
-      # happens in dry-run mode: what changed is develop, not state this run
-      # would have updated.
+      # If develop moved since this run was queued, start over with a run
+      # which uses its current workflows and tools. Unlike the other
+      # dispatches, this one also happens in dry-run mode: what changed is
+      # develop, not state this run would have updated.
       - name: Dispatch requeued run
         if: steps.stage.outputs.stale == 'true'
         env:
@@ -123,7 +126,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: develop
+          ref: ${{ github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -205,7 +208,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: develop
+          ref: ${{ github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
