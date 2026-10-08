@@ -773,12 +773,78 @@ for (const cluster of shownClusters) {
   });
 }
 
-const unresolved = shownStuck.filter((s) => s.unresolved.length);
-if (unresolved.length) {
+// Why no group can let `name` move to `entry`, as rows for the report. Each
+// package with no version, up to its latest, that works with the target
+// stops it in one of two ways: the target needs a version of the package
+// that has no stable release yet (`unreleased`), or every release the target
+// could use rejects it (`unsupported`). Both are empty when the search only
+// ran out of room.
+function whyUnresolved(name, entry) {
+  const unreleased = [];
+  const unsupported = [];
+  for (const other of componentOf.get(name)) {
+    if (other === name) continue;
+    const range = entry.peers[other];
+    const usable = nodes
+      .get(other)
+      .candidates.filter((oe) => !range || satisfies(oe.version, range));
+    const accepts = (oe) =>
+      !oe.peers[name] || satisfies(entry.version, oe.peers[name]);
+    if (usable.some(accepts)) continue;
+    if (!usable.length) {
+      unreleased.push([
+        `${name}@${entry.version}`,
+        `wants ${other}@"${range}"`,
+        `(latest ${latestOf(nodes.get(other)).version})`,
+      ]);
+    } else {
+      const oe = usable.findLast((e) => !e.deprecated) ?? usable.at(-1);
+      unsupported.push([
+        `${other}@${oe.version}`,
+        `wants ${name}@"${oe.peers[name]}"`,
+      ]);
+    }
+  }
+  const byFirst = ([a], [b]) => a.localeCompare(b);
+  return {
+    unreleased: unreleased.sort(byFirst),
+    unsupported: unsupported.sort(byFirst),
+  };
+}
+
+const unresolved = shownStuck.flatMap((s) =>
+  s.unresolved.map((entry) => ({
+    name: s.node.name,
+    entry,
+    ...whyUnresolved(s.node.name, entry),
+  })),
+);
+
+// Print each target that has rows under `key`, padding all the rows together
+// so "wants" lines up across targets.
+function printReasons(heading, key) {
+  const shown = unresolved.filter((u) => u[key].length);
+  if (!shown.length) return;
+  console.log(`\n${heading}`);
+  const lines = pad(shown.flatMap((u) => u[key]));
+  for (const u of shown) {
+    console.log(`  ${describeTargets([u])}`);
+    for (const line of lines.splice(0, u[key].length)) {
+      console.log(`    ${line}`);
+    }
+  }
+}
+printReasons("Needs peer versions with no stable release yet:", "unreleased");
+printReasons("Blocked until other packages release support:", "unsupported");
+
+const notFound = unresolved.filter(
+  (u) => !u.unreleased.length && !u.unsupported.length,
+);
+if (notFound.length) {
   console.log(`\nNo group of up to ${maxGroup} packages found for:`);
-  for (const s of unresolved) {
+  for (const [name, ts] of Map.groupBy(notFound, (u) => u.name)) {
     console.log(
-      `  ${describeTargets(s.unresolved.map((entry) => ({ name: s.node.name, entry })))}`,
+      `  ${describeTargets(ts.map((u) => ({ name, entry: u.entry })))}`,
     );
   }
 }
