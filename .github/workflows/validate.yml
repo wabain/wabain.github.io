@@ -90,7 +90,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dependencies: |
-            tree
             poetry
             geckodriver
 
@@ -147,6 +146,7 @@ jobs:
 
       - name: Install packages
         run: |
+          echo "bundle ($(which bundle)): $(bundle --version)"
           bundle config set deployment 'true'
           bundle install --jobs=4 --retry=3
           bundle info --path --verbose jekyll

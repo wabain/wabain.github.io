@@ -5,12 +5,10 @@ inputs:
     description: Which dependencies to install
     required: true
     default: |
-      tree
       jq
       poetry
       geckodriver
       sentry-cli
-      unzip
 
   github-token:
     description: Token to authenticate with when requesting geckodriver and sentry-cli artifacts
@@ -41,7 +39,7 @@ runs:
               gsub("^\\s+|\\s+$"; "") |
               # Filter empty entries
               select(. != "") |
-              if test("^(tree|jq|poetry|geckodriver|sentry-cli|unzip)$") then
+              if test("^(jq|poetry|geckodriver|sentry-cli)$") then
                 .
               else
                 error("::error ::Unknown dependency: \(.)")
@@ -54,22 +52,6 @@ runs:
     - name: Create user install dir
       shell: bash -e {0}
       run: mkdir -p $USER_INSTALL_DIR
-
-    - name: Install apt dependencies
-      shell: bash -e {0}
-      env:
-        DEPS: ${{ steps.validated.outputs.dependencies }}
-      run: |
-        apt_deps="$(jq --null-input --raw-output '
-          [env.DEPS | fromjson[] | select(test("^(tree|unzip)$"))] | join(" ")
-        ')"
-
-        [[ ! -z "$apt_deps" ]] || exit 0
-
-        echo "::group::Install apt dependencies ($apt_deps)"
-        sudo apt-get update
-        sudo apt-get -yq --no-install-suggests --no-install-recommends install $apt_deps
-        echo "::endgroup::"
 
     - name: Install poetry
       shell: bash -e {0}
@@ -130,6 +112,10 @@ runs:
 
     - name: List dependency executable versions
       shell: bash -e {0}
+      env:
+        DEP_POETRY: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'poetry') }}
+        DEP_GECKODRIVER: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'geckodriver') }}
+        DEP_SENTRY_CLI: ${{ contains(fromJSON(steps.validated.outputs.dependencies), 'sentry-cli') }}
       run: |
         print-version() {
           local cmd=$1
@@ -148,20 +134,26 @@ runs:
           echo "$cmd ($(which "$cmd")): $("$cmd" $args 2>&1 | head -n1)"
         }
 
+        print-version-if() {
+          local condition=$1
+          shift
+          if [[ "$condition" == true ]]; then
+            print-version "$@"
+          else
+            echo "$1: (not checked)"
+          fi
+        }
+
         echo 'Dependencies (externally managed):'
-        print-version ruby
-        print-version bundler
+        print-version git
         print-version python
-        print-version pipx
+        print-version-if "$DEP_POETRY" pipx
+        print-version-if "$DEP_GECKODRIVER" firefox
 
         echo
         echo 'Dependencies (via install-system-deps):'
-        print-version firefox
-        print-version geckodriver
-        print-version git
+        # Always print jq version since it's easy for it to slip into a build
         print-version jq
-        print-version node
-        print-version tree
-        print-version sentry-cli
-        print-version unzip -v
-        print-version poetry
+        print-version-if "$DEP_POETRY" poetry
+        print-version-if "$DEP_GECKODRIVER" geckodriver
+        print-version-if "$DEP_SENTRY_CLI" sentry-cli
