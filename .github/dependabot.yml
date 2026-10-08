@@ -23,8 +23,6 @@ updates:
         dependency-type: "development"
         patterns:
           - "@babel/*"
-          - "@typescript-eslint/*"
-          - "eslint*"
           - "jest"
           - "@types/jest"
           - "postcss-loader"
@@ -32,6 +30,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      # The typescript-eslint packages require each other at the same version.
+      dev-typescript-eslint:
+        dependency-type: "development"
+        patterns:
+          - "@typescript-eslint/*"
+          - "typescript-eslint"
 
   - package-ecosystem: "bundler"
     directory: "/"

@@ -36,7 +36,7 @@ type NavigationTrigger =
       }
 
 type ResolutionCache = Record<string, Promise<{ content: string }>> &
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
     Record<keyof Object, never>
 
 export function initializeDynamicNavigation(

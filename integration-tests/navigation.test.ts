@@ -285,7 +285,7 @@ class SiteWindow {
                 async () => await driver.executeScript('return !!window.__nav'),
                 1000,
             )
-        } catch (e) {
+        } catch {
             throw new Error(
                 'did not see dynamic navigation initialized on page load',
             )
@@ -361,7 +361,7 @@ class NavigablePage {
             )
 
             await driver.wait(until.titleMatches(expectedTitle), 1000)
-        } catch (e) {
+        } catch {
             throw new Error(
                 `Page title is "${await driver.getTitle()}", expected ` +
                     `"${this.params.title}"`,
@@ -373,7 +373,7 @@ class NavigablePage {
                 async () => this._hasExpectedPageIdentifier(driver),
                 1000,
             )
-        } catch (e) {
+        } catch {
             throw new Error(
                 `Loaded page content is for "${await this._getPageIdentifier(
                     driver,
