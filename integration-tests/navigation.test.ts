@@ -309,7 +309,7 @@ class SiteWindow {
 
     async getLinksOnPage(
         element: WebElement | null = null,
-    ): Promise<{ elem: WebElement; href: string }[]> {
+    ): Promise<{ elem: WebElement; href: string | null }[]> {
         const searchRoot = element || (await this.resolveDriver())
         const elements = await searchRoot.findElements(By.css('a'))
         return await Promise.all(
