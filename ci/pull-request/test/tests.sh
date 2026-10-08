@@ -66,6 +66,7 @@ run-test "First party: Eligible" \
         "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": true,
@@ -92,6 +93,7 @@ run-test "No automerge label" \
         "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": false,
@@ -118,6 +120,7 @@ run-test "Not mergeable" \
         "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": true,
@@ -144,6 +147,7 @@ run-test "Null mergeability" \
         "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": true,
@@ -170,6 +174,7 @@ run-test "Draft" \
         "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": false,
@@ -194,6 +199,7 @@ run-test "Third-party: Approved by owner" \
         "merge_sha": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": true,
@@ -218,6 +224,7 @@ run-test "Third-party: Unapproved" \
         "merge_sha": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": false,
@@ -244,6 +251,7 @@ run-test "Third-party: Approved by other" \
         "merge_sha": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_commit": "2fd095284174e8574b56a4735a204f030eadf8e6",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": false,
         "merge_isolate_label_present": false,
         "merge_blocked_label_present": false,
         "pr_is_eligible_up_to_mergeability": false,
@@ -259,7 +267,7 @@ run-test "Third-party: Approved by other" \
 
 run-test "Merge queue labels" \
     jq -s -f pull-request.jq \
-        <(jq '.labels += [{ name: "merge-isolate" }, { name: "merge-blocked" }]' test/first-party.pr.json) \
+        <(jq '.labels += [{ name: "merge-isolate" }, { name: "merge-blocked" }, { name: "merge-manually" }]' test/first-party.pr.json) \
         test/none.pr-reviews.json \
     '{
         "head_ref": "ci-statuses",
@@ -270,6 +278,7 @@ run-test "Merge queue labels" \
         "merge_sha": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_commit": "5444c4152d815ee49bf240ae6aba9b8b0a0ff288",
         "merge_pending_label_present": false,
+        "merge_manually_label_present": true,
         "merge_isolate_label_present": true,
         "merge_blocked_label_present": true,
         "pr_is_eligible_up_to_mergeability": true,

@@ -19,7 +19,7 @@ from ..gh_state import (
 )
 from ..merge_deploy import merge_prep
 from ..output import print_info_multi
-from ..utils import run
+from ..utils import run, run_status
 
 QUEUE_BASE_REF = "develop"
 
@@ -31,6 +31,12 @@ LABEL_AUTOMERGE = "automerge"
 LABEL_MERGE_PENDING = "merge-pending"
 LABEL_MERGE_ISOLATE = "merge-isolate"
 LABEL_MERGE_BLOCKED = "merge-blocked"
+LABEL_MERGE_MANUALLY = "merge-manually"
+
+# The merge queue builds batches with the copy of this workflow from the
+# revision the run was queued at, so a batch can't validate its own changes to
+# it. Pull requests which change it have to be merged manually.
+VALIDATE_WORKFLOW_PATH = ".github/workflows/validate.yml"
 
 
 @dataclass(kw_only=True)
@@ -38,6 +44,10 @@ class QueueCandidate:
     number: int
     pr_eval: PullRequestEvaluation
     build_state: BuildState
+
+    # Whether the pull request's own changes include VALIDATE_WORKFLOW_PATH,
+    # or None if that hasn't been determined
+    changes_validate_workflow: bool | None = None
 
     @property
     def pr_is_merge_eligible(self) -> bool:
@@ -77,6 +87,18 @@ def evaluate_candidate(pr_number: int) -> QueueCandidate:
 def is_queue_relevant(pull: dict[str, Any]) -> bool:
     """Whether a pull request from the GitHub API listing needs to be evaluated"""
     return any(label["name"] in (LABEL_AUTOMERGE, LABEL_MERGE_PENDING) for label in pull["labels"])
+
+
+def paths_differ(
+    rev_spec: str | Sequence[str], paths: Sequence[str], global_git_args: Sequence[str] = ()
+) -> bool:
+    revs = [rev_spec] if isinstance(rev_spec, str) else list(rev_spec)
+    status = run_status(
+        ["git", *global_git_args, "diff", "--quiet", "--end-of-options", *revs, "--", *paths]
+    )
+    if status not in (0, 1):
+        raise RuntimeError(f"git diff {' '.join(revs)} failed with status {status}")
+    return status == 1
 
 
 def partition_ready(

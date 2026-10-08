@@ -11,10 +11,12 @@ account, and the deploy has to be pushed atomically alongside `develop` anyway.
 
 Each run of `merge-queue.yml`:
 
-1. Stages a batch (`bin/ci-tools stage-batch`). Starting from `develop`, it
+1. Stages a batch (`bin/ci-tools stage-batch`). If `develop` moved since the
+   run was queued, it stages nothing and dispatches a follow-up run instead
+   (see [Stale runs](#stale-runs)). Otherwise, starting from `develop`, it
    merges a sequence of ready pull requests onto a branch, skipping any that
-   conflict or are already in `develop`. The result is force-pushed to
-   `refs/ci-tools/merge-queue/staging`.
+   change `validate.yml`, conflict, or are already in `develop`. The result is
+   force-pushed to `refs/ci-tools/merge-queue/staging`.
 2. Builds the batch by calling `validate.yml` with the batch commit.
 3. Lands the batch (`bin/ci-tools land-batch`). It re-evaluates every pull
    request in the batch. If any is no longer eligible to merge, the batch is
@@ -39,6 +41,8 @@ A pull request is _ready_ when it:
   commit
 - does not have the `merge-blocked` label
 
+The queue also skips ready pull requests that change `validate.yml`.
+
 PR build records expire, so an old pull request may need to be rebuilt (for
 example by asking dependabot to rebase it) before it becomes ready.
 
@@ -54,6 +58,12 @@ batch from the open pull requests and their labels.
   any ready pull request has it, the queue builds only the single
   lowest-numbered such PR, alone, and builds no regular batch. This retries the
   PRs of a failed batch one at a time. Cleared when the pull request merges.
+- `merge-manually`: informational. Set when the queue considers a ready pull
+  request for a batch and skips it because it [changes
+  `.github/workflows/validate.yml`](#changes-to-validateyml). Updated but not
+  consumed by CI. It is cleared if the queue considers a pull request and sees
+  it no longer changes `validate.yml`, but not if a pull request is merged
+  manually or loses `automerge`.
 - `merge-blocked`: set, with a comment, when a pull request fails to build
   alone. It supersedes `merge-isolate`. Blocked pull requests are excluded until
   someone removes the label, after which they're batched normally again.
@@ -102,4 +112,42 @@ up as a branch). The ref is overwritten by each run.
 Setting `MERGE_QUEUE_DRY_RUN` to `"true"` (in both workflows) stops the queue
 from merging while it keeps staging and building batches: nothing is pushed to
 `develop` or `master`, no labels are changed, no comments or approvals are
-posted, and the queue doesn't dispatch itself.
+posted, and the queue doesn't dispatch itself except to requeue a [stale
+run](#stale-runs).
+
+## Stale runs
+
+GitHub reads a run's workflow files at the revision of `develop` when the run
+was queued, and every job checks out its tools at that same revision, so that
+the workflow and tools match. A run can be queued well before it starts, and
+`develop` may move in the meantime. If it has, `stage-batch` stages nothing and
+the run dispatches a follow-up, which uses the current workflows and tools.
+
+This should be rare. After a merge queue run pushes to develop, the run
+dispatches a follow-up, which replaces any pending run queued before it moved
+`develop`. A stale run usually means `develop` was pushed to outside the queue,
+or a run moved `develop` but didn't dispatch a follow-up (for instance because a
+push failed partway or because the merge queue runs reached the chain depth
+limit).
+
+## Changes to `validate.yml`
+
+The queue doesn't merge pull requests that change
+`.github/workflows/validate.yml`; they have to be merged manually. This
+requirement exists because the batch should be built using its version of
+`validate.yml`, but due to restrictions on `workflow_call` GitHub uses the merge
+queue run's revision to resolve the content of `validate.yml` rather than the
+batch's revision. This enforcement is only needed for `validate.yml` itself;
+other files referenced within the workflow are accessed at runtime using the
+batch's revision.
+
+To enforce this condition, `stage-batch` skips any pull request whose changes
+since it branched from `develop` include `validate.yml` and labels that pull
+request `merge-manually`. If `develop` itself changed the file after the
+merge queue run was queued, the run is [stale](#stale-runs) and requeues.
+
+A PR build uses the pull request's version of `validate.yml`; this can be used
+to qualify the changes before a manual merge. (However, pull request builds are
+not necessarily rerun when new content is pushed to `develop`.) The
+`merge-deploy.yml` workflow is responsible for deploying code that is pushed to
+`develop` outside of the merge queue process.

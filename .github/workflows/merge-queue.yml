@@ -57,7 +57,9 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: develop
+          # Every job uses the tools from the revision the workflow was read
+          # from, so that they match it. stage-batch fetches develop itself.
+          ref: ${{ github.sha }}
           # Merging needs the history of develop and the PR branches
           fetch-depth: 0
           filter: blob:none
@@ -84,7 +86,24 @@ jobs:
           # Still stage the batch in dry-run mode so that it gets built
           [[ "$MERGE_QUEUE_DRY_RUN" != false ]] && args+=( --dry-run=pr-labels )
 
-          bin/ci-tools stage-batch "${args[@]}" --outputs-file "$GITHUB_OUTPUT"
+          bin/ci-tools stage-batch \
+            "${args[@]}" \
+            --workflow-sha "$GITHUB_SHA" \
+            --workflow-ref "$GITHUB_REF" \
+            --outputs-file "$GITHUB_OUTPUT"
+
+      # If develop moved since this run was queued, start over with a run
+      # which uses its current workflows and tools. Unlike the other
+      # dispatches, this one also happens in dry-run mode: what changed is
+      # develop, not state this run would have updated.
+      - name: Dispatch requeued run
+        if: steps.stage.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bin/ci-tools dispatch-merge-queue \
+            --chain-depth "$CHAIN_DEPTH" \
+            --max-chain-depth "$MERGE_QUEUE_MAX_CHAIN_DEPTH"
 
   build:
     name: Build batch
@@ -107,7 +126,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: develop
+          ref: ${{ github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -189,7 +208,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: develop
+          ref: ${{ github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
