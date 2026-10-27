@@ -1,5 +1,13 @@
-import anim from 'animejs'
 import type { ContentAttributes } from './dynamic-navigation'
+
+const BODY_SLIDE_DURATION = 400
+const CONTENT_FADE_DURATION = 400
+
+// Cubic bezier approximations of the Penner easing functions, as listed at
+// https://easings.net
+const EASE_IN_EXPO = 'cubic-bezier(0.7, 0, 0.84, 0)'
+const EASE_OUT_SINE = 'cubic-bezier(0.61, 1, 0.88, 1)'
+const EASE_IN_SINE = 'cubic-bezier(0.12, 0, 0.39, 0)'
 
 export type LayoutTransitionNavigationParameters = {
     hasManagedScroll: boolean
@@ -13,7 +21,8 @@ export type ContentTransitionParameters = {
     beforeContentEnter?: () => void
 }
 
-export function transitionContent({
+// Async so that synchronous errors reach the caller as a rejection
+export async function transitionContent({
     container: contentElem,
     attributes: { old: oldAttrs, new: newAttrs },
     content: newContentFragment,
@@ -42,53 +51,96 @@ function transitionOut(
     newAttrs: ContentAttributes,
 ): Promise<void> {
     const body = document.body
-    const tl = anim.timeline()
 
     const changingLongform = oldAttrs.isLongform !== newAttrs.isLongform
 
+    let bodySlide: Animation | null = null
+
     if (changingLongform) {
         const bodyOffset = getLongformBodyOffset()
+        const translateX = newAttrs.isLongform ? bodyOffset : -bodyOffset
 
-        tl.add({
-            targets: body,
-            translateX: newAttrs.isLongform ? bodyOffset : -bodyOffset,
-            duration: 400,
-            easing: 'easeInExpo',
-        })
+        bodySlide = startAnimation(
+            body,
+            { transform: `translateX(${translateX}px)` },
+            {
+                duration: BODY_SLIDE_DURATION,
+                easing: EASE_IN_EXPO,
+                fill: 'forwards',
+            },
+        )
     }
 
-    tl.add(
+    const contentFadeOut = startAnimation(
+        contentElem,
+        { opacity: 0 },
         {
-            targets: contentElem,
-            duration: 400,
-            opacity: 0,
-            easing: 'easeOutSine',
+            duration: CONTENT_FADE_DURATION,
+            delay: changingLongform ? BODY_SLIDE_DURATION - 200 : 0,
+            easing: EASE_OUT_SINE,
+            fill: 'forwards',
         },
-        changingLongform ? '-=200' : '0',
     )
 
-    return tl.finished.then(() => {
+    const finished = Promise.all([
+        bodySlide?.finished,
+        contentFadeOut?.finished,
+    ])
+
+    return finished.then(() => {
         if (!changingLongform) {
             return
         }
+
+        // Release the slide's offset in the same task as the class
+        // change, so no frame renders the new layout still offset
+        bodySlide?.cancel()
 
         if (newAttrs.isLongform) {
             body.classList.add('content-longform')
         } else {
             body.classList.remove('content-longform')
         }
-
-        body.style.transform = ''
     })
 }
 
 function transitionIn(contentElem: Element): Promise<void> {
-    return anim({
-        targets: contentElem,
-        duration: 400,
-        opacity: 1,
-        easing: 'easeInSine',
-    }).finished
+    // Once this finishes, the browser removes the fade out it replaces
+    const contentFadeIn = startAnimation(
+        contentElem,
+        { opacity: [0, 1] },
+        {
+            duration: CONTENT_FADE_DURATION,
+            easing: EASE_IN_SINE,
+            fill: 'forwards',
+        },
+    )
+
+    return Promise.resolve(contentFadeIn?.finished).then(() => {})
+}
+
+/**
+ * Start an animation using the Web Animations API, or return null if the
+ * browser doesn't support it.
+ */
+function startAnimation(
+    elem: Element,
+    keyframes: PropertyIndexedKeyframes,
+    options: KeyframeAnimationOptions,
+): Animation | null {
+    if (!hasWebAnimations()) {
+        return null
+    }
+
+    return elem.animate(keyframes, options)
+}
+
+function hasWebAnimations(): boolean {
+    return (
+        'animate' in Element.prototype &&
+        typeof Animation !== 'undefined' &&
+        'finished' in Animation.prototype
+    )
 }
 
 /**
