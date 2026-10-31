@@ -31,7 +31,7 @@
     "jest": "^30.5.2",
     "mini-css-extract-plugin": "^2.10.2",
     "mini-svg-data-uri": "^1.4.4",
-    "postcss": "^8.5.31",
+    "postcss": "^8.5.32",
     "postcss-loader": "^8.2.1",
     "prettier": "^3.9.10",
     "sass": "^1.106.1",
