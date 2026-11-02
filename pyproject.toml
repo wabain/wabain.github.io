@@ -9,7 +9,7 @@ packages = [{ include = "ci/integration_tools" }]
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^2.4.0"
+mypy = "^2.4.1"
 black = "^26.10.1"
 
 [tool.black]
