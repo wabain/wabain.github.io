@@ -97,11 +97,11 @@ importers:
         specifier: ^3.9.10
         version: 3.9.10
       sass:
-        specifier: ^1.106.1
-        version: 1.106.1
+        specifier: ^1.107.0
+        version: 1.107.0
       sass-loader:
         specifier: ^17.0.1
-        version: 17.0.1(sass@1.106.1)(webpack@5.112.2)
+        version: 17.0.1(sass@1.107.0)(webpack@5.112.2)
       selenium-webdriver:
         specifier: ^4.51.0
         version: 4.51.0
@@ -2607,8 +2607,8 @@ packages:
       webpack:
         optional: true
 
-  sass@1.106.1:
-    resolution: {integrity: sha512-kD+Gi66vycZcbJt+42NC4z4PXNMcCajVrJPhqoKKXy5cOBMmJQt052CxIBcRjwYXeImHYOpu/ydWWGZQIenl7A==}
+  sass@1.107.0:
+    resolution: {integrity: sha512-+whPilvVNoAD57xvdIPLQT0gXo4RD1lHYw+Uw8zYHlojaeaMDxK14tc0JmEsz/XMns48h3lpypisMP+3E8eHQA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -5718,12 +5718,12 @@ snapshots:
 
   safe-buffer@5.1.2: {}
 
-  sass-loader@17.0.1(sass@1.106.1)(webpack@5.112.2):
+  sass-loader@17.0.1(sass@1.107.0)(webpack@5.112.2):
     optionalDependencies:
-      sass: 1.106.1
+      sass: 1.107.0
       webpack: 5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(postcss@8.5.32)(svgo@4.1.0)(webpack-cli@7.2.3)
 
-  sass@1.106.1:
+  sass@1.107.0:
     dependencies:
       chokidar: 5.0.0
       immutable: 5.1.9
