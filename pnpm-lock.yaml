@@ -100,8 +100,8 @@ importers:
         specifier: ^1.106.1
         version: 1.106.1
       sass-loader:
-        specifier: ^17.0.1
-        version: 17.0.1(sass@1.106.1)(webpack@5.112.2)
+        specifier: ^17.1.0
+        version: 17.1.0(sass@1.106.1)(webpack@5.112.2)
       selenium-webdriver:
         specifier: ^4.51.0
         version: 4.51.0
@@ -2589,8 +2589,8 @@ packages:
   safe-buffer@5.1.2:
     resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
 
-  sass-loader@17.0.1:
-    resolution: {integrity: sha512-pgJMwCuLjVTSIWsv/2luVRXKlCeaViUGcgSe8dx95zMG4hUwqIMFmjbhq29ypFLflJU0GyiJZeLM9iI1n3KYAA==}
+  sass-loader@17.1.0:
+    resolution: {integrity: sha512-EZ/u/bLkAErTKvIq/f81Bz6tgL/5Brt8hWOABdTsVdO+nX0PWx2rQhR6fyxVME+MhnQrrwecMDlm2G1y07hhpQ==}
     engines: {node: '>= 22.11.0'}
     peerDependencies:
       '@rspack/core': 0.x || ^1.0.0 || ^2.0.0-0
@@ -5718,7 +5718,7 @@ snapshots:
 
   safe-buffer@5.1.2: {}
 
-  sass-loader@17.0.1(sass@1.106.1)(webpack@5.112.2):
+  sass-loader@17.1.0(sass@1.106.1)(webpack@5.112.2):
     optionalDependencies:
       sass: 1.106.1
       webpack: 5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(postcss@8.5.32)(svgo@4.1.0)(webpack-cli@7.2.3)
